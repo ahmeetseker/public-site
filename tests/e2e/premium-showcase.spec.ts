@@ -92,6 +92,8 @@ test.describe('Premium Showcase', () => {
     await page.setViewportSize({ width: 1280, height: 800 })
     await page.goto('/')
     const carousel = page.getByTestId('premium-showcase')
+    await expect(carousel).toHaveAttribute('data-hydrated', 'true', { timeout: 10_000 })
+
     const dots = carousel.getByTestId('premium-showcase-dots').locator('button')
     const count = await dots.count()
     if (count < 2) test.skip()
@@ -99,20 +101,9 @@ test.describe('Premium Showcase', () => {
     // Initial dot is current.
     await expect(dots.nth(0)).toHaveAttribute('aria-current', 'true')
 
-    // Wait for the React island (client:visible) to hydrate before clicking.
-    // Without this, the click can fire before onClick handlers are attached,
-    // leaving the SSR state unchanged.
-    await page.waitForFunction(() => {
-      const root = document.querySelector('[data-testid="premium-showcase"]') as HTMLElement | null
-      return !!root && root.hasAttribute('data-hydrated')
-    }, undefined, { timeout: 10_000 }).catch(() => {})
-
-    // Click second dot — second slide becomes active. Retry the click until
-    // React has registered it (handles hydration races deterministically).
-    await expect(async () => {
-      await dots.nth(1).click()
-      await expect(carousel).toHaveAttribute('data-active-index', '1', { timeout: 1000 })
-    }).toPass({ timeout: 10_000 })
+    // Click second dot — second slide becomes active.
+    await dots.nth(1).click()
+    await expect(carousel).toHaveAttribute('data-active-index', '1')
     await expect(dots.nth(1)).toHaveAttribute('aria-current', 'true')
     await expect(dots.nth(0)).toHaveAttribute('aria-current', 'false')
   })

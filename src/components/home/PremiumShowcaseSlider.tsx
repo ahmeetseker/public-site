@@ -47,6 +47,14 @@ export default function PremiumShowcaseSlider({
     })
   }, [active])
 
+  // Hydration signal — used by e2e tests to wait until the React island
+  // has attached event listeners before issuing user input.
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    root.dataset.hydrated = 'true'
+  }, [])
+
   return (
     <div
       ref={rootRef}
