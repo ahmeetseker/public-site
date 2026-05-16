@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import React, { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 
 export interface PremiumShowcaseSliderProps {
   total: number
@@ -48,6 +48,36 @@ export default function PremiumShowcaseSlider({
     return () => window.clearInterval(id)
   }, [isSingle, paused, autoPlayMs, safeTotal])
 
+  // Keyboard navigation while carousel has focus.
+  useEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); next() }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); prev() }
+      else if (e.key === 'Home') { e.preventDefault(); go(0) }
+      else if (e.key === 'End') { e.preventDefault(); go(safeTotal - 1) }
+    }
+    root.addEventListener('keydown', onKey)
+    return () => root.removeEventListener('keydown', onKey)
+  }, [next, prev, go, safeTotal])
+
+  // Touch / pointer swipe (mobile-first).
+  const swipeStartX = useRef<number | null>(null)
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (e.pointerType === 'mouse') return
+    swipeStartX.current = e.clientX
+  }
+  const onPointerUp = (e: React.PointerEvent) => {
+    const startX = swipeStartX.current
+    swipeStartX.current = null
+    if (startX === null) return
+    const dx = e.clientX - startX
+    if (Math.abs(dx) < 50) return
+    if (dx < 0) next()
+    else prev()
+  }
+
   // Reflect active state on slide elements (server-rendered children).
   useEffect(() => {
     const root = rootRef.current
@@ -79,13 +109,16 @@ export default function PremiumShowcaseSlider({
       aria-label={labels.eyebrow}
       data-testid="premium-showcase"
       data-active-index={active}
-      className="relative h-full"
+      className="relative h-full outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+      tabIndex={0}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false)
       }}
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
     >
       {children}
 

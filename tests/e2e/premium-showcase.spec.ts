@@ -129,4 +129,17 @@ test.describe('Premium Showcase', () => {
     const after = await carousel.getAttribute('data-active-index')
     expect(after).not.toBe('0')
   })
+
+  test('keyboard ArrowRight advances when carousel is focused', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.goto('/')
+    const carousel = page.getByTestId('premium-showcase')
+    await expect(carousel).toHaveAttribute('data-hydrated', 'true', { timeout: 10_000 })
+    await carousel.focus()
+    await expect(carousel).toHaveAttribute('data-active-index', '0')
+    await page.keyboard.press('ArrowRight')
+    await expect(carousel).toHaveAttribute('data-active-index', '1')
+    await page.keyboard.press('ArrowLeft')
+    await expect(carousel).toHaveAttribute('data-active-index', '0')
+  })
 })
