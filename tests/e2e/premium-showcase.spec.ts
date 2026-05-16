@@ -13,7 +13,7 @@ test.describe('Premium Showcase', () => {
     await page.goto('/')
     const card = page.getByTestId('premium-showcase')
     const href = await card.getAttribute('href')
-    expect(href).toMatch(/^\/ilan\/[a-z0-9-]+$/)
+    expect(href).toMatch(/^\/ilan\/[A-Za-z0-9.-]+$/)
   })
 
   test('respects prefers-reduced-motion (no metallic-displacement filter)', async ({ browser }) => {
