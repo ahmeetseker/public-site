@@ -117,4 +117,16 @@ test.describe('Premium Showcase', () => {
     await expect(slide0).toHaveAttribute('aria-hidden', 'false')
     await expect(slide1).toHaveAttribute('aria-hidden', 'true')
   })
+
+  test('auto-plays to next slide after interval (no reduced motion)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.goto('/')
+    const carousel = page.getByTestId('premium-showcase')
+    await expect(carousel).toHaveAttribute('data-hydrated', 'true', { timeout: 10_000 })
+    await expect(carousel).toHaveAttribute('data-active-index', '0')
+    // Default auto-play is 5000ms. Wait a touch longer.
+    await page.waitForTimeout(5500)
+    const after = await carousel.getAttribute('data-active-index')
+    expect(after).not.toBe('0')
+  })
 })

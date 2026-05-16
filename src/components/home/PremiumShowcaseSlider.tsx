@@ -32,6 +32,22 @@ export default function PremiumShowcaseSlider({
   const prev = useCallback(() => go(active - 1), [active, go])
   const next = useCallback(() => go(active + 1), [active, go])
 
+  // Auto-play: skip when single slide, reduced motion, hovered/focused, or document hidden.
+  const [paused, setPaused] = useState(false)
+  useEffect(() => {
+    if (isSingle) return
+    if (typeof window === 'undefined') return
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (prefersReduced) return
+    if (paused) return
+
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== 'visible') return
+      setActive((cur) => (cur + 1) % safeTotal)
+    }, autoPlayMs)
+    return () => window.clearInterval(id)
+  }, [isSingle, paused, autoPlayMs, safeTotal])
+
   // Reflect active state on slide elements (server-rendered children).
   useEffect(() => {
     const root = rootRef.current
@@ -64,6 +80,12 @@ export default function PremiumShowcaseSlider({
       data-testid="premium-showcase"
       data-active-index={active}
       className="relative h-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPaused(false)
+      }}
     >
       {children}
 
