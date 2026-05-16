@@ -1,0 +1,105 @@
+---
+import { LISTINGS, type Listing } from '@landx/data'
+import { formatTLCompact } from '@landx/ui/lib'
+import { Lock, MapPin, Maximize2 } from '@landx/icons'
+import ListingImage from '@/components/image/ListingImage.astro'
+import { useDict, detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  locale?: Locale
+  listing?: Listing
+}
+
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const dict = useDict('homepage.showcase', locale) as Record<string, string>
+
+// Selection heuristic: prop override → highest-priced active İmarlı → first active listing.
+function selectShowcaseListing(override?: Listing): Listing | null {
+  if (override) return override
+  const active = LISTINGS.filter((l) => l.status === 'Aktif')
+  if (active.length === 0) return null
+  const imarli = active.filter((l) => l.type === 'İmarlı')
+  if (imarli.length > 0) {
+    return [...imarli].sort((a, b) => b.price - a.price)[0]
+  }
+  return active[0]
+}
+
+const listing = selectShowcaseListing(Astro.props.listing)
+
+const slugify = (s: string) =>
+  s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' })[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+---
+
+{
+  listing && (
+    <section class="border-t border-border bg-background">
+      <div class="mx-auto max-w-[1280px] px-4 py-12 md:py-16">
+        <a
+          href={`${prefix}/ilan/${slugify(listing.title)}-${listing.id}`}
+          data-testid="premium-showcase"
+          class="reflective-card-container relative block overflow-hidden rounded-3xl bg-[#1a1a1a] aspect-[16/9] md:aspect-[21/9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground"
+        >
+          <div data-testid="premium-showcase-bg" class="reflective-bg absolute inset-0 h-full w-full">
+            <ListingImage
+              listingId={listing.id}
+              district={listing.district}
+              ratio="16/9"
+              index={1}
+              alt={`${listing.title} — vitrin ilanı`}
+              loading="eager"
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          <div class="reflective-content absolute inset-0 z-10 flex h-full flex-col justify-between p-6 text-white md:p-10">
+            <header class="flex items-center justify-between gap-3">
+              <span class="inline-flex items-center gap-1.5 rounded-md border border-white/30 bg-white/10 px-2 py-1 font-mono text-xs uppercase tracking-[0.18em]">
+                <Lock size={14} aria-hidden="true" />
+                <span>{dict.eyebrow}</span>
+              </span>
+              <span class="inline-flex items-center gap-1.5 font-mono text-xs uppercase tracking-[0.18em] text-white/80">
+                <MapPin size={14} aria-hidden="true" />
+                <span>{listing.district}</span>
+              </span>
+            </header>
+
+            <div class="flex flex-col items-center gap-2 text-center">
+              <h2 class="font-serif text-3xl font-normal tracking-tight md:text-4xl">
+                {listing.title}
+              </h2>
+              <p class="font-mono text-xs uppercase tracking-[0.2em] text-white/70">
+                {listing.type} · {listing.city}
+              </p>
+            </div>
+
+            <footer class="flex items-end justify-between gap-4">
+              <div class="flex flex-col gap-0.5">
+                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-white/60">
+                  {dict.priceLabel}
+                </span>
+                <span class="font-serif text-2xl tabular-nums md:text-3xl">
+                  {formatTLCompact(listing.price)}
+                </span>
+              </div>
+              <div class="flex flex-col items-end gap-2">
+                <span class="inline-flex items-center gap-1.5 font-mono text-sm tabular-nums text-white/90">
+                  <Maximize2 size={14} aria-hidden="true" />
+                  {listing.size.toLocaleString(locale === 'en' ? 'en-US' : 'tr-TR')} {dict.sizeLabel}
+                </span>
+                <span class="inline-flex items-center gap-1.5 rounded-xl border border-white/30 bg-white/10 px-3 py-1.5 text-sm font-medium backdrop-blur-sm">
+                  {dict.ctaLabel}
+                </span>
+              </div>
+            </footer>
+          </div>
+        </a>
+      </div>
+    </section>
+  )
+}
