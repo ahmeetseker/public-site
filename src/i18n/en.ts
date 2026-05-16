@@ -124,6 +124,12 @@ export const en: TrDictionary = {
       title: 'Notable this week',
       viewAll: 'View all listings →',
     },
+    showcase: {
+      eyebrow: 'FEATURED LISTING',
+      ctaLabel: 'View listing',
+      priceLabel: 'Price',
+      sizeLabel: 'sqm',
+    },
     stats: {
       verifiedListings: 'verified listings',
       partnerOffices: 'partner offices',

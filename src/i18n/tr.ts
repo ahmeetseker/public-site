@@ -124,6 +124,12 @@ export const tr = {
       title: 'Bu hafta dikkat çekenler',
       viewAll: 'Tüm ilanları gör →',
     },
+    showcase: {
+      eyebrow: 'VİTRİN İLAN',
+      ctaLabel: 'İlanı incele',
+      priceLabel: 'Fiyat',
+      sizeLabel: 'm²',
+    },
     stats: {
       verifiedListings: 'doğrulanmış ilan',
       partnerOffices: 'ortak emlak ofisi',
