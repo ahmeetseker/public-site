@@ -1,0 +1,8 @@
+# Place office photos / logos here as {office.slug}.webp (cover) or
+# {office.slug}-logo.webp (square logo).
+#
+# Convention (matches OfficeImage.astro):
+# - Logo (1/1): `<office.slug>-logo.webp`, source >= 720×720.
+# - Cover (16/9): `<office.slug>.webp`, source >= 1280×720.
+# - Until a real file exists, OfficeImage falls back to a deterministic
+#   gradient placeholder labelled with the office's initials.

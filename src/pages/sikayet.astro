@@ -1,0 +1,58 @@
+---
+// /sikayet — Anonim ilan şikayet formu (Wave F32 W2A).
+//
+// Astro shell + ReportForm island (useCreateReport hook). İlan ID
+// URL'den ?ilan=… ile prefill, kategori radio, açıklama textarea
+// (min 50 char), opsiyonel iletişim email.
+import RootLayout from '@/layouts/RootLayout.astro'
+import ReportForm from '@/components/trust/ReportForm.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const isEn = locale === 'en'
+const prefix = isEn ? '/en' : ''
+
+const title = isEn ? 'Report a listing — arsam.net' : 'İlan şikayet et — arsam.net'
+const description = isEn
+  ? 'Report fraudulent, inappropriate or misleading listings on arsam.net anonymously.'
+  : 'arsam.net üzerinde dolandırıcılık, uygunsuz veya yanıltıcı bir ilanı anonim olarak şikayet et.'
+
+const eyebrow = isEn ? 'TRUST · REPORT' : 'GÜVEN · ŞİKAYET'
+const heading = isEn ? 'Report a listing' : 'İlan şikayet et'
+const headingEm = isEn ? 'listing' : 'ilan'
+const intro = isEn
+  ? 'Help keep arsam.net safe. Anonymous reports go directly to our moderation team and are reviewed within 24 hours.'
+  : 'arsam.net\'i güvende tut. Anonim şikayetlerin doğrudan moderasyon ekibimize iletilir ve 24 saat içinde incelenir.'
+---
+
+<RootLayout title={title} description={description}>
+  <article class="mx-auto max-w-[760px] px-4 py-12 lg:py-16">
+    <nav class="mb-6 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+      <a href={`${prefix}/`} class="hover:text-foreground">{isEn ? 'Home' : 'Anasayfa'}</a>
+      <span class="mx-2">/</span>
+      <a href={`${prefix}/destek`} class="hover:text-foreground">{isEn ? 'Support' : 'Destek'}</a>
+      <span class="mx-2">/</span>
+      <span class="text-foreground">{isEn ? 'Report' : 'Şikayet'}</span>
+    </nav>
+
+    <header class="mb-8 max-w-[60ch]">
+      <div class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</div>
+      <h1 class="font-serif text-4xl font-normal tracking-tight md:text-5xl">
+        {heading.replace(headingEm, '').trim()}{' '}
+        <em class="font-serif italic font-normal">{headingEm}</em>
+      </h1>
+      <p class="mt-4 text-sm leading-relaxed text-muted-foreground">{intro}</p>
+    </header>
+
+    <ReportForm client:load />
+
+    <p class="mt-6 text-xs text-muted-foreground">
+      {isEn
+        ? 'Already have an account? '
+        : 'Hesabın var mı? '}
+      <a href={`${prefix}/hesabim/anlasmazliklar`} class="underline underline-offset-4 hover:text-foreground">
+        {isEn ? 'Open a dispute instead →' : 'Anlaşmazlık aç →'}
+      </a>
+    </p>
+  </article>
+</RootLayout>

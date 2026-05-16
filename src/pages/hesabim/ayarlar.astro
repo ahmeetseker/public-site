@@ -1,0 +1,29 @@
+---
+// Wave F7.C — /hesabim/ayarlar (TR).
+// 4 collapsible sections (Bildirimler, Dil & format, Gizlilik, Hesap işlemleri)
+// driven by a single React island that autosaves into arsam.settings.v1.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import SettingsForm from '@/components/account/SettingsForm.tsx'
+---
+
+<RootLayout
+  title="Ayarlar — arsam.net"
+  description="arsam.net hesap ayarları: bildirimler, dil, gizlilik ve hesap işlemleri (KVKK m.11 dahil)."
+>
+  <AuthGuard />
+  <AccountLayout active="ayarlar">
+    <PageHeader
+      eyebrow="HESAP · AYARLAR"
+      title="Ayarlar"
+      emphasis="ve tercihler"
+      description="Bildirim, dil, gizlilik ve hesap işlemleri tek yerde."
+    />
+
+    <section data-settings-island-wrap="" class="pb-6">
+      <SettingsForm client:idle />
+    </section>
+  </AccountLayout>
+</RootLayout>

@@ -1,0 +1,112 @@
+---
+import { LISTINGS } from '@landx/data'
+import { formatTLCompact } from '@landx/ui/lib'
+import { TypeChip } from '@landx/ui/atoms'
+import ListingImage from '@/components/image/ListingImage.astro'
+import { useDict, detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  locale?: Locale
+}
+
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const dict = useDict('homepage.featured', locale) as Record<string, string>
+
+const slugify = (s: string) =>
+  s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' })[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+const featured = LISTINGS.filter((l) => l.status === 'Aktif').slice(0, 6)
+const titleParts = dict.title.split(/(\s+)/)
+---
+
+<section class="border-t border-border bg-background">
+  <div class="mx-auto max-w-[1280px] px-4 py-16 md:py-20">
+    <div class="mb-8 flex items-end justify-between gap-4">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          {dict.eyebrow}
+        </div>
+        <h2 class="mt-2 font-serif text-3xl font-normal tracking-tight md:text-4xl">
+          {dict.title}
+        </h2>
+      </div>
+      <a
+        href={`${prefix}/ara`}
+        class="hidden text-sm text-muted-foreground transition hover:text-foreground md:inline"
+      >
+        {dict.viewAll}
+      </a>
+    </div>
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+      {
+        featured.map((l) => {
+          const slug = `${slugify(l.title)}-${l.id}`
+          return (
+            <a
+              href={`${prefix}/ilan/${slug}`}
+              class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground/20 hover:shadow-md"
+            >
+              <div class="relative aspect-[4/3] w-full overflow-hidden">
+                <ListingImage
+                  listingId={l.id}
+                  district={l.district}
+                  ratio="4/3"
+                  index={1}
+                  alt={`${l.title} — ${l.district}`}
+                  className="absolute inset-0"
+                />
+                <div class="absolute left-3 top-3">
+                  <TypeChip type={l.type} />
+                </div>
+              </div>
+              <div class="flex flex-1 flex-col gap-2 p-4 md:p-5">
+                <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {l.district}
+                </div>
+                <h3 class="font-serif text-lg leading-snug tracking-tight md:text-xl">
+                  {l.title}
+                </h3>
+                <div class="mt-auto flex items-center justify-between pt-2">
+                  <span class="font-serif text-xl tracking-tight md:text-2xl">
+                    {formatTLCompact(l.price)}
+                  </span>
+                  <span class="font-mono text-xs text-muted-foreground">
+                    {l.size.toLocaleString(locale === 'en' ? 'en-US' : 'tr-TR')} m²
+                  </span>
+                </div>
+              </div>
+            </a>
+          )
+        })
+      }
+    </div>
+
+    <div class="mt-10 flex justify-center md:hidden">
+      <a
+        href={`${prefix}/ara`}
+        class="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium transition hover:bg-foreground/5"
+      >
+        {dict.viewAll.replace(/\s*→\s*$/, '')}
+        <svg
+          class="h-3.5 w-3.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

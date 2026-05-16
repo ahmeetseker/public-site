@@ -1,0 +1,10 @@
+{
+  "extends": "@landx/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "noEmit": true,
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"]
+  },
+  "include": ["src"]
+}

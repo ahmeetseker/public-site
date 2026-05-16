@@ -1,0 +1,134 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import { REGIONS, getRegionListings } from '@landx/data'
+import type { Region, Listing } from '@landx/data'
+import Breadcrumb from '@/components/bolge/Breadcrumb.astro'
+import RegionHero from '@/components/bolge/RegionHero.astro'
+import MarketStatsBand from '@/components/bolge/MarketStatsBand.astro'
+import RegionListings from '@/components/bolge/RegionListings.astro'
+import RegionHighlights from '@/components/bolge/RegionHighlights.astro'
+import RegionFaq from '@/components/bolge/RegionFaq.astro'
+import SimilarRegions from '@/components/bolge/SimilarRegions.astro'
+import BolgeStats from '@/components/bolge/BolgeStats.tsx'
+import RegionMapView from '@/components/bolge/RegionMapView.tsx'
+import NeighborRegions from '@/components/bolge/NeighborRegions.astro'
+import RegionPhotos from '@/components/bolge/RegionPhotos.astro'
+import TransportInfo from '@/components/bolge/TransportInfo.astro'
+import { t, LOCALE_BCP47, detectLocaleFromPath } from '@/i18n'
+import {
+  faqPageSchema,
+  placeSchema,
+  breadcrumbListSchema,
+  toJsonLd,
+} from '@/lib/schema-builders'
+
+export function getStaticPaths() {
+  return REGIONS.map((r) => ({
+    params: { slug: r.slug },
+    props: { region: r, listings: getRegionListings(r) },
+  }))
+}
+
+interface PageProps {
+  region: Region
+  listings: Listing[]
+}
+
+const { region, listings } = Astro.props as PageProps
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+const similar = REGIONS.filter((r) => region.similarSlugs?.includes(r.slug))
+
+const title = locale === 'en'
+  ? `${region.name} land prices — arsam.net`
+  : `${region.name} arsa fiyatları — arsam.net`
+const description = locale === 'en'
+  ? `${region.name}, ${region.city}: ${listings.length} verified land listings. Avg m² ${region.marketStats.avgPricePerSqm.toLocaleString('en-US')} TL, YoY ${region.marketStats.yoy}.`
+  : `${region.name}, ${region.city} bölgesinde doğrulanmış ${listings.length} arsa ilanı. m² ortalama ${region.marketStats.avgPricePerSqm.toLocaleString('tr-TR')} TL, son 12 ayda ${region.marketStats.yoy}.`
+
+// F22.A — FAQPage / Place / BreadcrumbList JSON-LD via F22.0 builders (EN).
+const canonicalRegionUrl = new URL(`${prefix}/bolge/${region.slug}`, Astro.site).toString()
+
+const faqJsonLd: Record<string, unknown> = {
+  ...(faqPageSchema(region.faqs) as Record<string, unknown>),
+  inLanguage: LOCALE_BCP47[locale],
+}
+
+const placeJsonLd = placeSchema({
+  name: region.name,
+  url: canonicalRegionUrl,
+  description: region.description,
+  region: region.city,
+})
+
+const breadcrumbJsonLd: Record<string, unknown> = {
+  ...(breadcrumbListSchema([
+    { name: t('search.breadcrumbHome', locale), url: new URL(`${prefix}/`, Astro.site).toString() },
+    { name: t('regionHub.heading', locale), url: new URL(`${prefix}/bolge`, Astro.site).toString() },
+    { name: region.name, url: canonicalRegionUrl },
+  ]) as Record<string, unknown>),
+  inLanguage: LOCALE_BCP47[locale],
+}
+---
+
+<RootLayout title={title} description={description}>
+  <Breadcrumb region={region.name} />
+  <RegionHero region={region} listingCount={listings.length} />
+  <MarketStatsBand stats={region.marketStats} />
+  <BolgeStats client:visible bolge={region.slug} listings={listings} locale={locale} />
+  <RegionMapView
+    client:visible
+    slug={region.slug}
+    regionName={region.name}
+    city={region.city}
+    listings={listings}
+    locale={locale}
+    copy={{
+      title: t('regionDetail.advanced.mapTitle', locale).replace('{region}', region.name),
+      toggleShow: t('regionDetail.advanced.mapToggleShow', locale),
+      toggleHide: t('regionDetail.advanced.mapToggleHide', locale),
+      emptyMap: t('regionDetail.advanced.mapEmpty', locale),
+    }}
+  />
+  <RegionListings region={region.name} listings={listings} />
+  <TransportInfo
+    slug={region.slug}
+    copy={{
+      title: t('regionDetail.advanced.transportTitle', locale),
+      airport: t('regionDetail.advanced.transportAirport', locale),
+      motorway: t('regionDetail.advanced.transportMotorway', locale),
+      port: t('regionDetail.advanced.transportPort', locale),
+      distanceUnit: t('regionDetail.advanced.transportDistanceUnit', locale),
+    }}
+  />
+  <RegionPhotos
+    slug={region.slug}
+    regionName={region.name}
+    copy={{
+      title: t('regionDetail.advanced.photosTitle', locale).replace('{region}', region.name),
+      captions: [
+        t('regionDetail.advanced.photoCaptionCoast', locale),
+        t('regionDetail.advanced.photoCaptionField', locale),
+        t('regionDetail.advanced.photoCaptionHills', locale),
+        t('regionDetail.advanced.photoCaptionCenter', locale),
+      ],
+    }}
+  />
+  <RegionHighlights highlights={region.highlights} region={region.name} />
+  <RegionFaq faqs={region.faqs} region={region.name} />
+  <NeighborRegions
+    currentSlug={region.slug}
+    allRegions={REGIONS}
+    prefix={prefix}
+    copy={{
+      title: t('regionDetail.advanced.neighborsTitle', locale),
+      listingCount: t('regionDetail.advanced.neighborsListingCount', locale),
+    }}
+  />
+  <SimilarRegions regions={similar} />
+
+  <script is:inline type="application/ld+json" set:html={toJsonLd(faqJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={toJsonLd(placeJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={toJsonLd(breadcrumbJsonLd)} />
+</RootLayout>

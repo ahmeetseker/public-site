@@ -1,0 +1,75 @@
+---
+// Reusable breadcrumb component with BreadcrumbList JSON-LD.
+//
+// Usage:
+//   import Breadcrumb from '@/components/seo/Breadcrumb.astro'
+//   <Breadcrumb crumbs={[
+//     { label: 'Anasayfa', href: '/' },
+//     { label: 'Arsa arama', href: '/ara' },
+//     { label: 'Ayvalık · Cunda' }, // last crumb has no href (current page)
+//   ]} />
+//
+// Renders an accessible <nav> + <ol> trail in eyebrow typography and a
+// BreadcrumbList JSON-LD <script> for Google rich-result eligibility.
+//
+// NOTE: Wave-2 pages may already have inline breadcrumbs — this component is
+// for FUTURE pages and consistency. We deliberately do not refactor existing
+// pages (out of scope for Agent-20).
+//
+// F22.A: JSON-LD generation now goes through the shared
+// `breadcrumbListSchema` builder (F22.0). For the trailing "current page"
+// crumb (no `href`) we fall back to the current page URL so each list-item
+// still carries a valid `item` field.
+import { breadcrumbListSchema, toJsonLd } from '@/lib/schema-builders'
+
+export interface Crumb {
+  label: string
+  href?: string // omit on the last crumb (current page)
+}
+
+export interface Props {
+  crumbs: Crumb[]
+}
+
+const { crumbs } = Astro.props
+
+const SITE = 'https://arsam.net'
+const currentUrl = `${SITE}${Astro.url.pathname}`
+
+const jsonLd = breadcrumbListSchema(
+  crumbs.map((c) => ({
+    name: c.label,
+    url: c.href ? `${SITE}${c.href}` : currentUrl,
+  })),
+)
+---
+
+<nav aria-label="Sayfa hiyerarşisi" class="mb-4">
+  <ol
+    class="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
+  >
+    {
+      crumbs.map((c, i) => (
+        <>
+          {i > 0 && (
+            <li aria-hidden="true" class="text-muted-foreground/50">
+              /
+            </li>
+          )}
+          <li>
+            {c.href ? (
+              <a href={c.href} class="transition hover:text-foreground">
+                {c.label}
+              </a>
+            ) : (
+              <span class="text-foreground" aria-current="page">
+                {c.label}
+              </span>
+            )}
+          </li>
+        </>
+      ))
+    }
+  </ol>
+</nav>
+<script is:inline type="application/ld+json" set:html={toJsonLd(jsonLd)} />

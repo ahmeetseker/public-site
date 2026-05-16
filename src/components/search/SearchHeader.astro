@@ -1,0 +1,104 @@
+---
+import FilterChip from './FilterChip.astro'
+import { formatTLCompact } from '@landx/ui/lib'
+import { t, interpolate, detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  q: string
+  tip: string
+  il: string
+  priceMax: string
+  resultCount: number
+  locale?: Locale
+}
+
+const { q, tip, il, priceMax, resultCount } = Astro.props
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const baseSearch = `${prefix}/ara`
+
+function urlWithout(param: string): string {
+  const u = new URL(baseSearch, 'https://placeholder')
+  if (q && param !== 'q') u.searchParams.set('q', q)
+  if (tip && tip !== 'Tümü' && param !== 'tip') u.searchParams.set('tip', tip)
+  if (il && il !== 'Tümü' && param !== 'il') u.searchParams.set('il', il)
+  if (priceMax && param !== 'priceMax') u.searchParams.set('priceMax', priceMax)
+  const qs = u.searchParams.toString()
+  return qs ? `${baseSearch}?${qs}` : baseSearch
+}
+
+interface Chip { label: string; removeHref: string }
+const chips: Chip[] = []
+if (q) chips.push({ label: `"${q}"`, removeHref: urlWithout('q') })
+if (tip && tip !== 'Tümü')
+  chips.push({ label: interpolate(t('search.chipType', locale), { value: tip }), removeHref: urlWithout('tip') })
+if (il && il !== 'Tümü')
+  chips.push({ label: interpolate(t('search.chipCity', locale), { value: il }), removeHref: urlWithout('il') })
+if (priceMax) {
+  chips.push({
+    label: interpolate(t('search.chipMax', locale), { value: formatTLCompact(Number(priceMax)) }),
+    removeHref: urlWithout('priceMax'),
+  })
+}
+
+const headingAllParts = t('search.resultsHeadingAll', locale).split('{accent}')
+const headingForParts = t('search.resultsHeadingFor', locale).split('{accent}')
+---
+<header class="border-b border-border bg-background">
+  <div class="mx-auto max-w-[1280px] px-4 pb-6 pt-5">
+    <nav aria-label="Breadcrumb" class="text-xs text-muted-foreground">
+      <ol class="flex items-center gap-1.5">
+        <li><a href={`${prefix}/`} class="transition hover:text-foreground">{t('search.breadcrumbHome', locale)}</a></li>
+        <li aria-hidden class="text-muted-foreground/60">/</li>
+        <li><span class="text-foreground">{t('search.breadcrumbSearch', locale)}</span></li>
+      </ol>
+    </nav>
+
+    <div class="mt-3 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{t('search.resultsEyebrow', locale)}</div>
+        <h1 class="mt-1 font-serif text-3xl font-normal tracking-tight md:text-4xl">
+          {q
+            ? headingForParts.map((part, i) => (
+                <>
+                  {i > 0 && <em class="italic">{t('search.resultsHeadingForAccent', locale)}</em>}
+                  {part.replace('{q}', q)}
+                </>
+              ))
+            : headingAllParts.map((part, i) => (
+                <>
+                  {i > 0 && <em class="italic">{t('search.resultsHeadingAllAccent', locale)}</em>}
+                  {part}
+                </>
+              ))
+          }
+        </h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {(() => {
+            const parts = t('search.resultsListed', locale).split('{count}')
+            return (
+              <>
+                {parts[0]}<span class="font-mono tabular-nums">{resultCount}</span>{parts[1] ?? ''}
+              </>
+            )
+          })()}
+        </p>
+      </div>
+    </div>
+
+    {chips.length > 0 && (
+      <div class="mt-4 flex flex-wrap items-center gap-2">
+        <span class="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">{t('search.activeFilters', locale)}</span>
+        {chips.map((c) => (
+          <FilterChip label={c.label} removeHref={c.removeHref} />
+        ))}
+        <a
+          href={baseSearch}
+          class="rounded-full px-2 py-0.5 text-xs text-muted-foreground underline-offset-2 transition hover:text-foreground hover:underline"
+        >
+          {t('search.clearAll', locale)}
+        </a>
+      </div>
+    )}
+  </div>
+</header>

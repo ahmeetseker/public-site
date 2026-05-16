@@ -1,0 +1,155 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import DemoBadge from '@/components/auth/DemoBadge.astro'
+import AuthTrustPanel from '@/components/auth/AuthTrustPanel.astro'
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: auth form copy stays TR-canonical (low-priority i18n surface).
+---
+
+<RootLayout
+  title={t('auth.loginTitle', locale)}
+  description={t('auth.loginIntro', locale)}
+>
+  <!-- RootLayout sets `index, follow` for SEO. /giris should not be indexed. -->
+  <!-- Overriding via client-side script since RootLayout has no head slot. -->
+  <script is:inline>
+    (function () {
+      const r = document.querySelector('meta[name="robots"]')
+      if (r) r.setAttribute('content', 'noindex, nofollow')
+    })()
+  </script>
+
+  <div class="mx-auto max-w-[1280px] px-4 py-10 md:py-16">
+    <div class="grid items-start gap-10 md:grid-cols-2 md:gap-16">
+      <div class="mx-auto w-full max-w-md md:max-w-none">
+        <div class="flex flex-col gap-2">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            HESAP · GİRİŞ
+          </span>
+          <h1 class="font-serif text-3xl leading-tight tracking-tight md:text-4xl">
+            Tekrar <em class="font-normal italic">hoş geldin</em>.
+          </h1>
+          <p class="text-sm leading-relaxed text-muted-foreground">
+            arsam.net hesabına gir; favorilerin, aramaların ve ofislerle
+            konuşmaların seni bekliyor.
+          </p>
+        </div>
+
+        <div class="mt-6">
+          <DemoBadge />
+        </div>
+
+        <div class="mt-6">
+          <SocialLoginButtons client:idle locale="en" />
+          <div class="mt-4 flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            <span class="h-px flex-1 bg-border" aria-hidden="true"></span>
+            <span>{t('auth.social.divider', locale)}</span>
+            <span class="h-px flex-1 bg-border" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <form
+          id="login-form"
+          method="get"
+          action="/hesabim/"
+          class="mt-6 flex flex-col gap-4 rounded-2xl border border-border bg-card p-6"
+          novalidate
+        >
+          <div class="flex flex-col gap-1.5">
+            <label for="login-email" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              E-posta
+            </label>
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="ornek@arsam.net"
+              class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="login-password" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Parola
+              </label>
+              <a href="/en/sifre-sifirla" class="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground" aria-label="Forgot your password">
+                {t('auth.forgotPassword.linkLabel', locale)}
+              </a>
+            </div>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+              placeholder="••••••••"
+              class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+            />
+          </div>
+
+          <label class="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              id="login-remember"
+              name="remember"
+              type="checkbox"
+              checked
+              class="h-4 w-4 rounded border-border accent-foreground"
+            />
+            <span>Beni hatırla</span>
+          </label>
+
+          <button
+            type="submit"
+            class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+          >
+            Giriş yap
+          </button>
+
+          <div class="text-center text-sm text-muted-foreground">
+            Hesabın yok mu?
+            {' '}
+            <a id="register-link" href="/kayit" class="font-medium text-foreground underline underline-offset-2">
+              Kayıt ol →
+            </a>
+          </div>
+        </form>
+
+        <p class="mt-4 text-xs leading-relaxed text-muted-foreground">
+          Giriş yaparak <a href="/kullanim-sartlari" class="underline underline-offset-2 hover:text-foreground">Kullanım Şartları</a>
+          {' '}ve <a href="/kvkk" class="underline underline-offset-2 hover:text-foreground">KVKK Aydınlatma Metni</a>'ni
+          kabul ettiğini onaylarsın.
+        </p>
+      </div>
+
+      <AuthTrustPanel />
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      const form = document.getElementById('login-form')
+      const registerLink = document.getElementById('register-link')
+      const params = new URLSearchParams(location.search)
+      const next = params.get('next') || '/hesabim/'
+
+      // Preserve ?next= on the "Kayıt ol" link so flow continues post-register.
+      if (registerLink && params.get('next')) {
+        registerLink.href = '/kayit?next=' + encodeURIComponent(next)
+      }
+
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault()
+          document.cookie = 'arsam_buyer_demo=1; path=/; max-age=2592000; SameSite=Lax'
+          location.href = next
+        })
+      }
+    })()
+  </script>
+</RootLayout>

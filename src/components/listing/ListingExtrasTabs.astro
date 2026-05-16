@@ -1,0 +1,266 @@
+---
+// ListingExtrasTabs.astro — Wave F24.A.
+//
+// Compact 3-tab selector that surfaces a listing's optional media (sanal
+// tur / kat planı / video gezinti). Only renders tabs whose flag is true
+// on `getListingExtras(listing)`; if no flags are set the whole section
+// collapses to nothing, which is by design — most listings have no extras
+// today (see deterministic mock buckets in `lib/listing-extras`).
+//
+// Pannellum is loaded once at the page level from CDN. Because Astro
+// hoists `<script>` tags by default we mark the loader `is:inline` so it
+// stays where we put it (right next to the panels) and runs without an
+// extra bundle entry.
+//
+// Tabs are driven by a tiny inline script that toggles `data-active` on
+// the buttons and `hidden` on the panels — no React island for the tab
+// chrome itself, which keeps the JS payload limited to the actual
+// viewers (Pannellum/FloorPlan modal/YouTube iframe).
+
+import type { Listing } from '@landx/data'
+import { getListingExtras } from '@/lib/listing-extras'
+import VirtualTourViewer from './VirtualTourViewer.tsx'
+import FloorPlanViewer from './FloorPlanViewer.tsx'
+import VideoWalkthroughEmbed from './VideoWalkthroughEmbed.tsx'
+
+interface Props {
+  listing: Listing
+  locale?: 'tr' | 'en'
+}
+
+const { listing, locale = 'tr' } = Astro.props as Props
+const extras = getListingExtras(listing)
+
+const tabs: Array<{
+  key: 'tour' | 'plan' | 'video'
+  label: string
+  available: boolean
+}> = [
+  {
+    key: 'tour',
+    label: locale === 'en' ? '360° tour' : '360° tur',
+    available: extras.hasVirtualTour,
+  },
+  {
+    key: 'plan',
+    label: locale === 'en' ? 'Floor plan' : 'Kat planı',
+    available: extras.hasFloorPlan,
+  },
+  {
+    key: 'video',
+    label: locale === 'en' ? 'Video' : 'Video',
+    available: extras.hasVideo,
+  },
+]
+
+const activeTabs = tabs.filter((t) => t.available)
+const hasAny = activeTabs.length > 0
+const initialKey = activeTabs[0]?.key ?? null
+
+const sectionTitle = locale === 'en' ? 'Extras' : 'Ekstralar'
+const sectionLead =
+  locale === 'en'
+    ? 'Immersive media for this listing.'
+    : 'Bu ilan için ek görsel ve medya.'
+---
+
+{
+  hasAny && (
+    <section
+      class="rounded-2xl border border-border bg-card p-4"
+      aria-labelledby="listing-extras-heading"
+      data-testid="listing-extras"
+    >
+      <div class="mb-3 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            {sectionTitle}
+          </div>
+          <h2
+            id="listing-extras-heading"
+            class="mt-1 font-serif text-lg font-medium tracking-tight"
+          >
+            {sectionLead}
+          </h2>
+        </div>
+
+        {/* Tab strip */}
+        <div
+          role="tablist"
+          aria-label={sectionTitle}
+          class="flex flex-wrap items-center gap-1.5"
+          data-listing-extras-tablist
+        >
+          {activeTabs.map((t, i) => (
+            <button
+              type="button"
+              role="tab"
+              id={`extras-tab-${t.key}`}
+              aria-controls={`extras-panel-${t.key}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              data-extras-tab={t.key}
+              data-active={i === 0 ? 'true' : 'false'}
+              data-testid={`extras-tab-${t.key}`}
+              class="rounded-full border border-border bg-background px-3 py-1.5 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground transition data-[active=true]:bg-foreground data-[active=true]:text-background focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40"
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Panels — only one visible at a time. Each viewer mounts as its
+          own React island; hidden panels still render so reactivating a
+          tab is instant, but `client:visible` keeps initial JS minimal. */}
+      <div class="space-y-3">
+        {extras.hasVirtualTour && (
+          <div
+            role="tabpanel"
+            id="extras-panel-tour"
+            aria-labelledby="extras-tab-tour"
+            data-extras-panel="tour"
+            data-testid="extras-panel-tour"
+            hidden={initialKey !== 'tour'}
+          >
+            <VirtualTourViewer
+              client:visible
+              listingId={listing.id}
+              locale={locale}
+              panoramaUrl={extras.virtualTourUrl}
+            />
+          </div>
+        )}
+
+        {extras.hasFloorPlan && extras.floorPlanUrl && (
+          <div
+            role="tabpanel"
+            id="extras-panel-plan"
+            aria-labelledby="extras-tab-plan"
+            data-extras-panel="plan"
+            data-testid="extras-panel-plan"
+            hidden={initialKey !== 'plan'}
+          >
+            <FloorPlanViewer
+              client:visible
+              url={extras.floorPlanUrl}
+              locale={locale}
+            />
+          </div>
+        )}
+
+        {extras.hasVideo && extras.videoEmbedUrl && (
+          <div
+            role="tabpanel"
+            id="extras-panel-video"
+            aria-labelledby="extras-tab-video"
+            data-extras-panel="video"
+            data-testid="extras-panel-video"
+            hidden={initialKey !== 'video'}
+          >
+            <VideoWalkthroughEmbed
+              client:visible
+              embedUrl={extras.videoEmbedUrl}
+              locale={locale}
+            />
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+{
+  extras.hasVirtualTour && (
+    <>
+      {/* Pannellum CDN. `is:inline` keeps the tag in the document head as
+          written so the script is available before the React island
+          hydrates. ~30 KB gzipped. */}
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"
+      />
+      <script
+        src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"
+        is:inline
+      />
+    </>
+  )
+}
+
+{/* Tab activation script — vanilla JS, ships once per page. */}
+<script>
+  function initListingExtrasTabs() {
+    const root = document.querySelector('[data-testid="listing-extras"]') as HTMLElement | null
+    if (!root) return
+    const tabs = Array.from(
+      root.querySelectorAll<HTMLButtonElement>('[data-extras-tab]'),
+    )
+    const panels = Array.from(
+      root.querySelectorAll<HTMLElement>('[data-extras-panel]'),
+    )
+
+    function activate(key: string) {
+      for (const t of tabs) {
+        const isActive = t.dataset.extrasTab === key
+        t.dataset.active = isActive ? 'true' : 'false'
+        t.setAttribute('aria-selected', isActive ? 'true' : 'false')
+        t.tabIndex = isActive ? 0 : -1
+        if (isActive) t.focus()
+      }
+      for (const p of panels) {
+        const isActive = p.dataset.extrasPanel === key
+        if (isActive) p.removeAttribute('hidden')
+        else p.setAttribute('hidden', '')
+      }
+      const url = new URL(window.location.href)
+      url.hash = `extras=${key}`
+      history.replaceState(null, '', url.toString())
+    }
+
+    for (const t of tabs) {
+      t.addEventListener('click', () => {
+        const key = t.dataset.extrasTab
+        if (key) activate(key)
+      })
+      t.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          e.preventDefault()
+          const idx = tabs.indexOf(t)
+          const delta = e.key === 'ArrowRight' ? 1 : -1
+          const next = tabs[(idx + delta + tabs.length) % tabs.length]
+          const key = next?.dataset.extrasTab
+          if (key) activate(key)
+        }
+      })
+    }
+
+    // Hash deep-link: /#extras=plan opens the plan tab on load.
+    const m = /extras=(tour|plan|video)/.exec(window.location.hash)
+    if (m && m[1]) {
+      const target = tabs.find((t) => t.dataset.extrasTab === m[1])
+      if (target) {
+        target.dataset.active = 'true'
+        target.setAttribute('aria-selected', 'true')
+        // Activate panels without stealing focus on initial load.
+        for (const t of tabs) {
+          if (t !== target) {
+            t.dataset.active = 'false'
+            t.setAttribute('aria-selected', 'false')
+            t.tabIndex = -1
+          }
+        }
+        for (const p of panels) {
+          if (p.dataset.extrasPanel === m[1]) p.removeAttribute('hidden')
+          else p.setAttribute('hidden', '')
+        }
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initListingExtrasTabs)
+  } else {
+    initListingExtrasTabs()
+  }
+</script>

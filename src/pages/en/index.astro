@@ -1,0 +1,40 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import Hero from '@/components/home/Hero.astro'
+import PopularRegions from '@/components/home/PopularRegions.astro'
+import FeaturedListings from '@/components/home/FeaturedListings.astro'
+import StatsBand from '@/components/home/StatsBand.astro'
+import HomeCTA from '@/components/home/HomeCTA.astro'
+import { t, LOCALE_BCP47 } from '@/i18n'
+
+// Faz 9.13.b — EN homepage. Re-uses all TR components which are now locale-aware.
+const locale = 'en' as const
+const siteUrl = Astro.site?.toString() ?? 'https://arsam.net/'
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'arsam.net',
+  url: siteUrl,
+  inLanguage: LOCALE_BCP47[locale],
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${siteUrl.replace(/\/$/, '')}/en/ara?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+}
+---
+
+<RootLayout
+  locale={locale}
+  title={`${t('site.brand', locale)} — ${t('site.tagline', locale)}`}
+  description={t('site.description', locale)}
+>
+  <Hero locale={locale} />
+  <PopularRegions locale={locale} />
+  <FeaturedListings locale={locale} />
+  <StatsBand locale={locale} />
+  <HomeCTA locale={locale} />
+
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+</RootLayout>

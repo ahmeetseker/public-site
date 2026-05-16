@@ -1,0 +1,146 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import { t } from '@/i18n'
+
+const locale = 'tr' as const
+
+const i18n = {
+  title: t('newsletter.confirmPage.title', locale),
+  eyebrow: 'BÜLTEN',
+  successHeading: t('newsletter.confirmPage.success', locale),
+  successBody: t('newsletter.confirmPage.successBody', locale),
+  errorHeading: t('newsletter.confirmPage.error', locale),
+  errorBody: t('newsletter.confirmPage.errorBody', locale),
+  unsubscribeHeading: t('newsletter.unsubscribePage.success', locale),
+  unsubscribeBody: t('newsletter.unsubscribePage.successBody', locale),
+  notFound: t('newsletter.unsubscribePage.notFound', locale),
+  home: t('newsletter.confirmPage.home', locale),
+}
+---
+<RootLayout title={`${i18n.title} — arsam.net`} locale={locale}>
+  <article class="mx-auto max-w-[760px] px-4 py-16 lg:py-24">
+    <header class="mb-8 max-w-[60ch]">
+      <div class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {i18n.eyebrow}
+      </div>
+      <h1 class="font-serif text-4xl font-normal tracking-tight md:text-5xl">
+        {i18n.title}
+      </h1>
+    </header>
+
+    <section
+      id="newsletter-confirm-result"
+      data-testid="newsletter-confirm-status"
+      data-action="pending"
+      data-home-href="/"
+      data-i18n-success-heading={i18n.successHeading}
+      data-i18n-success-body={i18n.successBody}
+      data-i18n-error-heading={i18n.errorHeading}
+      data-i18n-error-body={i18n.errorBody}
+      data-i18n-unsubscribe-heading={i18n.unsubscribeHeading}
+      data-i18n-unsubscribe-body={i18n.unsubscribeBody}
+      data-i18n-not-found={i18n.notFound}
+      data-i18n-home={i18n.home}
+      class="rounded-2xl border border-border bg-card p-6"
+    >
+      <p class="text-sm text-muted-foreground">…</p>
+    </section>
+
+    <p class="mt-6 text-xs text-muted-foreground">
+      <a href="/" class="underline underline-offset-2">{i18n.home}</a>
+    </p>
+  </article>
+
+  <script>
+    import { confirmSubscription, getSubscription, mockToken, unsubscribe } from '@/lib/newsletter'
+
+    const root = document.getElementById('newsletter-confirm-result') as HTMLElement | null
+    if (root) {
+      const ds = root.dataset
+      const homeHref = ds.homeHref ?? '/'
+      const i18n = {
+        successHeading: ds.i18nSuccessHeading ?? '',
+        successBody: ds.i18nSuccessBody ?? '',
+        errorHeading: ds.i18nErrorHeading ?? '',
+        errorBody: ds.i18nErrorBody ?? '',
+        unsubscribeHeading: ds.i18nUnsubscribeHeading ?? '',
+        unsubscribeBody: ds.i18nUnsubscribeBody ?? '',
+        notFound: ds.i18nNotFound ?? '',
+        home: ds.i18nHome ?? '',
+      }
+
+      type State = 'confirmed' | 'unsubscribed' | 'error'
+      function render(state: State, body: string, email: string | null, reason?: string) {
+        root!.setAttribute('data-action', state)
+        if (reason) root!.setAttribute('data-reason', reason)
+        const accentBorder =
+          state === 'confirmed'
+            ? 'border-emerald-500/40'
+            : state === 'unsubscribed'
+              ? 'border-amber-500/40'
+              : 'border-rose-500/40'
+        root!.className = `rounded-2xl border ${accentBorder} bg-card p-6`
+
+        const heading =
+          state === 'confirmed'
+            ? i18n.successHeading
+            : state === 'unsubscribed'
+              ? i18n.unsubscribeHeading
+              : i18n.errorHeading
+
+        const headingEl = document.createElement('h2')
+        headingEl.className = 'font-serif text-2xl font-normal tracking-tight'
+        headingEl.textContent = heading
+
+        const bodyEl = document.createElement('p')
+        bodyEl.className = 'mt-2 text-sm leading-relaxed text-muted-foreground'
+        bodyEl.textContent = body
+
+        root!.replaceChildren(headingEl, bodyEl)
+
+        if (email) {
+          const emailEl = document.createElement('p')
+          emailEl.className = 'mt-2 break-all font-mono text-xs text-muted-foreground'
+          emailEl.textContent = email
+          root!.appendChild(emailEl)
+        }
+
+        const link = document.createElement('a')
+        link.href = homeHref
+        link.className =
+          'mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-foreground px-4 py-2 text-xs font-medium uppercase tracking-[0.14em] text-background transition hover:opacity-90'
+        link.textContent = `${i18n.home} →`
+        root!.appendChild(link)
+      }
+
+      const params = new URLSearchParams(window.location.search)
+      const token = params.get('token')
+      const action = params.get('action')
+
+      if (action === 'unsubscribe') {
+        const result = unsubscribe()
+        if (!result) {
+          render('error', i18n.notFound, null, 'no-record')
+        } else {
+          render('unsubscribed', i18n.unsubscribeBody, result.email)
+        }
+      } else if (token) {
+        const current = getSubscription()
+        if (!current) {
+          render('error', i18n.errorBody, null, 'no-record')
+        } else if (token !== mockToken(current.email)) {
+          render('error', i18n.errorBody, null, 'bad-token')
+        } else {
+          const next = confirmSubscription()
+          if (!next) {
+            render('error', i18n.errorBody, null, 'no-record')
+          } else {
+            render('confirmed', i18n.successBody, next.email)
+          }
+        }
+      } else {
+        render('error', i18n.errorBody, null, 'no-token')
+      }
+    }
+  </script>
+</RootLayout>

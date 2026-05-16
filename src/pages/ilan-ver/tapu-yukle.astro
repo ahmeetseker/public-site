@@ -1,0 +1,38 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import TapuUploadIsland from '@/components/ai/TapuUploadIsland.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+// F33 Faz 2 — opsiyonel ek step (mevcut 4-step wizard'a değil, standalone).
+// Wizard'dan deep link verilebilir; başarılı OCR sonrası /ilan-ver/1'e geri döner.
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+---
+
+<WizardLayout
+  title={locale === 'en' ? 'Tapu OCR — arsam.net' : 'Tapu OCR — arsam.net'}
+  description={locale === 'en'
+    ? 'Upload your tapu and let AI extract ada/parsel/area/zoning + risk markers in seconds.'
+    : 'Tapunu yükle, AI ada/parsel/m²/cins/imar bilgisini ve risk işaretlerini saniyeler içinde çıkarsın.'}
+  step={0}
+  locale={locale}
+>
+  <main class="mx-auto max-w-[800px] px-4 py-8 md:py-12">
+    <header class="flex flex-col gap-2 pb-6">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        İLAN VER · TAPU OCR
+      </span>
+      <h1 class="font-serif text-3xl leading-tight tracking-tight md:text-4xl">
+        Tapu yükle,
+        <em class="font-normal italic text-muted-foreground">AI çıkarsın</em>
+      </h1>
+      <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+        Ada / parsel / m² / cins / imar durumu otomatik doldurulur. İpotek, haciz veya şerh
+        gibi takyidatlar için renkli risk işaretleri görürsün — alıcıya yayınlamadan önce
+        düzeltebilirsin.
+      </p>
+    </header>
+
+    <TapuUploadIsland client:only="react" />
+  </main>
+</WizardLayout>

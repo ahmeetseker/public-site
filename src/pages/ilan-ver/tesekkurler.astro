@@ -1,0 +1,26 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import SuccessSummary from '@/components/ilan-ver/SuccessSummary.tsx'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// Wave F4 / Agent-F4A — tesekkurler reads the ref number from window.location
+// inside the SuccessSummary island; SSR fallback shows AT-2026-0042.
+---
+<WizardLayout
+  title={`${t('ilanVer.thanks', locale)} — arsam.net`}
+  description={t('ilanVer.thanksBody', locale)}
+  step={0}
+  locale={locale}
+>
+  <SuccessSummary client:load />
+
+  <div class="mx-auto mt-14 max-w-xl rounded-2xl border border-dashed border-border bg-card/40 p-5 text-left">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Sırada ne var?</div>
+    <ol class="mt-3 space-y-2 text-sm text-muted-foreground">
+      <li><strong class="font-medium text-foreground">1.</strong> Editör inceler (24 saat içinde).</li>
+      <li><strong class="font-medium text-foreground">2.</strong> Onaylanırsa ilan arsam.net arama sonuçlarına çıkar.</li>
+      <li><strong class="font-medium text-foreground">3.</strong> İlk teklif geldiğinde sana bildirim gelir.</li>
+    </ol>
+  </div>
+</WizardLayout>

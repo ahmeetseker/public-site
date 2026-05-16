@@ -1,0 +1,48 @@
+---
+// Wave F8 / Agent-F8A — Related posts.
+// Renders up to N peer posts (same category) under the post body. Pure
+// presentational — caller supplies the array (sourced via getRelatedPosts).
+import type { BlogPost } from '@/lib/blog'
+import { blogHref, postSlug } from '@/lib/blog'
+import { t, type Locale } from '@/i18n'
+
+export interface Props {
+  posts: BlogPost[]
+  locale: Locale
+}
+
+const { posts, locale } = Astro.props
+const heading = t('blog.post.relatedTitle', locale)
+const dateFmt = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'tr-TR', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+})
+---
+{posts.length > 0 && (
+  <section class="mt-12 border-t border-border pt-8" data-testid="related-posts">
+    <h2 class="mb-5 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      {heading}
+    </h2>
+    <ul class="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+      {posts.map((p) => {
+        const slug = postSlug(p)
+        const title = locale === 'en' ? p.data.titleEn : p.data.title
+        return (
+          <li>
+            <a
+              href={blogHref(slug, locale)}
+              class="block h-full rounded-xl border border-border bg-card/40 p-4 transition hover:bg-card"
+              data-testid="related-post"
+            >
+              <div class="font-medium text-foreground">{title}</div>
+              <div class="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                {dateFmt.format(p.data.date)}
+              </div>
+            </a>
+          </li>
+        )
+      })}
+    </ul>
+  </section>
+)}

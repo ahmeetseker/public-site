@@ -1,0 +1,18 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import VerificationStartIsland from '@/components/identity/VerificationStartIsland'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+const seoTitle = locale === 'en'
+  ? 'Verify your account — arsam.net'
+  : 'Hesabını doğrula — arsam.net'
+const seoDescription = locale === 'en'
+  ? 'Start verification with email, phone, or national ID. Verified users gain higher visibility on listings.'
+  : 'E-posta, telefon veya kimlik ile hesap doğrulamasını başlat. Doğrulanmış kullanıcılar daha üst sıralarda görünür.'
+---
+
+<RootLayout title={seoTitle} description={seoDescription}>
+  <VerificationStartIsland client:idle locale={locale} />
+</RootLayout>

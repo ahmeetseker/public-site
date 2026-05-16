@@ -1,0 +1,27 @@
+---
+import PriceForecastChart from './PriceForecastChart.tsx'
+import RoiCalculator from './RoiCalculator.tsx'
+import TaxBreakdownCard from './TaxBreakdownCard.tsx'
+import NegotiationCoach from './NegotiationCoach.tsx'
+import MortgagePreApprovalCta from './MortgagePreApprovalCta.tsx'
+import type { Listing } from '@landx/data'
+
+interface Props {
+  listing: Listing
+}
+const { listing } = Astro.props as Props
+---
+<div class="space-y-4">
+  <div>
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">AI Yatırım</div>
+    <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+      Tahmin · ROI · <em class="not-italic font-normal">müzakere</em>
+    </h2>
+  </div>
+
+  <PriceForecastChart client:visible listingId={listing.id} currentPrice={listing.price} />
+  <RoiCalculator client:visible listingId={listing.id} price={listing.price} />
+  <TaxBreakdownCard client:visible price={listing.price} />
+  <NegotiationCoach client:visible listingId={listing.id} listedPrice={listing.price} />
+  <MortgagePreApprovalCta client:idle price={listing.price} creditEligible={listing.creditEligible ?? false} />
+</div>

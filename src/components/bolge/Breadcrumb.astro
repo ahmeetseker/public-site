@@ -1,0 +1,41 @@
+---
+export interface Props {
+  region?: string
+}
+
+const { region } = Astro.props
+---
+
+<nav aria-label="Sayfa yolu" class="border-b border-border bg-card/30">
+  <div class="mx-auto flex max-w-[1280px] items-center gap-2 px-4 py-3 text-xs">
+    <ol class="flex flex-wrap items-center gap-2">
+      <li>
+        <a href="/" class="text-muted-foreground transition hover:text-foreground">
+          Anasayfa
+        </a>
+      </li>
+      <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+      <li>
+        {
+          region ? (
+            <a href="/bolge" class="text-muted-foreground transition hover:text-foreground">
+              Bölgeler
+            </a>
+          ) : (
+            <span class="text-foreground">Bölgeler</span>
+          )
+        }
+      </li>
+      {
+        region && (
+          <>
+            <li aria-hidden="true" class="text-muted-foreground/50">
+              /
+            </li>
+            <li class="text-foreground">{region}</li>
+          </>
+        )
+      }
+    </ol>
+  </div>
+</nav>

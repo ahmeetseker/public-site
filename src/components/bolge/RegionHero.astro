@@ -1,0 +1,50 @@
+---
+import type { Region } from '@landx/data'
+
+export interface Props {
+  region: Region
+  listingCount: number
+}
+
+const { region, listingCount } = Astro.props
+const searchHref = `/ara?q=${encodeURIComponent(region.name)}`
+---
+
+<section class="border-b border-border bg-card/40">
+  <div class="mx-auto max-w-[1280px] px-4 py-16 md:py-24">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      {region.heroEyebrow}
+    </div>
+    <h1 class="mt-3 font-serif text-4xl font-normal tracking-tight md:text-5xl">
+      {region.heroHeadline}
+    </h1>
+    <p class="mt-5 max-w-[68ch] text-base leading-relaxed text-muted-foreground md:text-lg">
+      {region.description}
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-center gap-3">
+      <a
+        href={searchHref}
+        class="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2.5 text-sm font-medium text-background transition hover:bg-foreground/90"
+      >
+        Tüm ilanları gör
+        <svg
+          class="h-3.5 w-3.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </a>
+      <span class="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+        {listingCount} doğrulanmış ilan · {region.city}
+      </span>
+    </div>
+  </div>
+</section>

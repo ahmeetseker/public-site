@@ -1,0 +1,32 @@
+---
+// Wave F7.C — /en/hesabim/ayarlar (EN mirror).
+// React island reads `document.documentElement.lang` to pick the locale —
+// RootLayout sets that to `en` for /en/* routes.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import SettingsForm from '@/components/account/SettingsForm.tsx'
+
+const locale = 'en' as const
+---
+
+<RootLayout
+  locale={locale}
+  title="Settings — arsam.net"
+  description="arsam.net account settings: notifications, language, privacy and account actions (incl. KVKK art. 11 data export)."
+>
+  <AuthGuard />
+  <AccountLayout active="ayarlar">
+    <PageHeader
+      eyebrow="ACCOUNT · SETTINGS"
+      title="Settings"
+      emphasis="& preferences"
+      description="Notifications, language, privacy and account actions — all in one place."
+    />
+
+    <section data-settings-island-wrap="" class="pb-6">
+      <SettingsForm client:idle />
+    </section>
+  </AccountLayout>
+</RootLayout>

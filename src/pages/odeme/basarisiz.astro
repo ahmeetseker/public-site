@@ -1,0 +1,127 @@
+---
+// Wave F32 W1A — /odeme/basarisiz: ödeme hata sayfası (statik).
+//
+// Hata kodu ikonu + tekrar dene CTA → /premium. URL'den `?code=` opsiyonel
+// okunabilir ama mock akışta bu yalnızca PaymentForm rejection branch'inden
+// gelir. Hata mesajları yerelleştirilmiş Astro statik metni.
+import RootLayout from '@/layouts/RootLayout.astro'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const errorCode = Astro.url.searchParams.get('code') ?? 'PAYMENT_DECLINED'
+
+const title = locale === 'en' ? 'Payment failed — LandX' : 'Ödeme başarısız — LandX'
+const description =
+  locale === 'en'
+    ? 'Your payment could not be completed. Please review the details and try again.'
+    : 'Ödemeniz tamamlanamadı. Lütfen bilgileri kontrol edip tekrar deneyin.'
+
+const labels = {
+  eyebrow: locale === 'en' ? 'PAYMENT · DECLINED' : 'ÖDEME · BAŞARISIZ',
+  heading: locale === 'en' ? 'We could not' : 'Ödemeniz',
+  emphasis: locale === 'en' ? 'process your payment.' : 'tamamlanamadı.',
+  body:
+    locale === 'en'
+      ? 'Common causes: insufficient balance, card limit reached, 3D Secure timeout, or bank-side decline. Try a different card or method.'
+      : 'Olası nedenler: yetersiz bakiye, kart limiti, 3D Secure zaman aşımı veya bankanız tarafından reddetme. Farklı bir kart veya yöntem deneyebilirsiniz.',
+  errorCodeLabel: locale === 'en' ? 'Error code' : 'Hata kodu',
+  retryCta: locale === 'en' ? 'Try again' : 'Tekrar dene',
+  toAccount: locale === 'en' ? 'Go to my account' : 'Hesabıma dön',
+  contact: locale === 'en' ? 'Contact support' : 'Destek ile iletişim',
+  crumbHome: locale === 'en' ? 'Home' : 'Anasayfa',
+  crumbPayment: locale === 'en' ? 'Payment' : 'Ödeme',
+  crumbHere: locale === 'en' ? 'Failed' : 'Başarısız',
+}
+---
+
+<RootLayout title={title} description={description}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, follow" />
+  </Fragment>
+
+  <section class="mx-auto max-w-[1100px] px-4 py-10 md:py-14">
+    <nav aria-label={locale === 'en' ? 'Breadcrumb' : 'Sayfa hiyerarşisi'} class="mb-3">
+      <ol
+        class="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
+      >
+        <li>
+          <a href={`${prefix}/`} class="transition hover:text-foreground">{labels.crumbHome}</a>
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li>
+          <a href={`${prefix}/odeme`} class="transition hover:text-foreground"
+            >{labels.crumbPayment}</a
+          >
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li class="text-foreground" aria-current="page">{labels.crumbHere}</li>
+      </ol>
+    </nav>
+
+    <article class="rounded-2xl border border-border bg-card p-6 md:p-10">
+      <div
+        class="mb-4 inline-flex items-center gap-2 rounded-full bg-red-500/10 px-2.5 py-1 font-mono text-xs uppercase tracking-[0.14em] text-red-700 dark:text-red-300"
+      >
+        <span class="h-1.5 w-1.5 rounded-full bg-red-500" aria-hidden="true"></span>
+        {labels.eyebrow}
+      </div>
+
+      <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-6">
+        <div
+          aria-hidden="true"
+          class="flex h-16 w-16 flex-none items-center justify-center rounded-2xl bg-red-500/10 text-red-700 dark:text-red-300"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-8 w-8"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M15 9l-6 6" />
+            <path d="M9 9l6 6" />
+          </svg>
+        </div>
+        <div class="flex-1">
+          <h1
+            class="font-serif text-3xl font-normal leading-tight tracking-tight text-foreground md:text-4xl"
+          >
+            {labels.heading}{' '}
+            <em class="font-serif italic font-normal text-foreground/70">{labels.emphasis}</em>
+          </h1>
+          <p class="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">
+            {labels.body}
+          </p>
+          <p class="mt-3 font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            {labels.errorCodeLabel}: <span class="text-foreground">{errorCode}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex flex-wrap gap-2">
+        <a
+          href={`${prefix}/premium`}
+          class="inline-flex items-center justify-center rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background transition hover:opacity-90"
+        >
+          {labels.retryCta}
+        </a>
+        <a
+          href={`${prefix}/hesabim`}
+          class="inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-foreground/5"
+        >
+          {labels.toAccount}
+        </a>
+        <a
+          href={`${prefix}/iletisim`}
+          class="inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-foreground/5"
+        >
+          {labels.contact}
+        </a>
+      </div>
+    </article>
+  </section>
+</RootLayout>

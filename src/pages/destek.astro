@@ -1,0 +1,118 @@
+---
+// /destek — Public Trust & Safety hub (Wave F32 W2A).
+//
+// Hero + FAQ accordion (FaqAccordion island, useListFaq hook) + "Bilet aç"
+// CTA → /hesabim/destek. Birleştirilmiş /yardim → /destek (eski /yardim
+// 301 redirect ile bu sayfaya yönlendirir).
+import RootLayout from '@/layouts/RootLayout.astro'
+import FaqAccordion from '@/components/trust/FaqAccordion.tsx'
+import { detectLocaleFromPath, LOCALE_BCP47 } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const isEn = locale === 'en'
+const prefix = isEn ? '/en' : ''
+const canonical = `https://arsam.net${prefix}/destek`
+
+const title = isEn ? 'Support — arsam.net' : 'Destek — arsam.net'
+const description = isEn
+  ? 'arsam.net support hub: FAQ, file a complaint, open a support ticket.'
+  : 'arsam.net destek merkezi: SSS, ilan şikayet, destek bileti aç.'
+
+const eyebrow = isEn ? 'SUPPORT · HELP CENTER' : 'DESTEK · YARDIM MERKEZİ'
+const heading = isEn ? 'How can we help?' : 'Sana nasıl yardımcı olabiliriz?'
+const headingEm = isEn ? 'help' : 'yardımcı olabiliriz'
+const intro = isEn
+  ? "Browse FAQ entries below. Can't find what you need? Open a support ticket from your account or report a listing anonymously."
+  : 'Aşağıdaki sıkça sorulan sorulara göz at. Aradığını bulamazsan hesabından destek bileti aç veya bir ilanı anonim olarak şikayet et.'
+
+const faqHeading = isEn ? 'Frequently asked questions' : 'Sıkça sorulan sorular'
+const ticketCta = isEn ? 'Open support ticket →' : 'Destek bileti aç →'
+const reportCta = isEn ? 'Report a listing →' : 'İlan şikayeti gönder →'
+const ticketHelp = isEn
+  ? 'Sign in required — we typically respond within 24 hours.'
+  : 'Giriş gerekiyor — genellikle 24 saat içinde dönüş yapıyoruz.'
+const reportHelp = isEn
+  ? 'Anonymous report — moderation team reviews within 24 hours.'
+  : 'Anonim şikayet — moderasyon ekibi 24 saat içinde inceler.'
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  inLanguage: LOCALE_BCP47[locale],
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Anasayfa', item: `https://arsam.net${prefix}/` },
+    { '@type': 'ListItem', position: 2, name: isEn ? 'Support' : 'Destek', item: canonical },
+  ],
+}
+---
+
+<RootLayout title={title} description={description}>
+  <link rel="canonical" href={canonical} slot="head" />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} slot="head" />
+
+  <article class="mx-auto max-w-[1200px] px-4 py-12 lg:py-16">
+    <header class="mb-10 max-w-[64ch]">
+      <div class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</div>
+      <h1 class="font-serif text-4xl font-normal tracking-tight md:text-5xl">
+        {heading.replace(headingEm, '').trim()}{' '}
+        <em class="font-serif italic font-normal">{headingEm}</em>?
+      </h1>
+      <p class="mt-4 text-base leading-relaxed text-foreground/85">{intro}</p>
+    </header>
+
+    <section class="mb-12 grid grid-cols-1 gap-3 md:grid-cols-2">
+      <a
+        href={`${prefix}/hesabim/destek`}
+        class="group flex flex-col gap-1 rounded-2xl border border-border bg-card p-5 transition hover:border-foreground/20 hover:bg-foreground/[0.02]"
+      >
+        <span class="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          {isEn ? 'TICKET' : 'BİLET'}
+        </span>
+        <span class="font-serif text-lg tracking-tight">{ticketCta}</span>
+        <span class="text-xs text-muted-foreground">{ticketHelp}</span>
+      </a>
+      <a
+        href={`${prefix}/sikayet`}
+        class="group flex flex-col gap-1 rounded-2xl border border-border bg-card p-5 transition hover:border-foreground/20 hover:bg-foreground/[0.02]"
+      >
+        <span class="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          {isEn ? 'REPORT' : 'ŞİKAYET'}
+        </span>
+        <span class="font-serif text-lg tracking-tight">{reportCta}</span>
+        <span class="text-xs text-muted-foreground">{reportHelp}</span>
+      </a>
+    </section>
+
+    <section class="mb-10">
+      <div class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {faqHeading}
+      </div>
+      <FaqAccordion client:visible />
+    </section>
+
+    <div class="rounded-2xl border border-border bg-card p-6">
+      <div class="font-serif text-xl font-medium tracking-tight">
+        {isEn ? 'Still stuck?' : 'Hâlâ takılı kaldın mı?'}
+      </div>
+      <p class="mt-1.5 max-w-[50ch] text-sm leading-relaxed text-muted-foreground">
+        {isEn
+          ? 'Reach our support team — typical reply in 24 hours.'
+          : 'Destek ekibimize ulaş — genellikle 24 saat içinde dönüş yapıyoruz.'}
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <a
+          href={`${prefix}/iletisim`}
+          class="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-accent"
+        >
+          {isEn ? 'Contact form →' : 'İletişim formu →'}
+        </a>
+        <a
+          href={`${prefix}/hesabim/anlasmazliklar`}
+          class="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-accent"
+        >
+          {isEn ? 'Disputes →' : 'Anlaşmazlıklar →'}
+        </a>
+      </div>
+    </div>
+  </article>
+</RootLayout>

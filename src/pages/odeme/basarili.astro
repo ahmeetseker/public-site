@@ -1,0 +1,52 @@
+---
+// Wave F32 W1A — /odeme/basarili: ödeme onay sayfası.
+//
+// PaymentSuccess island URL'den `?id=` okur, payment kaydını gösterir,
+// "Hesabıma git" + "Fatura indir" CTA'larını render eder.
+import RootLayout from '@/layouts/RootLayout.astro'
+import { detectLocaleFromPath } from '@/i18n'
+import PaymentSuccess from '@/components/billing/PaymentSuccess.tsx'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+const title = locale === 'en' ? 'Payment successful — LandX' : 'Ödeme başarılı — LandX'
+const description =
+  locale === 'en'
+    ? 'Your LandX payment was processed successfully.'
+    : 'LandX ödemeniz başarıyla işlendi.'
+
+const labels = {
+  crumbHome: locale === 'en' ? 'Home' : 'Anasayfa',
+  crumbPayment: locale === 'en' ? 'Payment' : 'Ödeme',
+  crumbHere: locale === 'en' ? 'Successful' : 'Başarılı',
+}
+---
+
+<RootLayout title={title} description={description}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, follow" />
+  </Fragment>
+
+  <section class="mx-auto max-w-[1100px] px-4 py-10 md:py-14">
+    <nav aria-label={locale === 'en' ? 'Breadcrumb' : 'Sayfa hiyerarşisi'} class="mb-3">
+      <ol
+        class="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
+      >
+        <li>
+          <a href={`${prefix}/`} class="transition hover:text-foreground">{labels.crumbHome}</a>
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li>
+          <a href={`${prefix}/odeme`} class="transition hover:text-foreground"
+            >{labels.crumbPayment}</a
+          >
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li class="text-foreground" aria-current="page">{labels.crumbHere}</li>
+      </ol>
+    </nav>
+
+    <PaymentSuccess client:only="react" locale={locale} />
+  </section>
+</RootLayout>

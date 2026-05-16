@@ -1,0 +1,104 @@
+---
+import type { Listing } from '@landx/data'
+
+export interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props
+---
+<section
+  id="contact-form"
+  data-print-hide=""
+  aria-label="İletişim formu"
+  class="rounded-2xl border border-border bg-card p-5"
+>
+  <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">İletişim</div>
+  <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+    Bize <em class="not-italic font-normal">yazın</em>
+  </h2>
+  <p class="mt-1 text-xs text-muted-foreground">
+    Bu ilanla ilgili sorularınızı iletin, ekibimiz iletişime geçsin.
+  </p>
+
+  <form
+    method="POST"
+    action="/_mock-contact"
+    class="mt-4 space-y-3"
+  >
+    <input type="hidden" name="listingId" value={listing.id} />
+
+    <div class="grid gap-3 sm:grid-cols-2">
+      <label class="block" for="contact-name">
+        <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Ad soyad</span>
+        <input
+          id="contact-name"
+          type="text"
+          name="name"
+          required
+          autocomplete="name"
+          placeholder="Adınız Soyadınız"
+          class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none"
+        />
+      </label>
+
+      <label class="block" for="contact-phone">
+        <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Telefon</span>
+        <input
+          id="contact-phone"
+          type="tel"
+          name="phone"
+          required
+          autocomplete="tel"
+          placeholder="5xx xxx xx xx"
+          class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none"
+        />
+      </label>
+    </div>
+
+    <label class="block" for="contact-email">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">E-posta</span>
+      <input
+        id="contact-email"
+        type="email"
+        name="email"
+        autocomplete="email"
+        placeholder="ad@ornek.com"
+        class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none"
+      />
+    </label>
+
+    <label class="block" for="contact-message">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Mesaj</span>
+      <textarea
+        id="contact-message"
+        name="message"
+        rows="4"
+        required
+        placeholder={`${listing.title} ilanı hakkında bilgi almak istiyorum.`}
+        class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-foreground/30 focus:outline-none"
+      ></textarea>
+    </label>
+
+    <label class="flex items-start gap-2 text-xs text-muted-foreground" for="contact-kvkk">
+      <input
+        id="contact-kvkk"
+        type="checkbox"
+        name="kvkk"
+        required
+        class="mt-0.5 h-4 w-4 shrink-0 rounded border border-border bg-background accent-foreground"
+      />
+      <span>
+        <a href="/kvkk" class="underline underline-offset-2 hover:text-foreground">Kişisel verilerimin</a>
+        bu form aracılığıyla işlenmesini ve Atölye Emlak danışmanlarının benimle iletişime geçmesini kabul ediyorum.
+      </span>
+    </label>
+
+    <button
+      type="submit"
+      class="inline-flex w-full items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90 sm:w-auto"
+    >
+      Mesajı gönder
+    </button>
+  </form>
+</section>

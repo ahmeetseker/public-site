@@ -1,0 +1,53 @@
+---
+import type { Listing } from '@landx/data'
+
+export interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props
+const cityShort = listing.city
+---
+<aside aria-label="İlan sahibi" class="rounded-2xl border border-border bg-card p-5">
+  <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">İlan sahibi</div>
+
+  <div class="mt-3 flex items-center gap-3">
+    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent font-serif text-lg font-medium text-accent-foreground">
+      A
+    </div>
+    <div class="min-w-0">
+      <div class="font-serif text-base font-medium tracking-tight">Atölye Emlak</div>
+      <div class="text-xs text-muted-foreground">{cityShort} ofisi · 8 yıldır portföyde</div>
+    </div>
+  </div>
+
+  <dl class="mt-4 space-y-2 border-t border-border pt-3 text-sm">
+    <div class="flex items-baseline justify-between gap-3">
+      <dt class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Danışman</dt>
+      <dd>Mehmet Yılmaz</dd>
+    </div>
+    <div class="flex items-baseline justify-between gap-3">
+      <dt class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Yetki belgesi</dt>
+      <dd class="tabular-nums">TR-{listing.id}</dd>
+    </div>
+    <div class="flex items-baseline justify-between gap-3">
+      <dt class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Yanıt süresi</dt>
+      <dd>~ 2 saat</dd>
+    </div>
+  </dl>
+
+  <div class="mt-4 flex flex-col gap-2">
+    <a
+      href="tel:+902667000000"
+      class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+    >
+      Telefonla ara
+    </a>
+    <a
+      href="#contact-form"
+      class="inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:bg-foreground/5"
+    >
+      Mesaj gönder
+    </a>
+  </div>
+</aside>

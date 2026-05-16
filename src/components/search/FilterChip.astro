@@ -1,0 +1,22 @@
+---
+/**
+ * Removable active filter chip.
+ *
+ * Renders as an `<a>` so it works without JS — `removeHref` should point at
+ * the same `/ara` URL with the relevant param stripped (server-side).
+ */
+export interface Props {
+  label: string
+  removeHref: string
+}
+
+const { label, removeHref } = Astro.props
+---
+<a
+  href={removeHref}
+  class="group inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-[11.5px] text-foreground transition hover:bg-foreground/5"
+  aria-label={`${label} filtresini kaldır`}
+>
+  {label}
+  <span aria-hidden class="text-muted-foreground transition group-hover:text-foreground">×</span>
+</a>

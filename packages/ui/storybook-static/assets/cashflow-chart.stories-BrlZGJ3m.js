@@ -1,0 +1,5 @@
+import{t as e}from"./jsx-runtime-Yq6KkvIc.js";import{t}from"./cashflow-chart-o_eQ51bn.js";var n=e(),r={title:`Charts/CashflowChart`,component:t,parameters:{layout:`centered`,docs:{description:{component:"Area + dashed line composition — `tahsilat` (collections, emerald fill) and `komisyon` (commission, amber dashed)."}}},tags:[`autodocs`],decorators:[e=>(0,n.jsx)(`div`,{className:`h-[280px] w-[680px] rounded-2xl border border-border bg-card p-5`,children:(0,n.jsx)(e,{})})]},i={args:{data:[{month:`Oca`,tahsilat:48e4,komisyon:36e3,gider:12e4,net:324e3},{month:`Şub`,tahsilat:72e4,komisyon:54e3,gider:14e4,net:526e3},{month:`Mar`,tahsilat:54e4,komisyon:41e3,gider:13e4,net:369e3},{month:`Nis`,tahsilat:92e4,komisyon:69e3,gider:16e4,net:691e3},{month:`May`,tahsilat:108e4,komisyon:81e3,gider:17e4,net:829e3},{month:`Haz`,tahsilat:132e4,komisyon:99e3,gider:18e4,net:1041e3}]}};i.parameters={...i.parameters,docs:{...i.parameters?.docs,source:{originalSource:`{
+  args: {
+    data: SIX_MONTHS
+  }
+}`,...i.parameters?.docs?.source}}};var a=[`Default`];export{i as Default,a as __namedExportsOrder,r as default};

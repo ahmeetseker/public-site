@@ -1,0 +1,107 @@
+---
+// Wave-10 / Agent-46 / Faz-13.i — Responsive listing image with content-collection
+// metadata and a graceful placeholder fallback.
+//
+// CURRENT STATE: no real .webp files exist in `src/assets/listings/` yet, so the
+// component always renders the deterministic SVG placeholder (same visual as
+// the simpler `<ListingImage>` from Wave 7). The `<Picture>` srcset branch is
+// kept INLINE BUT COMMENTED — see the JSX block below — as the documented
+// "future-implementation reference". As soon as real assets land, uncomment
+// that block (instructions in `docs/dev/images.md` step 3).
+//
+// API parity goal: drop-in replacement for `<ListingImage>` plus a `sizes`
+// attribute, so existing callers can migrate one prop at a time.
+import { getListingImage } from '@/lib/listing-images'
+import {
+  dimsForRatio,
+  placeholderDataUri,
+  type PlaceholderRatio,
+} from '@/lib/placeholder-image'
+
+export interface Props {
+  listingId: string
+  district: string
+  /** 1-based — hero = 1, thumbnails 2.. */
+  index?: number
+  ratio?: PlaceholderRatio
+  /** Standard `sizes` attribute — drives Astro's responsive width selection. */
+  sizes?: string
+  className?: string
+  alt?: string
+  loading?: 'eager' | 'lazy'
+}
+
+const {
+  listingId,
+  district,
+  index = 1,
+  ratio = '4/3',
+  // Sensible default: 1 col on mobile, ~760px max on desktop.
+  sizes = '(min-width: 1024px) 760px, (min-width: 640px) 100vw, 100vw',
+  className = '',
+  alt,
+  loading = 'lazy',
+} = Astro.props
+
+// Try metadata lookup. When absent → placeholder mode.
+const real = await getListingImage(listingId, index)
+const isPlaceholder = real === undefined
+
+const dims = dimsForRatio(ratio)
+const seed = `${listingId}-${index}`
+const placeholder = placeholderDataUri({
+  seed,
+  label: district,
+  ratio,
+  size: index === 1 ? 'lg' : 'md',
+})
+const altText = real?.alt ?? alt ?? `${district} ilanı görseli ${index}`
+
+// Used in data-* attrs for tests / debugging.
+const mode = isPlaceholder ? 'placeholder' : 'real-fallback'
+---
+
+{/*
+  ─── Real-asset branch (currently disabled) ───
+  Uncomment when `src/assets/listings/<filename>` exists. Astro's <Picture>
+  emits a multi-format (`avif` + `webp`) srcset with explicit widths, plus a
+  fallback `<img>` for older browsers. Width/height are inferred from the
+  imported `ImageMetadata`, preventing CLS.
+
+  ---
+  import { Picture } from 'astro:assets'
+  import { buildAssetPath } from '@/lib/listing-images'
+
+  const assets = import.meta.glob<{ default: ImageMetadata }>('/src/assets/listings/*.webp')
+  const loader = real ? assets[buildAssetPath(real.filename)] : undefined
+  const mod = loader ? await loader() : undefined
+  ---
+  {mod && (
+    <Picture
+      src={mod.default}
+      alt={altText}
+      widths={[400, 800, 1200, 1600]}
+      sizes={sizes}
+      formats={['avif', 'webp']}
+      loading={loading}
+      decoding="async"
+      class:list={['block h-full w-full object-cover', className]}
+      style={real ? `object-position: ${real.focalX * 100}% ${real.focalY * 100}%` : undefined}
+    />
+  )}
+*/}
+
+<img
+  src={placeholder}
+  alt={altText}
+  loading={loading}
+  decoding="async"
+  width={dims.w}
+  height={dims.h}
+  sizes={sizes}
+  class:list={['block h-full w-full object-cover', className]}
+  style={real ? `object-position: ${real.focalX * 100}% ${real.focalY * 100}%` : undefined}
+  data-image-mode={mode}
+  data-listing-id={listingId}
+  data-index={index}
+/>

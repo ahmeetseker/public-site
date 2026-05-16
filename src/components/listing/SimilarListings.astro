@@ -1,0 +1,30 @@
+---
+// SimilarListings — Wave F6.B.
+//
+// Thin Astro wrapper that mounts the SimilarListingsIsland React component
+// with `client:visible`. The actual ranking now uses the weighted
+// similarity algorithm in `@/lib/similar.ts` (see findSimilar() — district
+// +3, city +2, zoning +1, sizeRatio×2, priceRatio×1.5; top 6).
+//
+// History: prior version of this file did a static TR-only "same district
+// then same city" sort and rendered 3 cards. The island replacement keeps
+// the same visual shell (eyebrow + serif heading + card list) so the page
+// layout is unchanged.
+//
+// Callers no longer need to pass `slugify` — the island has its own copy
+// (we still accept the prop for API stability but ignore it).
+
+import type { Listing } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+import SimilarListingsIsland from './SimilarListingsIsland.tsx'
+
+export interface Props {
+  listing: Listing
+  /** Legacy: accepted for backwards compat with /ilan/[slug].astro. Ignored. */
+  slugify?: (s: string) => string
+}
+
+const { listing } = Astro.props
+const locale = detectLocaleFromPath(Astro.url.pathname)
+---
+<SimilarListingsIsland client:visible current={listing} locale={locale} count={6} />

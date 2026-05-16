@@ -1,0 +1,93 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import ConversationList from '@/components/account/ConversationList.astro'
+import ConversationThread from '@/components/account/ConversationThread.astro'
+import MessagesView from '@/components/account/MessagesView.tsx'
+import { MOCK_CONVERSATIONS } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: account body labels stay TR-canonical (low-priority surface).
+// Astro can't read query strings at build time (static output), so the active
+// thread is selected client-side and we default to the first conversation here.
+const activeId = MOCK_CONVERSATIONS[0]?.id ?? ''
+const activeConversation = MOCK_CONVERSATIONS.find((c) => c.id === activeId)
+const totalUnread = MOCK_CONVERSATIONS.reduce((s, c) => s + c.unread, 0)
+---
+
+<RootLayout
+  title={locale === 'en' ? 'My messages — arsam.net' : 'Mesajlarım — arsam.net'}
+  description={locale === 'en' ? 'Conversations with real-estate offices on arsam.net.' : 'arsam.net üzerinden emlak ofisleriyle yaptığın konuşmalar.'}
+>
+  <AuthGuard />
+  <AccountLayout active="mesajlar">
+    <PageHeader
+      eyebrow="HESAP · MESAJLAR"
+      title="Mesajlarım"
+      emphasis={`${MOCK_CONVERSATIONS.length} konuşma`}
+      description={
+        totalUnread > 0
+          ? `${totalUnread} okunmamış mesajın var.`
+          : 'Tüm mesajların okundu.'
+      }
+    />
+
+    <!-- Wave F9.B — real-time mock island (polling + typing + read receipts). -->
+    <section data-messages-island-wrap="" class="pb-6">
+      <MessagesView client:idle />
+    </section>
+
+    <details class="mt-6 rounded-2xl border border-dashed border-border bg-card/50 p-4">
+      <summary class="cursor-pointer font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        Statik mesaj görünümü (yedek) ▾
+      </summary>
+      <div class="mt-4 grid gap-6 md:grid-cols-[320px_1fr]">
+        <div class="md:max-h-[640px] md:overflow-y-auto">
+          <ConversationList activeId={activeId} />
+          <button
+            id="new-msg-btn"
+            type="button"
+            class="mt-4 w-full rounded-xl border border-dashed border-border bg-card/50 px-4 py-3 text-sm font-medium text-muted-foreground transition hover:border-foreground/20 hover:text-foreground"
+          >
+            + Yeni mesaj başlat
+          </button>
+        </div>
+
+        <div class="md:min-h-[640px]">
+          {activeConversation ? (
+            <ConversationThread conversation={activeConversation} />
+          ) : (
+            <div class="flex h-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
+              <span class="font-serif text-4xl font-normal text-muted-foreground" aria-hidden="true">✉</span>
+              <h2 class="font-serif text-xl tracking-tight">Henüz konuşman yok.</h2>
+              <p class="max-w-sm text-sm text-muted-foreground">
+                Bir ilan sayfasındaki iletişim formunu doldurduğunda buradan
+                takip edebilirsin.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </details>
+  </AccountLayout>
+
+  <script is:inline>
+    (function () {
+      const btn = document.getElementById('new-msg-btn')
+      if (btn) {
+        btn.addEventListener('click', function () {
+          alert("Yeni mesaj başlatma Faz 10.2'de aktif olacak. Şimdilik ilan sayfalarındaki iletişim formunu kullanabilirsin.")
+        })
+      }
+
+      // Optional: react to ?id=<conversationId> in the URL by highlighting/scrolling.
+      // The actual thread switch requires a hydrated component in Faz 10.2; for
+      // now we just update the URL on click without page reload would be nice,
+      // but since pages are static and conversations are server-rendered, full
+      // navigation is acceptable for MVP.
+    })()
+  </script>
+</RootLayout>

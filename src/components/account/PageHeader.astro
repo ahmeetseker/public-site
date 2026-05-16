@@ -1,0 +1,27 @@
+---
+export interface Props {
+  eyebrow: string
+  title: string
+  emphasis?: string
+  description?: string
+}
+
+const { eyebrow, title, emphasis, description } = Astro.props
+---
+<header class="flex flex-col gap-2 pb-6">
+  <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+    {eyebrow}
+  </span>
+  <h1 class="font-serif text-3xl leading-tight tracking-tight md:text-4xl">
+    {title}
+    {emphasis && (
+      <>
+        {' '}
+        <em class="font-normal italic text-muted-foreground">{emphasis}</em>
+      </>
+    )}
+  </h1>
+  {description && (
+    <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground">{description}</p>
+  )}
+</header>

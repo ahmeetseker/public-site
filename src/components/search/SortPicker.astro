@@ -1,0 +1,71 @@
+---
+import { t, useDict, detectLocaleFromPath, type Locale } from '@/i18n'
+
+/**
+ * Server-rendered sort picker — pill row of <a> tags.
+ *
+ * Each option preserves the current URL's other query params and only mutates
+ * `sort`. No JS needed; uses CSS-only horizontal scroll on small screens.
+ */
+
+export interface Props {
+  current: string
+  /** Free-text query — used to decide whether the "Relevance" option is offered. */
+  q?: string
+  locale?: Locale
+}
+
+const { current, q = '' } = Astro.props
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const dict = useDict('search', locale) as Record<string, string>
+
+// Wave F6 / Agent-F6D — "Relevance" is only meaningful when there's a query
+// to score against. When `q` is empty we hide the option so users don't pick
+// a sort that would silently fall back to the default.
+const sortDict = useDict('search.sort', locale) as Record<string, string>
+const relevanceLabel = sortDict?.relevance ?? (locale === 'en' ? 'Relevance' : 'İlgi')
+
+const SORTS = [
+  { value: 'lastUpdate', label: dict.sortNewest },
+  ...(q ? [{ value: 'relevance', label: relevanceLabel }] : []),
+  { value: 'price-desc', label: dict.sortPriceDesc },
+  { value: 'price-asc', label: dict.sortPriceAsc },
+  { value: 'size', label: dict.sortAreaDesc },
+]
+
+function sortHref(s: string): string {
+  const next = new URL(Astro.url)
+  if (s === 'lastUpdate') {
+    next.searchParams.delete('sort')
+  } else {
+    next.searchParams.set('sort', s)
+  }
+  const qs = next.searchParams.toString()
+  return qs ? `${next.pathname}?${qs}` : next.pathname
+}
+---
+<div
+  role="group"
+  aria-label={dict.sortAriaLabel}
+  class="-mx-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+>
+  <div class="inline-flex items-center gap-1 rounded-full border border-border bg-card p-1">
+    {SORTS.map((s) => {
+      const active = current === s.value || (!current && s.value === 'lastUpdate')
+      return (
+        <a
+          href={sortHref(s.value)}
+          aria-current={active ? 'true' : undefined}
+          class:list={[
+            'inline-flex flex-none items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition',
+            active
+              ? 'bg-foreground text-background'
+              : 'text-muted-foreground hover:text-foreground',
+          ]}
+        >
+          {s.label}
+        </a>
+      )
+    })}
+  </div>
+</div>

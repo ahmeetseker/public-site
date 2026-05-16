@@ -1,0 +1,45 @@
+---
+// Empty state for /karsilastir with no valid ids — pure SSR, inline SVG to avoid React dep.
+---
+<section class="rounded-2xl border border-dashed border-border/70 bg-card/50 px-6 py-16 text-center">
+  <div class="mx-auto max-w-[420px]">
+    <div class="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-foreground/[0.06] text-foreground/70">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.75"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    </div>
+    <h2 class="font-serif text-2xl font-normal tracking-tight">Karşılaştırılacak ilan yok</h2>
+    <p class="mt-2 text-sm text-muted-foreground">
+      Arsa arama sayfasında ilanlar üzerindeki "Karşılaştır" işaretini kullan veya URL'e doğrudan ID'leri ekle.
+    </p>
+    <div class="mt-5 inline-flex flex-wrap items-center justify-center gap-2">
+      <a
+        href="/ara"
+        class="rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium transition hover:bg-foreground/5"
+      >
+        İlanları gez →
+      </a>
+      <a
+        href="/?demo=1"
+        class="rounded-xl bg-foreground px-3 py-2 text-sm font-medium text-background transition hover:opacity-90"
+      >
+        Anasayfa
+      </a>
+    </div>
+    <p class="mt-6 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">URL ÖRNEĞİ</p>
+    <code class="mt-1 inline-block rounded-lg bg-muted/40 px-2 py-1 font-mono text-xs text-foreground">
+      /karsilastir?ids=28.AY.0142,09.AL.0061
+    </code>
+  </div>
+</section>

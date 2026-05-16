@@ -1,0 +1,224 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+const title = locale === 'en' ? 'Premium Plans — LandX' : 'Premium Üyelik — LandX'
+const description =
+  locale === 'en'
+    ? 'Unlock LandX Premium: priority listings, AI search, advanced analytics, and unlimited comparisons.'
+    : 'LandX Premium ile öne çıkın: vitrine ilan, AI arama, gelişmiş analitik ve sınırsız karşılaştırma.'
+
+const PLANS = [
+  {
+    id: 'free',
+    name: 'Ücretsiz',
+    nameEn: 'Free',
+    price: 0,
+    period: 'ay',
+    tagline: 'Bireysel kullanıcılar için temel ihtiyaçlar.',
+    taglineEn: 'Essentials for individual users.',
+    features: [
+      '5 aktif ilan',
+      'Standart arama',
+      'E-posta destek',
+      '3 favori karşılaştırma',
+      'Mobil uygulama erişimi',
+    ],
+    featuresEn: [
+      '5 active listings',
+      'Standard search',
+      'Email support',
+      '3 favorite comparisons',
+      'Mobile app access',
+    ],
+    cta: 'Devam Et',
+    ctaEn: 'Continue',
+    highlighted: false,
+  },
+  {
+    id: 'plus',
+    name: 'Plus',
+    nameEn: 'Plus',
+    price: 199,
+    period: 'ay',
+    tagline: 'Aktif satıcı/alıcı için ek görünürlük.',
+    taglineEn: 'Extra visibility for active sellers/buyers.',
+    features: [
+      '25 aktif ilan',
+      'Vitrine 3 ilan/ay',
+      'AI doğal dil arama',
+      'Sınırsız karşılaştırma',
+      'Öncelikli destek',
+      'İlan analitiği',
+    ],
+    featuresEn: [
+      '25 active listings',
+      '3 featured listings/mo',
+      'AI natural language search',
+      'Unlimited comparisons',
+      'Priority support',
+      'Listing analytics',
+    ],
+    cta: 'Plus’a Geç',
+    ctaEn: 'Upgrade to Plus',
+    highlighted: true,
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    nameEn: 'Pro',
+    price: 499,
+    period: 'ay',
+    tagline: 'Profesyonel danışman ve yatırımcı için.',
+    taglineEn: 'For professional advisors and investors.',
+    features: [
+      'Sınırsız ilan',
+      'Vitrine 10 ilan/ay',
+      'Gelişmiş AI risk skoru',
+      'Bölge fiyat trendleri',
+      'API erişimi (yakında)',
+      'Özel hesap yöneticisi',
+    ],
+    featuresEn: [
+      'Unlimited listings',
+      '10 featured listings/mo',
+      'Advanced AI risk scoring',
+      'Region price trends',
+      'API access (soon)',
+      'Dedicated account manager',
+    ],
+    cta: 'Pro’ya Geç',
+    ctaEn: 'Upgrade to Pro',
+    highlighted: false,
+  },
+]
+
+const labels = {
+  eyebrow: locale === 'en' ? 'PRICING · MEMBERSHIP' : 'FİYATLANDIRMA · ÜYELİK',
+  heading: locale === 'en' ? 'Pick a plan' : 'Bir plan seçin',
+  emphasis: locale === 'en' ? 'that fits.' : 'size uygun.',
+  popularBadge: locale === 'en' ? 'Most popular' : 'En popüler',
+  per: locale === 'en' ? '/mo' : '/ay',
+  free: locale === 'en' ? 'Free' : 'Ücretsiz',
+  faqTitle: locale === 'en' ? 'Frequently asked' : 'Sıkça sorulan',
+  vatNote:
+    locale === 'en'
+      ? 'All prices include VAT. Cancel anytime.'
+      : 'Fiyatlara KDV dahildir. İstediğiniz zaman iptal edebilirsiniz.',
+}
+---
+
+<RootLayout title={title} description={description}>
+  <Fragment slot="head">
+    <meta name="robots" content="index, follow" />
+  </Fragment>
+
+  <section class="mx-auto max-w-[1200px] px-4 py-10 md:py-16">
+    <header class="mb-10 max-w-2xl">
+      <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {labels.eyebrow}
+      </p>
+      <h1
+        class="mt-3 font-serif text-4xl font-normal leading-tight tracking-tight text-foreground md:text-5xl"
+      >
+        {labels.heading}{' '}
+        <em class="font-serif italic font-normal text-foreground/80">{labels.emphasis}</em>
+      </h1>
+      <p class="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+        {description}
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-3">
+      {
+        PLANS.map((plan) => {
+          const name = locale === 'en' ? plan.nameEn : plan.name
+          const tagline = locale === 'en' ? plan.taglineEn : plan.tagline
+          const features = locale === 'en' ? plan.featuresEn : plan.features
+          const cta = locale === 'en' ? plan.ctaEn : plan.cta
+          return (
+            <article
+              data-plan-id={plan.id}
+              class={`relative flex flex-col rounded-2xl border bg-card p-6 transition ${
+                plan.highlighted
+                  ? 'border-foreground/40 shadow-lg ring-1 ring-foreground/10'
+                  : 'border-border'
+              }`}
+            >
+              {plan.highlighted && (
+                <span
+                  class="absolute -top-3 right-6 inline-flex items-center rounded-full bg-foreground px-2.5 py-1 font-mono text-xs uppercase tracking-[0.14em] text-background"
+                >
+                  {labels.popularBadge}
+                </span>
+              )}
+
+              <header class="mb-5">
+                <h2 class="font-serif text-2xl font-normal tracking-tight text-foreground">
+                  {name}
+                </h2>
+                <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">{tagline}</p>
+              </header>
+
+              <div class="mb-6 flex items-baseline gap-1.5">
+                {plan.price === 0 ? (
+                  <span class="font-serif text-4xl font-normal text-foreground">{labels.free}</span>
+                ) : (
+                  <>
+                    <span class="font-mono text-sm text-muted-foreground">₺</span>
+                    <span class="font-serif text-5xl font-normal tabular-nums text-foreground">
+                      {plan.price}
+                    </span>
+                    <span class="font-mono text-xs text-muted-foreground">{labels.per}</span>
+                  </>
+                )}
+              </div>
+
+              <ul class="mb-8 flex flex-col gap-2.5">
+                {features.map((f) => (
+                  <li class="flex items-start gap-2 text-sm leading-snug text-foreground">
+                    <span
+                      aria-hidden="true"
+                      class="mt-0.5 inline-flex h-4 w-4 flex-none items-center justify-center rounded-full bg-foreground/10 text-foreground"
+                    >
+                      <svg
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class="h-2.5 w-2.5"
+                      >
+                        <path d="M2.5 6.5l2.5 2.5L9.5 3.5" />
+                      </svg>
+                    </span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href={plan.id === 'free' ? `${prefix}/hesabim` : `${prefix}/odeme?plan=${plan.id}`}
+                class={`mt-auto inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-medium transition ${
+                  plan.highlighted
+                    ? 'bg-foreground text-background hover:opacity-90'
+                    : 'border border-border bg-background text-foreground hover:bg-foreground/5'
+                }`}
+              >
+                {cta}
+              </a>
+            </article>
+          )
+        })
+      }
+    </div>
+
+    <p class="mt-6 text-center font-mono text-xs text-muted-foreground">
+      {labels.vatNote}
+    </p>
+  </section>
+</RootLayout>

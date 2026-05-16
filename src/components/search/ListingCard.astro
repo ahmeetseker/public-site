@@ -1,0 +1,90 @@
+---
+import type { Listing } from '@landx/data'
+import { formatTLCompact, formatArea } from '@landx/ui/lib'
+import { TypeChip } from '@landx/ui/atoms'
+import ListingImage from '@/components/image/ListingImage.astro'
+import { detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  listing: Listing
+  locale?: Locale
+}
+
+const { listing } = Astro.props
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+function slugify(s: string): string {
+  const map: Record<string, string> = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' }
+  return s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => map[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+const href = `${prefix}/ilan/${slugify(listing.title)}-${listing.id}`
+const compareHref = `${prefix}/karsilastir?ids=${listing.id}`
+const compareLabel = locale === 'en' ? 'Compare' : 'Karşılaştır'
+const compareAria = locale === 'en' ? `Compare ${listing.title}` : `${listing.title} karşılaştır`
+---
+<div class="relative">
+<a
+  href={href}
+  class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground/20 hover:shadow-sm"
+>
+  <div class="relative h-44 w-full overflow-hidden">
+    <ListingImage
+      listingId={listing.id}
+      district={listing.district}
+      ratio="4/3"
+      index={1}
+      alt={`${listing.title} — ${listing.district}`}
+      className="absolute inset-0"
+    />
+    <div class="absolute left-3 top-3">
+      <TypeChip type={listing.type} />
+    </div>
+    <div class="absolute right-3 top-3 rounded-full bg-background/85 px-2 py-0.5 font-mono text-xs tabular-nums text-muted-foreground backdrop-blur">
+      {listing.id}
+    </div>
+  </div>
+
+  <div class="flex flex-1 flex-col gap-2 p-4">
+    <h3 class="line-clamp-2 font-serif text-base leading-snug tracking-tight text-foreground">
+      {listing.title}
+    </h3>
+    <div class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+      {listing.city} · {listing.district}
+    </div>
+
+    <div class="mt-auto flex items-end justify-between gap-3 pt-2">
+      <div class="font-serif text-lg font-medium tracking-tight">
+        {formatTLCompact(listing.price)}
+      </div>
+      <div class="font-mono text-xs tabular-nums text-muted-foreground">
+        {formatArea(listing.size)}
+      </div>
+    </div>
+
+    {listing.tags.length > 0 && (
+      <div class="flex flex-wrap gap-1.5 pt-1">
+        {listing.tags.slice(0, 2).map((tag) => (
+          <span class="rounded-full bg-foreground/5 px-2 py-0.5 text-xs text-muted-foreground">
+            {tag}
+          </span>
+        ))}
+      </div>
+    )}
+  </div>
+</a>
+<a
+  href={compareHref}
+  data-listing-id={listing.id}
+  aria-label={compareAria}
+  class="absolute right-3 bottom-3 z-10 inline-flex items-center gap-1 rounded-full border border-border bg-background/90 px-2 py-1 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground backdrop-blur transition hover:bg-foreground hover:text-background"
+>
+  <span aria-hidden="true">↔</span>
+  {compareLabel}
+</a>
+</div>

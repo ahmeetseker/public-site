@@ -1,0 +1,41 @@
+---
+// Generic breadcrumb — used by /yardim hub and child articles.
+// Renders schema.org BreadcrumbList JSON-LD inline AND visible links.
+// F22.A: uses the shared `breadcrumbListSchema` builder (F22.0). The
+// shared builder expects every crumb to have a URL, so for the trailing
+// "current page" crumb we fall back to the canonical page URL (read from
+// Astro.url) — Google's Rich Results tester accepts the page URL as the
+// `item` for the last position.
+import { breadcrumbListSchema, toJsonLd } from '@/lib/schema-builders'
+
+export interface Crumb {
+  label: string
+  href?: string
+}
+export interface Props {
+  items: Crumb[]
+}
+const { items } = Astro.props
+const currentUrl = new URL(Astro.url.pathname, 'https://arsam.net').toString()
+const breadcrumbJsonLd = breadcrumbListSchema(
+  items.map((c) => ({
+    name: c.label,
+    url: c.href ? new URL(c.href, 'https://arsam.net').toString() : currentUrl,
+  })),
+)
+---
+<nav aria-label="Breadcrumb" class="mb-6 text-xs">
+  <ol class="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+    {items.map((c, i) => (
+      <li class="flex items-center gap-1.5">
+        {c.href && i < items.length - 1 ? (
+          <a href={c.href} class="transition hover:text-foreground">{c.label}</a>
+        ) : (
+          <span class="text-foreground" aria-current={i === items.length - 1 ? 'page' : undefined}>{c.label}</span>
+        )}
+        {i < items.length - 1 && <span aria-hidden="true" class="text-muted-foreground/60">›</span>}
+      </li>
+    ))}
+  </ol>
+</nav>
+<script is:inline type="application/ld+json" set:html={toJsonLd(breadcrumbJsonLd)} />

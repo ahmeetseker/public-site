@@ -1,0 +1,40 @@
+---
+import SunPathClock from './SunPathClock.tsx'
+import SolarPotentialCard from './SolarPotentialCard.tsx'
+import { ListingGalleryTabs } from '@landx/ui/listing-detail'
+import type { Listing } from '@landx/data'
+
+interface Props {
+  listing: Listing
+}
+const { listing } = Astro.props as Props
+const isArsa = (listing.category ?? 'arsa') === 'arsa'
+
+const tabs = [
+  { key: 'drone', label: 'Drone', images: listing.droneImages },
+  { key: 'plan', label: 'Plan', images: listing.planImages },
+].filter((t) => (t.images?.length ?? 0) > 0)
+---
+<div class="space-y-4">
+  <div>
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Görsel</div>
+    <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+      Güneş · drone · plan
+    </h2>
+  </div>
+
+  {isArsa && (
+    <>
+      <SunPathClock client:visible listingId={listing.id} />
+      <SolarPotentialCard client:visible listingId={listing.id} sizeM2={listing.size} />
+    </>
+  )}
+
+  {tabs.length > 0 ? (
+    <ListingGalleryTabs client:visible tabs={tabs} alt={listing.title} />
+  ) : (
+    <article class="rounded-2xl border border-dashed border-border bg-card px-4 py-3 text-center text-sm text-muted-foreground">
+      Drone & plan görselleri bu ilan için henüz eklenmedi.
+    </article>
+  )}
+</div>

@@ -1,0 +1,147 @@
+---
+// Gallery is upgraded to <ResponsiveListingImage> (Wave-10 / Faz-13.i) so the
+// hero + thumbnails get proper `sizes` hints and pick up content-collection
+// metadata (alt text, focal point) the moment real .webp assets land in
+// `src/assets/listings/`. Placeholder rendering is unchanged for now.
+//
+// Wave F4.A.1: the gallery is now wired to a React lightbox (LightboxRoot)
+// mounted from the surrounding page. Triggers carry `data-index` (0-based),
+// `data-gallery-hero` / `data-gallery-thumb` / `data-gallery-open` and the
+// modal handles keyboard / pointer / swipe input. Legacy in-place keyboard
+// nav script was removed.
+import type { Listing } from '@landx/data'
+import ResponsiveListingImage from '@/components/image/ResponsiveListingImage.astro'
+
+export interface Props {
+  listing: Listing
+  imageCount?: number
+}
+
+const { listing, imageCount = 4 } = Astro.props
+
+const altBase = `${listing.title} · ${listing.district}, ${listing.city}`
+
+const thumbCount = Math.max(0, imageCount - 1)
+---
+<section
+  aria-label="Galeri"
+  class="space-y-3"
+  data-gallery
+  data-image-count={imageCount}
+>
+  {/* ─── Hero image (16:9) — falls back to deterministic placeholder ─── */}
+  <figure
+    class="group relative aspect-[16/9] overflow-hidden rounded-2xl border border-border bg-stone-200 dark:bg-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30"
+    aria-label={`${altBase} — ana görsel`}
+    tabindex="0"
+    data-gallery-hero
+    data-index="0"
+  >
+    <ResponsiveListingImage
+      listingId={listing.id}
+      district={listing.district}
+      ratio="16/9"
+      index={1}
+      loading="eager"
+      sizes="(min-width: 1024px) 760px, 100vw"
+      alt={`${altBase} — ana görsel`}
+      className="absolute inset-0"
+    />
+    <div class="arsam-shimmer pointer-events-none absolute inset-0"></div>
+
+    {/* ─── Image count badge (bottom-right) ─── */}
+    <div class="absolute bottom-3 right-3 rounded-full bg-background/90 px-2.5 py-1 font-mono text-xs uppercase tracking-[0.12em] tabular-nums text-foreground backdrop-blur">
+      <span data-gallery-current>1</span> / <span data-gallery-total>{imageCount}</span>
+    </div>
+
+    {/* ─── "Galeriyi aç" trigger (bottom-left) — opens LightboxRoot ─── */}
+    <button
+      type="button"
+      class="absolute bottom-3 left-3 rounded-full bg-foreground px-3 py-1 font-mono text-xs uppercase tracking-[0.12em] text-background transition hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40"
+      aria-label="Galeriyi büyüt"
+      data-gallery-open
+      data-index="0"
+    >
+      Galeriyi aç
+    </button>
+
+    {/* ─── Keyboard nav hint (top-center, fades) ─── */}
+    <div class="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-4 opacity-0 transition group-focus:opacity-100 group-hover:opacity-100">
+      <div class="rounded-full border border-foreground/10 bg-background/80 px-3 py-1 font-mono text-xs uppercase tracking-[0.14em] text-foreground/70 backdrop-blur">
+        ← → ile gezin
+      </div>
+    </div>
+
+    <noscript>
+      <span class="sr-only">{altBase}</span>
+    </noscript>
+  </figure>
+
+  {/* ─── Thumbnail row (square aspect) ─── */}
+  {thumbCount > 0 && (
+    <div class="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      {Array.from({ length: thumbCount }).map((_, i) => {
+        const idx = i + 1
+        return (
+          <figure
+            class="group/thumb relative aspect-square cursor-pointer overflow-hidden rounded-xl border border-border bg-stone-200 dark:bg-stone-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30"
+            aria-label={`${altBase} — küçük görsel ${idx + 1}`}
+            tabindex="0"
+            data-gallery-thumb
+            data-index={idx}
+          >
+            <ResponsiveListingImage
+              listingId={listing.id}
+              district={listing.district}
+              ratio="1/1"
+              index={idx + 1}
+              sizes="(min-width: 640px) 240px, 33vw"
+              alt={`${altBase} — küçük görsel ${idx + 1}`}
+              className="absolute inset-0"
+            />
+            <div class="arsam-shimmer pointer-events-none absolute inset-0"></div>
+            <span class="absolute bottom-1 right-1 rounded bg-background/80 px-1 font-mono text-[8px] tabular-nums text-foreground">
+              {idx + 1}
+            </span>
+          </figure>
+        )
+      })}
+    </div>
+  )}
+
+  <noscript>
+    <div class="text-xs text-muted-foreground">
+      Görseller henüz hazırlanıyor. Tüm fotoğraflar yakında yüklenecek.
+    </div>
+  </noscript>
+</section>
+
+<style is:global>
+  /* Shimmer overlay used by gallery placeholders. */
+  @keyframes arsam-shimmer-kf {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .arsam-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: arsam-shimmer-kf 2s ease-in-out infinite;
+  }
+  .dark .arsam-shimmer {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      transparent 100%
+    );
+  }
+  /* Respect users who prefer reduced motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .arsam-shimmer { animation: none; }
+  }
+</style>

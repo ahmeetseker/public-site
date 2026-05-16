@@ -1,0 +1,188 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import SearchHeader from '@/components/search/SearchHeader.astro'
+import FilterSidebar from '@/components/search/FilterSidebar.astro'
+import ResultsGrid from '@/components/search/ResultsGrid.astro'
+import SortPicker from '@/components/search/SortPicker.astro'
+import CompareDock from '@/components/search/CompareDock.tsx'
+import SearchSuggestions from '@/components/search/SearchSuggestions.tsx'
+import AraMapShell from '@/components/map/AraMapShell'
+import { LISTINGS_V2 as LISTINGS } from '@landx/data'
+import type { Listing, ListingType } from '@landx/data'
+import { sortByRelevance } from '@/lib/relevance-score'
+import { t, interpolate, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+// ─── parse query params (server-side, SSR via static prerender) ───
+const url = new URL(Astro.url)
+const q = url.searchParams.get('q')?.trim() ?? ''
+const tip = url.searchParams.get('tip') ?? 'Tümü'
+const il = url.searchParams.get('il') ?? 'Tümü'
+const priceMaxRaw = url.searchParams.get('priceMax') ?? ''
+const priceMax = Number(priceMaxRaw) || Infinity
+const sort = url.searchParams.get('sort') ?? 'lastUpdate'
+// F37 Faz 4.0 / T9 — category filter (sahibinden parity). Default 'arsa' keeps
+// legacy behavior because LISTINGS_V2 base entries fall back to category=arsa.
+const category = (url.searchParams.get('kat') ?? 'arsa') as 'arsa' | 'konut' | 'villa' | 'isyeri'
+
+const qLower = q.toLocaleLowerCase('tr-TR')
+
+// ─── filter (server-side, deterministic) ───
+// Apply category FIRST so subsequent type/city/price/q filters scope to it.
+const sourceListings: Listing[] = LISTINGS.filter((l) => (l.category ?? 'arsa') === category)
+let filtered: Listing[] = sourceListings.filter((l) => {
+  if (l.status !== 'Aktif') return false // public site shows only Aktif
+  if (tip !== 'Tümü' && l.type !== tip) return false
+  if (il !== 'Tümü' && l.city !== il) return false
+  if (l.price > priceMax) return false
+  if (qLower) {
+    const blob = `${l.id} ${l.title} ${l.city} ${l.district} ${l.tags.join(' ')}`.toLocaleLowerCase('tr-TR')
+    if (!blob.includes(qLower)) return false
+  }
+  return true
+})
+
+// ─── sort ───
+// Wave F6 / Agent-F6D — `?sort=relevance` is honoured server-side when `q`
+// is present; falls back to lastUpdate when there's nothing to score against.
+switch (sort) {
+  case 'relevance':
+    if (q) {
+      filtered = sortByRelevance(filtered, q)
+    } else {
+      filtered = [...filtered].sort(
+        (a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime(),
+      )
+    }
+    break
+  case 'price-asc':
+    filtered = [...filtered].sort((a, b) => a.price - b.price)
+    break
+  case 'price-desc':
+    filtered = [...filtered].sort((a, b) => b.price - a.price)
+    break
+  case 'size':
+    filtered = [...filtered].sort((a, b) => b.size - a.size)
+    break
+  case 'lastUpdate':
+  default:
+    filtered = [...filtered].sort(
+      (a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime(),
+    )
+    break
+}
+
+// ─── unique cities + types (computed once at build) ───
+const cities = Array.from(new Set(LISTINGS.map((l) => l.city))).sort((a, b) =>
+  a.localeCompare(b, 'tr-TR'),
+)
+const types: ListingType[] = ['İmarlı', 'Tarla', 'Zeytinlik', 'Villa Arsası']
+
+const hasActiveFilters = Boolean(q) || tip !== 'Tümü' || il !== 'Tümü' || Boolean(priceMaxRaw)
+
+const title = q
+  ? interpolate(t('search.titleWithQuery', locale), { q })
+  : t('search.title', locale)
+const description = q
+  ? interpolate(t('search.descriptionWithQuery', locale), { count: filtered.length, q })
+  : interpolate(t('search.description', locale), { count: filtered.length })
+---
+<RootLayout title={title} description={description}>
+  <SearchHeader q={q} tip={tip} il={il} priceMax={priceMaxRaw} resultCount={filtered.length} locale={locale} />
+
+  <div class="mx-auto max-w-[1280px] px-4 py-6 md:py-8">
+    {/* ─── Mobile-only sticky filter & sort drawer ─── */}
+    <details class="group sticky top-0 z-30 -mx-4 mb-4 border-b border-border bg-background/95 px-4 py-2 backdrop-blur md:hidden">
+      <summary class="flex cursor-pointer list-none items-center justify-between gap-2">
+        <span class="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">
+          {t('search.mobileToggle', locale)}
+        </span>
+        <span class="inline-flex items-center gap-2">
+          {hasActiveFilters && (
+            <span class="rounded-full bg-foreground/10 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-foreground">
+              {t('search.mobileActive', locale)}
+            </span>
+          )}
+          <span class="rounded-full bg-foreground px-2 py-0.5 font-mono text-xs text-background tabular-nums">
+            {filtered.length}
+          </span>
+          <span
+            aria-hidden
+            class="font-mono text-xs text-muted-foreground transition group-open:rotate-180"
+          >
+            ▾
+          </span>
+        </span>
+      </summary>
+
+      <div class="mt-3 space-y-3">
+        <SortPicker current={sort} q={q} locale={locale} />
+        <FilterSidebar
+          q={q}
+          tip={tip}
+          il={il}
+          priceMax={priceMaxRaw}
+          sort={sort}
+          cities={cities}
+          types={types}
+          resultCount={filtered.length}
+          locale={locale}
+          category={category}
+        />
+      </div>
+    </details>
+
+    <div class="flex flex-col gap-6 md:flex-row md:gap-8">
+      {/* Desktop sidebar (hidden on mobile — mobile uses <details> above) */}
+      <div class="hidden md:block">
+        <FilterSidebar
+          q={q}
+          tip={tip}
+          il={il}
+          priceMax={priceMaxRaw}
+          sort={sort}
+          cities={cities}
+          types={types}
+          resultCount={filtered.length}
+          locale={locale}
+          category={category}
+        />
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="mb-4">
+          <SearchSuggestions client:idle initialQuery={q} locale={locale} basePath="/en" />
+        </div>
+        <AraMapShell client:only="react" locale={locale} />
+        <div data-ara-list>
+          <ResultsGrid
+            listings={filtered}
+            sort={sort}
+            q={q}
+            tip={tip}
+            il={il}
+            priceMax={priceMaxRaw}
+            locale={locale}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <CompareDock client:load />
+</RootLayout>
+
+{/*
+  F4.B.2 — body-attr CSS drives the list/map/split toggle without rerendering
+  the Astro-rendered ResultsGrid. AraMapShell sets `document.body.dataset.viewMode`.
+  See pages/ara.astro for the rationale.
+*/}
+<style is:global>
+  body[data-view-mode='map'] [data-ara-list] {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    body[data-view-mode='split'] [data-ara-list] {
+      max-width: 50%;
+    }
+  }
+</style>

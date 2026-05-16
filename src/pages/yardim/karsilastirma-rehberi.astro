@@ -1,0 +1,59 @@
+---
+import ArticleLayout from '@/components/help/ArticleLayout.astro'
+---
+<ArticleLayout slug="karsilastirma-rehberi" dateModified="2026-05-09">
+  <p>
+    Aynı bölgede iki veya daha fazla arsayı kafanızda yan yana koymak zor olabilir: biri hisseli, diğeri imarsız,
+    bir başkasının yola cephesi yok... <a href="/karsilastir">/karsilastir</a> sayfası, ilanları detaylı bir
+    tabloyla karşılaştırmanızı ve farkları 30 saniyede görmenizi sağlar.
+  </p>
+
+  <h2>İlanları karşılaştırma listesine ekleme</h2>
+  <p>
+    Her ilan kartında küçük bir <strong>"Karşılaştır"</strong> kutucuğu bulunur. İşaretlediğiniz ilanlar
+    tarayıcınızın yerel deposunda (localStorage) tutulur — hesap açmanıza gerek yoktur. Aynı zamanda
+    arama sayfasının sağ alt köşesinde küçük bir "Karşılaştırma çubuğu" belirir; üzerine tıklayarak doğrudan
+    karşılaştırma sayfasına geçebilirsiniz.
+  </p>
+
+  <h2>Karşılaştırılan başlıca alanlar</h2>
+  <ul>
+    <li><strong>Fiyat ve m² fiyatı</strong> — TL toplam ve TL/m² yan yana, bölge ortalamasıyla karşılaştırmalı.</li>
+    <li><strong>Alan</strong> — m² olarak parsel büyüklüğü.</li>
+    <li><strong>İmar durumu</strong> — konut, ticari, tarım, sanayi veya imarsız.</li>
+    <li><strong>Tapu cinsi</strong> — müstakil, hisseli, kat irtifakı.</li>
+    <li><strong>Yola cephe</strong> — metre cinsinden cephe uzunluğu.</li>
+    <li><strong>Altyapı</strong> — elektrik, su, doğalgaz erişimi.</li>
+    <li><strong>Doğrulama durumu</strong> — ofisin "Doğrulanmış" rozeti, ilanın son güncellenme tarihi.</li>
+  </ul>
+
+  <h2>Aynı anda kaç ilan karşılaştırılabilir?</h2>
+  <p>
+    Şu an en fazla 4 ilan aynı anda karşılaştırılır. Bu sınır, mobil ekranda tabloyu okunaklı tutmak için seçildi.
+    Listede 4 ilan varken yeni eklemeye çalışırsanız uyarı görürsünüz; mevcut bir ilanı çıkararak yer açabilirsiniz.
+  </p>
+
+  <h2>Karşılaştırmayı paylaşma</h2>
+  <p>
+    Karşılaştırma sayfasının URL'si, içerdiği ilan kimliklerini ID parametresi olarak taşır. URL'yi kopyalayıp
+    paylaşırsanız karşı tarafta aynı tablo açılır. Bu, ortakla veya danışmanla karar verirken işe yarar.
+  </p>
+
+  <h2>Karşılaştırmayı temizleme</h2>
+  <p>
+    Karşılaştırma sayfasının üst kısmındaki <strong>"Tümünü temizle"</strong> bağlantısı tüm kaydedilmiş ilanları
+    siler. Tek bir ilanı çıkarmak için satır sonundaki çarpı işaretine basabilirsiniz. localStorage temizlendiğinde
+    (tarayıcı geçmişi silme, gizli sekme kapatma) liste de sıfırlanır.
+  </p>
+
+  <h2>İpuçları</h2>
+  <ul>
+    <li>Aynı bölgede 2-3 ilanı yan yana koyup TL/m² farkına bakın; bölge ortalamasına yakın olanlar daha güvenilirdir.</li>
+    <li>İmar durumu farkı, fiyat farkını çoğu zaman tek başına açıklar.</li>
+    <li>Hisseli tapu, müstakile göre %20-40 daha ucuz görünebilir; ancak satış sürecinde diğer hissedar onayı gerekir.</li>
+  </ul>
+
+  <p>
+    Karşılaştırma aracı hakkında geri bildiriminizi <a href="/iletisim">iletişim sayfasından</a> bize iletin.
+  </p>
+</ArticleLayout>

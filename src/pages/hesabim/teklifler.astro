@@ -1,0 +1,26 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import OffersList from '@/components/account/OffersList.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+---
+
+<RootLayout
+  title={locale === 'en' ? 'My offers — arsam.net' : 'Tekliflerim — arsam.net'}
+  description={locale === 'en' ? 'Offers you sent on arsam.net listings.' : 'arsam.net üzerinde verdiğin teklifler ve durumları.'}
+>
+  <AuthGuard />
+  <AccountLayout active="teklifler">
+    <PageHeader
+      eyebrow="HESAP · TEKLİFLER"
+      title="Tekliflerim"
+      emphasis="3 teklif"
+      description="Verdiğin ve aldığın teklifler, karşı teklifler, durum güncellemeleri."
+    />
+    <OffersList client:idle />
+  </AccountLayout>
+</RootLayout>

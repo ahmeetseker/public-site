@@ -1,0 +1,97 @@
+---
+import type { Office } from '@landx/data'
+
+export interface Props {
+  office: Office
+}
+
+const { office } = Astro.props
+
+// 5 stars; integer-fill from rounded rating (so 4.8 → 5 filled).
+// Visually we render half-step using width %, but for static SSG SVG masks
+// add too much weight — round to nearest 0.5 and show a half via gradient.
+const fullStars = Math.floor(office.rating)
+const hasHalf = office.rating - fullStars >= 0.5
+const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0)
+---
+
+<section class="border-b border-border bg-card/40">
+  <div class="mx-auto max-w-[1280px] px-4 pb-8 pt-6 md:pb-10 md:pt-8">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      EMLAK OFİSİ · {office.district.toUpperCase()}
+    </div>
+
+    <div class="mt-2 flex flex-wrap items-end justify-between gap-4">
+      <div class="min-w-0">
+        <h1 class="font-serif text-3xl font-normal leading-[1.05] tracking-tight md:text-5xl">
+          {office.name}
+        </h1>
+        <p class="mt-2 text-sm text-muted-foreground md:text-base">
+          {office.district}, {office.city} · kuruluş <span class="font-mono tabular-nums">{office.founded}</span>
+        </p>
+      </div>
+
+      <span
+        class="inline-flex items-center gap-1.5 rounded-full border border-border bg-accent/40 px-2.5 py-1 text-xs font-medium text-accent-foreground"
+        aria-label="Doğrulanmış üye"
+      >
+        <svg
+          class="h-3 w-3"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M20 6 9 17l-5-5"></path>
+        </svg>
+        Doğrulanmış üye
+      </span>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center gap-3" aria-label="Müşteri değerlendirmesi">
+      <div class="flex items-center gap-0.5" aria-hidden="true">
+        {Array.from({ length: fullStars }).map(() => (
+          <svg class="h-4 w-4 text-foreground" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2 14.9 8.6 22 9.3l-5.3 4.8 1.6 7-6.3-3.6L5.7 21l1.6-7L2 9.3l7.1-.7L12 2Z" />
+          </svg>
+        ))}
+        {hasHalf && (
+          <svg class="h-4 w-4 text-foreground" viewBox="0 0 24 24">
+            <defs>
+              <linearGradient id="half">
+                <stop offset="50%" stop-color="currentColor" />
+                <stop offset="50%" stop-color="transparent" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M12 2 14.9 8.6 22 9.3l-5.3 4.8 1.6 7-6.3-3.6L5.7 21l1.6-7L2 9.3l7.1-.7L12 2Z"
+              fill="url(#half)"
+              stroke="currentColor"
+              stroke-width="1"
+            />
+          </svg>
+        )}
+        {Array.from({ length: emptyStars }).map(() => (
+          <svg
+            class="h-4 w-4 text-muted-foreground/40"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M12 2 14.9 8.6 22 9.3l-5.3 4.8 1.6 7-6.3-3.6L5.7 21l1.6-7L2 9.3l7.1-.7L12 2Z" />
+          </svg>
+        ))}
+      </div>
+      <span class="font-serif text-base text-foreground">
+        {office.rating.toFixed(1)}<span class="text-muted-foreground">/5</span>
+      </span>
+      <span class="font-mono text-xs tabular-nums text-muted-foreground">
+        {office.reviewCount} değerlendirme
+      </span>
+    </div>
+  </div>
+</section>

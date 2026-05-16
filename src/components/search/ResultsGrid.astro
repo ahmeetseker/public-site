@@ -1,0 +1,122 @@
+---
+import type { Listing } from '@landx/data'
+import ListingCard from './ListingCard.astro'
+import SortPicker from './SortPicker.astro'
+import CompareToggle from './CompareToggle.tsx'
+import FavoriteToggle from './FavoriteToggle.tsx'
+import { t, useDict, interpolate, detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  listings: Listing[]
+  sort: string
+  q: string
+  tip: string
+  il: string
+  priceMax: string
+  locale?: Locale
+}
+
+const { listings, sort, q } = Astro.props
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const dict = useDict('search', locale) as Record<string, string>
+
+const POPULAR_SUGGESTIONS = ['Alaçatı', 'Datça', 'Ayvalık', 'Urla', 'Zeytinlik']
+
+const hasResults = listings.length > 0
+const foundParts = dict.foundHeading.split(/(\{count\}|\{accent\})/g)
+const noResultsParts = dict.noResultsHeading.split('{accent}')
+const noResultsTitleParts = dict.noResultsTitle.split('{accent}')
+---
+<section class="flex-1 min-w-0">
+  {/* ─── Prominent results count badge ─── */}
+  <div class="mb-4 flex flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {dict.foundEyebrow}
+      </div>
+      <h2 class="mt-1 font-serif text-2xl font-normal tracking-tight md:text-3xl">
+        {hasResults ? (
+          foundParts.map((seg) => {
+            if (seg === '{count}') return <span class="tabular-nums">{listings.length}</span>
+            if (seg === '{accent}') return <em class="italic">{dict.foundHeadingAccent}</em>
+            return <>{seg}</>
+          })
+        ) : (
+          noResultsParts.map((part, i) => (
+            <>
+              {i > 0 && <em class="italic">{dict.noResultsAccent}</em>}
+              {part}
+            </>
+          ))
+        )}
+      </h2>
+      <p class="mt-1 text-xs text-muted-foreground">
+        {dict.updatedNote}
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span class="hidden font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground sm:inline">
+        {dict.sortBy}
+      </span>
+      <SortPicker current={sort} q={q} locale={locale} />
+    </div>
+  </div>
+
+  {hasResults ? (
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {listings.map((l) => (
+        <div class="relative">
+          <ListingCard listing={l} locale={locale} />
+          <CompareToggle client:load id={l.id} label={l.title} />
+          <FavoriteToggle client:idle id={l.id} label={l.title} />
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div class="rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center">
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{dict.noResultsAccent}</div>
+      <h3 class="mt-2 font-serif text-2xl font-normal tracking-tight">
+        {noResultsTitleParts.map((part, i) => (
+          <>
+            {i > 0 && <em class="italic">{dict.noResultsTitleAccent}</em>}
+            {part}
+          </>
+        ))}
+      </h3>
+      <p class="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+        {q
+          ? interpolate(dict.noResultsBodyWithQuery, { q })
+          : dict.noResultsBody}
+      </p>
+      <div class="mt-5 flex flex-col items-center gap-3">
+        <a
+          href={`${prefix}/ara`}
+          class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+        >
+          {dict.clearFilters}
+        </a>
+        <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{dict.popular}</span>
+          {POPULAR_SUGGESTIONS.map((s) => (
+            <a
+              href={`${prefix}/ara?q=${encodeURIComponent(s)}`}
+              class="rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground transition hover:text-foreground"
+            >
+              {s}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  )}
+
+  {hasResults && (
+    <nav aria-label={dict.pagerLabel} class="mt-8 flex items-center justify-center gap-1">
+      <span class="rounded-lg border border-border bg-card px-3 py-1.5 font-mono text-xs tabular-nums text-muted-foreground">‹</span>
+      <span class="rounded-lg bg-accent px-3 py-1.5 font-mono text-xs tabular-nums text-accent-foreground">1</span>
+      <span class="rounded-lg border border-border bg-card px-3 py-1.5 font-mono text-xs tabular-nums text-muted-foreground">›</span>
+    </nav>
+  )}
+</section>

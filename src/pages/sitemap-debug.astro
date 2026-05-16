@@ -1,0 +1,103 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import { LISTINGS } from '@landx/data'
+
+const slugify = (s: string): string =>
+  s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' })[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+// Kept in sync with sitemap.xml.ts inline lists (intentional duplication —
+// each endpoint stays self-contained, no shared util coupling).
+const REGION_SLUGS = ['ayvalik', 'cesme', 'datca', 'fethiye', 'urla', 'marmaris', 'soke', 'edremit']
+const OFFICE_SLUGS = [
+  'atolye-emlak-ayvalik',
+  'cesme-arsa-merkezi',
+  'datca-koy-arsa',
+  'fethiye-panorama-emlak',
+]
+
+const groups: Array<{ name: string; urls: string[] }> = [
+  {
+    name: 'Üst seviye',
+    urls: [
+      '/',
+      '/ara',
+      '/ofisler',
+      '/bolge/',
+      '/kvkk',
+      '/cerez-politikasi',
+      '/kullanim-sartlari',
+    ],
+  },
+  {
+    name: `İlanlar (${LISTINGS.length})`,
+    urls: LISTINGS.map((l) => `/ilan/${slugify(l.title)}-${l.id}`),
+  },
+  {
+    name: `Bölgeler (${REGION_SLUGS.length})`,
+    urls: REGION_SLUGS.map((s) => `/bolge/${s}`),
+  },
+  {
+    name: `Ofisler (${OFFICE_SLUGS.length})`,
+    urls: OFFICE_SLUGS.map((s) => `/ofis/${s}`),
+  },
+]
+
+const total = groups.reduce((s, g) => s + g.urls.length, 0)
+---
+
+<RootLayout
+  title="Sitemap (debug)"
+  description="Geliştirici görünümü — public sitemap'in insan-okur hali."
+>
+  <section class="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 md:px-8 md:py-14 lg:px-10 lg:py-16">
+    <div class="mb-6">
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        DEBUG · SITEMAP
+      </div>
+      <h1 class="mt-1 font-serif text-3xl font-normal md:text-4xl lg:text-5xl">
+        Sitemap özet — <em class="font-serif italic font-normal">{total}</em> URL
+      </h1>
+      <p class="mt-2 text-sm text-muted-foreground md:text-base">
+        Bu sayfa SEO indeksinde değildir.{' '}
+        <a class="underline" href="/sitemap.xml">Raw sitemap.xml →</a>
+      </p>
+    </div>
+    {
+      groups.map((g) => (
+        <details open class="mb-4 rounded-2xl border border-border bg-card p-4 md:p-5 lg:p-6">
+          <summary class="min-h-[44px] cursor-pointer py-2 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground sm:py-1">
+            {g.name}
+          </summary>
+          <ul class="mt-3 grid grid-cols-1 gap-1 text-sm sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {g.urls.map((u) => (
+              <li>
+                <a class="block min-h-[44px] py-2 text-foreground/85 underline-offset-2 hover:underline sm:min-h-0 sm:py-0.5" href={u}>
+                  {u}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))
+    }
+  </section>
+
+  {/* RootLayout has no `head` slot — inject noindex meta + canonical override at runtime. */}
+  <script is:inline>
+    (function () {
+      var m = document.querySelector('meta[name="robots"]')
+      if (m) {
+        m.setAttribute('content', 'noindex, nofollow')
+      } else {
+        m = document.createElement('meta')
+        m.setAttribute('name', 'robots')
+        m.setAttribute('content', 'noindex, nofollow')
+        document.head.appendChild(m)
+      }
+    })()
+  </script>
+</RootLayout>

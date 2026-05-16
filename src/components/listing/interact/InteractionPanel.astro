@@ -1,0 +1,27 @@
+---
+import MakeAnOfferDialog from './MakeAnOfferDialog.tsx'
+import ReservationButton from './ReservationButton.tsx'
+import AppointmentPicker from './AppointmentPicker.tsx'
+import CoViewingInvite from './CoViewingInvite.tsx'
+import PriceDropSubscribe from './PriceDropSubscribe.tsx'
+import type { Listing } from '@landx/data'
+
+interface Props {
+  listing: Listing
+}
+const { listing } = Astro.props as Props
+---
+<div class="space-y-4">
+  <div>
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Etkileşim</div>
+    <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+      Teklif · rezerv · <em class="not-italic font-normal">görüşme</em>
+    </h2>
+  </div>
+
+  <MakeAnOfferDialog client:load listingId={listing.id} listedPrice={listing.price} />
+  <ReservationButton client:load listingId={listing.id} reservationFee={50000} />
+  <AppointmentPicker client:visible listingId={listing.id} />
+  <CoViewingInvite client:idle listingId={listing.id} />
+  <PriceDropSubscribe client:idle listingId={listing.id} />
+</div>

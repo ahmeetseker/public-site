@@ -1,0 +1,43 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import NotificationPrefMatrix from '@/components/identity/NotificationPrefMatrix'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const isEn = locale === 'en'
+
+const labels = isEn
+  ? {
+      eyebrow: 'ACCOUNT · NOTIFICATIONS',
+      title: 'Notification',
+      emphasis: 'preferences',
+      description:
+        'Choose which channels (Email / Push / SMS) you want for each event type. Saved instantly.',
+    }
+  : {
+      eyebrow: 'HESAP · BİLDİRİMLER',
+      title: 'Bildirim',
+      emphasis: 'tercihleri',
+      description:
+        'Her olay tipi için hangi kanalları (E-posta / Push / SMS) almak istediğini seç. Anlık kaydedilir.',
+    }
+---
+
+<RootLayout
+  title={isEn ? 'Notification preferences — arsam.net' : 'Bildirim tercihleri — arsam.net'}
+  description={labels.description}
+>
+  <AuthGuard />
+  <AccountLayout active="bildirimler">
+    <PageHeader
+      eyebrow={labels.eyebrow}
+      title={labels.title}
+      emphasis={labels.emphasis}
+      description={labels.description}
+    />
+    <NotificationPrefMatrix client:idle locale={locale} />
+  </AccountLayout>
+</RootLayout>

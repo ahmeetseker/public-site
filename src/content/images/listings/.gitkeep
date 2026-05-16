@@ -1,0 +1,11 @@
+# Listing image metadata directory
+#
+# Each real listing gets ONE .json file here named after its id, e.g.
+#   28.AY.0142.json
+#
+# Schema is defined in `src/content.config.ts` (zod). The Astro glob loader
+# picks up every `*.json` under this directory EXCEPT files / dirs starting
+# with `_` — that's why the bundled `_example-*.json` is treated as a static
+# template rather than as runtime data.
+#
+# See `docs/dev/images.md` for the full drop-file → metadata → build flow.

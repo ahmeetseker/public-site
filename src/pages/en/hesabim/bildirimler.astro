@@ -1,0 +1,22 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import NotificationInbox from '@/components/account/NotificationInbox.tsx'
+---
+
+<RootLayout
+  title="Notifications — arsam.net"
+  description="Manage your arsam.net system, message and listing notifications."
+>
+  <AuthGuard />
+  <AccountLayout active="bildirimler">
+    <PageHeader
+      eyebrow="ACCOUNT · NOTIFICATIONS"
+      title="Notifications"
+      description="Read, delete, or mark all your system, message and listing notifications from here."
+    />
+    <NotificationInbox client:visible />
+  </AccountLayout>
+</RootLayout>

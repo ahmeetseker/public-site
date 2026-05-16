@@ -1,0 +1,84 @@
+{
+  "name": "@landx/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./atoms": "./src/atoms/index.ts",
+    "./charts": "./src/charts/index.ts",
+    "./command": "./src/command/index.ts",
+    "./feedback": "./src/feedback/index.ts",
+    "./lib": "./src/lib/index.ts",
+    "./maps": "./src/maps/index.ts",
+    "./primitives": "./src/primitives/index.ts",
+    "./shell": "./src/shell/index.ts",
+    "./theme": "./src/theme/index.ts",
+    "./types": "./src/types/index.ts",
+    "./ai": "./src/ai/index.ts",
+    "./persona-switcher": "./src/persona-switcher/index.ts",
+    "./listing-detail": {
+      "types": "./src/listing-detail/index.tsx",
+      "import": "./src/listing-detail/index.tsx"
+    },
+    "./styles/theme.css": "./src/styles/theme.css",
+    "./styles/leaflet.css": "./src/styles/leaflet.css"
+  },
+  "scripts": {
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build",
+    "chromatic": "chromatic --project-token=$CHROMATIC_PROJECT_TOKEN",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@landx/ai": "workspace:*",
+    "@landx/data": "workspace:*",
+    "@landx/icons": "workspace:*",
+    "@tanstack/react-query": "^5.100.9",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^5.0.0",
+    "recharts": "^3.8.1",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@landx/tsconfig": "workspace:*",
+    "@storybook/addon-a11y": "^8.6.18",
+    "@tanstack/react-query": "^5.100.9",
+    "@storybook/addon-essentials": "^8.6.18",
+    "@storybook/react": "^8.6.18",
+    "@storybook/react-vite": "^8.6.18",
+    "@tailwindcss/vite": "^4.2.4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/leaflet": "^1.9.21",
+    "chromatic": "^11.20.2",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "framer-motion": "^12.38.0",
+    "jsdom": "^29.1.0",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "storybook": "^8.6.18",
+    "tailwindcss": "^4.2.4",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.11",
+    "vitest": "^4.1.5"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "framer-motion": "^12.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router": "^7.0.0",
+    "tailwindcss": "^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-router": { "optional": true }
+  }
+}

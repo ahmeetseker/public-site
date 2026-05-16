@@ -1,0 +1,19 @@
+---
+export interface Props {
+  name: string
+  role: string
+  bio: string
+  initials: string
+}
+const { name, role, bio, initials } = Astro.props
+---
+<div class="flex items-start gap-4 rounded-xl border border-border bg-card/40 p-4">
+  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent font-serif text-base font-medium text-accent-foreground" aria-hidden="true">
+    {initials}
+  </div>
+  <div class="min-w-0">
+    <div class="font-serif text-base font-medium tracking-tight">{name}</div>
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{role}</div>
+    <p class="mt-1.5 text-sm leading-relaxed text-muted-foreground">{bio}</p>
+  </div>
+</div>

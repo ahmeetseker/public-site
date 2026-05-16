@@ -1,0 +1,21 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import IlanOnizleme from '@/components/ilan-ver/IlanOnizleme.tsx'
+import { t } from '@/i18n'
+
+// Wave F5 / Agent-F5B — EN mirror of /ilan-ver/onizleme.astro.
+const locale = 'en' as const
+---
+<WizardLayout
+  title={`${t('ilanVer.preview', locale)} — arsam.net`}
+  description="Review your listing before publishing."
+  step={0}
+  locale={locale}
+>
+  <IlanOnizleme client:load locale="en" />
+  <noscript>
+    <p class="mt-6 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+      This page is interactive. Enable JavaScript to see the preview.
+    </p>
+  </noscript>
+</WizardLayout>

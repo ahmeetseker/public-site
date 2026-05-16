@@ -1,0 +1,51 @@
+---
+/**
+ * F37 Faz 4.0 — İşyeri-özgü filtre bloğu.
+ */
+---
+<fieldset class="space-y-3 border-t border-border pt-4">
+  <legend class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">İşyeri Filtreleri</legend>
+
+  <div>
+    <label class="text-xs text-foreground">İşyeri tipi</label>
+    <div class="mt-1 flex flex-wrap gap-1">
+      {['ofis', 'dukkan', 'depo', 'fabrika', 'otel'].map((t) => (
+        <label class="inline-flex items-center gap-1 rounded-full border border-border px-2 py-1 text-xs">
+          <input type="checkbox" name="subType" value={t} /> {t}
+        </label>
+      ))}
+    </div>
+  </div>
+
+  <div>
+    <label class="text-xs text-foreground">Kullanım</label>
+    <div class="mt-1 flex gap-1.5">
+      <label class="inline-flex items-center gap-1 rounded-full border border-border px-2 py-1 text-xs">
+        <input type="checkbox" name="commercialUsage" value="kira" /> Kiralık
+      </label>
+      <label class="inline-flex items-center gap-1 rounded-full border border-border px-2 py-1 text-xs">
+        <input type="checkbox" name="commercialUsage" value="satilik" /> Satılık
+      </label>
+      <label class="inline-flex items-center gap-1 rounded-full border border-border px-2 py-1 text-xs">
+        <input type="checkbox" name="commercialUsage" value="devren" /> Devren
+      </label>
+    </div>
+  </div>
+
+  <div>
+    <label class="text-xs text-foreground">Net m²</label>
+    <div class="mt-1 flex gap-2">
+      <input type="number" name="netSize-min" placeholder="Min" class="w-1/2 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+      <input type="number" name="netSize-max" placeholder="Max" class="w-1/2 rounded-md border border-border bg-background px-2 py-1.5 text-sm" />
+    </div>
+  </div>
+
+  <div class="space-y-1.5">
+    <label class="flex items-center gap-2 text-xs">
+      <input type="checkbox" name="vitrin" /> Vitrinli
+    </label>
+    <label class="flex items-center gap-2 text-xs">
+      <input type="checkbox" name="kredi" /> Krediye uygun
+    </label>
+  </div>
+</fieldset>

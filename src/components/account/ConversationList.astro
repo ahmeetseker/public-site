@@ -1,0 +1,57 @@
+---
+import { MOCK_CONVERSATIONS } from '@landx/data'
+import { timeAgo } from '@landx/ui/lib'
+
+export interface Props {
+  activeId: string
+}
+
+const { activeId } = Astro.props
+---
+<ul class="flex flex-col divide-y divide-border rounded-2xl border border-border bg-card">
+  {MOCK_CONVERSATIONS.map((c) => {
+    const isActive = c.id === activeId
+    const initials = c.office
+      .split(' ')
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() ?? '')
+      .join('')
+    return (
+      <li>
+        <a
+          href={`/hesabim/mesajlar?id=${c.id}`}
+          aria-current={isActive ? 'true' : undefined}
+          class={`flex items-start gap-3 px-4 py-3 transition ${
+            isActive ? 'bg-foreground/[0.04]' : 'hover:bg-foreground/[0.02]'
+          }`}
+        >
+          <div
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-foreground/10 font-serif text-xs font-medium tracking-tight"
+            aria-hidden="true"
+          >
+            {initials}
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline justify-between gap-2">
+              <span class="truncate text-sm font-medium">{c.office}</span>
+              <time datetime={c.lastMessageAt} class="font-mono text-xs text-muted-foreground">
+                {timeAgo(c.lastMessageAt)}
+              </time>
+            </div>
+            <div class="mt-0.5 truncate text-xs text-muted-foreground">{c.lastMessage}</div>
+            <div class="mt-1 flex items-center gap-2">
+              <span class="truncate font-mono text-xs uppercase tracking-wide text-muted-foreground">
+                {c.listingId}
+              </span>
+              {c.unread > 0 && (
+                <span class="inline-flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-accent px-1 text-xs font-medium text-accent-foreground">
+                  {c.unread}
+                </span>
+              )}
+            </div>
+          </div>
+        </a>
+      </li>
+    )
+  })}
+</ul>

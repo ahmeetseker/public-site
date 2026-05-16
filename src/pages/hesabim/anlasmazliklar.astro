@@ -1,0 +1,34 @@
+---
+// /hesabim/anlasmazliklar — Bireysel anlaşmazlık paneli (Wave F32 W2A).
+//
+// Astro shell + DisputesList island (useListDisputes + useCreateDispute).
+// Tab: Açık | Çözüldü | Reddedildi. "Yeni anlaşmazlık aç" buton → modal.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import DisputesList from '@/components/trust/DisputesList.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const isEn = locale === 'en'
+---
+
+<RootLayout
+  title={isEn ? 'Disputes — arsam.net' : 'Anlaşmazlıklar — arsam.net'}
+  description={isEn
+    ? 'Track and manage your arsam.net disputes — open, resolved or rejected.'
+    : 'arsam.net üzerinde açtığın anlaşmazlıkları takip et — açık, çözüldü veya reddedildi.'}
+>
+  <AuthGuard />
+  <AccountLayout active="destek">
+    <PageHeader
+      eyebrow={isEn ? 'ACCOUNT · DISPUTES' : 'HESAP · ANLAŞMAZLIK'}
+      title={isEn ? 'Your disputes' : 'Anlaşmazlıkların'}
+      description={isEn
+        ? 'Open, in-progress or resolved disputes between you and other users / listings.'
+        : 'Açtığın veya hakkında karar verilen anlaşmazlıklar burada — kullanıcı veya ilan bazlı.'}
+    />
+    <DisputesList client:visible />
+  </AccountLayout>
+</RootLayout>

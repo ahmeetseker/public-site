@@ -1,0 +1,75 @@
+---
+// Wave F9.D — Transport chip row (airport/motorway/port) for /bolge/[slug].
+// Horizontal scroll on mobile; settles into 3-up flex on md+.
+import { getTransportInfo } from '@/lib/bolge-neighbors'
+
+export interface Props {
+  slug: string
+  copy: {
+    title: string
+    airport: string
+    motorway: string
+    port: string
+    distanceUnit: string // "km"
+  }
+}
+
+const { slug, copy } = Astro.props
+const info = getTransportInfo(slug)
+
+interface Chip {
+  kind: 'airport' | 'motorway' | 'port'
+  label: string
+  name: string
+  km: number
+  icon: string
+}
+
+const chips: Chip[] = [
+  { kind: 'airport', label: copy.airport, name: info.airport.name, km: info.airport.km, icon: '✈' },
+  { kind: 'motorway', label: copy.motorway, name: info.motorway.name, km: info.motorway.km, icon: '🛣' },
+]
+if (info.port) {
+  chips.push({ kind: 'port', label: copy.port, name: info.port.name, km: info.port.km, icon: '⚓' })
+}
+---
+
+<section
+  data-transport-info=""
+  data-region-slug={slug}
+  class="mx-auto max-w-[1280px] px-4 py-8 md:py-10"
+>
+  <div class="mb-4">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      ULAŞIM
+    </div>
+    <h2 class="mt-2 font-serif text-2xl font-normal tracking-tight md:text-3xl">
+      {copy.title}
+    </h2>
+  </div>
+
+  <div
+    class="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0"
+    data-testid="transport-chips"
+  >
+    {chips.map((chip) => (
+      <article
+        data-transport-chip={chip.kind}
+        class="flex min-w-[240px] snap-start items-start gap-3 rounded-2xl border border-border bg-card p-4 md:min-w-0"
+      >
+        <span aria-hidden="true" class="text-2xl leading-none">{chip.icon}</span>
+        <div class="flex-1">
+          <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            {chip.label}
+          </div>
+          <div class="mt-1 font-serif text-base font-normal tracking-tight">
+            {chip.name}
+          </div>
+          <div class="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
+            ~{chip.km} {copy.distanceUnit}
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+</section>

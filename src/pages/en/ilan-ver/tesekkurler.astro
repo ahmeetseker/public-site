@@ -1,0 +1,25 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import SuccessSummary from '@/components/ilan-ver/SuccessSummary.tsx'
+import { t } from '@/i18n'
+
+// Wave F5 / Agent-F5B — EN mirror of /ilan-ver/tesekkurler.astro.
+const locale = 'en' as const
+---
+<WizardLayout
+  title={`${t('ilanVer.thanks', locale)} — arsam.net`}
+  description={t('ilanVer.thanksBody', locale)}
+  step={0}
+  locale={locale}
+>
+  <SuccessSummary client:load locale="en" />
+
+  <div class="mx-auto mt-14 max-w-xl rounded-2xl border border-dashed border-border bg-card/40 p-5 text-left">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">What's next?</div>
+    <ol class="mt-3 space-y-2 text-sm text-muted-foreground">
+      <li><strong class="font-medium text-foreground">1.</strong> Our editors review the listing (within 24 hours).</li>
+      <li><strong class="font-medium text-foreground">2.</strong> If approved, the listing appears in arsam.net search results.</li>
+      <li><strong class="font-medium text-foreground">3.</strong> You get a notification when the first inquiry arrives.</li>
+    </ol>
+  </div>
+</WizardLayout>

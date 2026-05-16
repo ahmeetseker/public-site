@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <title>arsam.net</title>
+  <rect width="192" height="192" rx="40" ry="40" fill="#3a2f24"/>
+  <text
+    x="96"
+    y="118"
+    text-anchor="middle"
+    font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif"
+    font-weight="600"
+    font-size="120"
+    fill="#faf7f0"
+    letter-spacing="-4">a</text>
+</svg>

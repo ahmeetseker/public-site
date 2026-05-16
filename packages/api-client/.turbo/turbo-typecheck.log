@@ -1,0 +1,4 @@
+
+> @landx/api-client@0.1.0 typecheck /Users/ahmet/Downloads/LandX-Module-Catalog-main 2/packages/api-client
+> tsc --noEmit
+

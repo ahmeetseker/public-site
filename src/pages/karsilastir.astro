@@ -1,0 +1,77 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import { detectLocaleFromPath, t } from '@/i18n'
+import CompareIsland from '@/components/compare/CompareIsland'
+import '@/styles/print.css'
+
+// Wave F4.A.3 — /karsilastir is now a client-island page. The previous
+// SSG implementation read `?ids=` server-side and rendered an SSG table,
+// but selections are inherently a runtime concern (URL params + the
+// `arsam.compare.v1` localStorage list maintained from /ara). Moving to a
+// client island removes the SSG/runtime mismatch, makes the page printable
+// (the share/print toolbar lives inside the island), and unblocks the
+// per-row diff highlighting that needs all selected listings in one render.
+//
+// JSON-LD ItemList was emitted by the prior SSG version. It is intentionally
+// dropped here — IDs are runtime-only and Google does not crawl
+// noindex pages anyway. If a future iteration wants the metadata back, it
+// can be injected client-side after hydration (out of scope for F4).
+//
+// Wave F9.A — comparison capacity bumped 3→4 (cap enforced in CompareIsland's
+// MAX const), PDF export, and an "only differences" toggle ship inside the
+// island. The page shell stays unchanged; print.css carries the A4 landscape
+// rules.
+//
+// Wave F24.B — capacity bumped 4 → 6 and the island now renders a
+// CompareGrid (responsive `grid-cols-2 md:grid-cols-3 xl:grid-cols-6`) above
+// the legacy CompareTable. The grid feeds each metric row through the new
+// DifferenceHighlight helper to tint the best (emerald) / worst (rose) cells
+// — ₺/m² uses `invertBest` because the lowest price-per-m² is "best". The
+// .astro shell stays unchanged: all logic lives inside the island so SSR
+// output is identical and we don't disturb the F9.A print stylesheet.
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+const title = t('compare.title', locale)
+const description = t('compare.description', locale)
+---
+
+<RootLayout title={title} description={description}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, follow" />
+  </Fragment>
+
+  <section class="mx-auto max-w-[1400px] px-4 py-8 md:py-12">
+    <nav
+      aria-label={locale === 'en' ? 'Breadcrumb' : 'Sayfa hiyerarşisi'}
+      class="mb-3"
+    >
+      <ol
+        class="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
+      >
+        <li>
+          <a href={`${prefix}/`} class="transition hover:text-foreground"
+            >{t('search.breadcrumbHome', locale)}</a
+          >
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li>
+          <a href={`${prefix}/ara`} class="transition hover:text-foreground"
+            >{t('search.breadcrumbSearch', locale)}</a
+          >
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li class="text-foreground" aria-current="page">
+          {locale === 'en' ? 'Compare' : 'Karşılaştır'}
+        </li>
+      </ol>
+    </nav>
+
+    <h1 class="mb-4 text-2xl font-medium text-foreground md:text-3xl">
+      {title}
+    </h1>
+
+    <CompareIsland client:only="react" locale={locale} />
+  </section>
+</RootLayout>

@@ -1,0 +1,248 @@
+---
+import '@/styles/global.css'
+// Roboto fontları — JS-side import şart, çünkü Tailwind v4 @import url()
+// referanslarını Vite asset graph'ına aktarmıyor (woff2'ler dist'e emit
+// edilmiyor). ES import Astro/Vite pipeline'a doğru sinyal gönderir.
+import '@fontsource/roboto/400.css'
+import '@fontsource/roboto/500.css'
+import '@fontsource/roboto/700.css'
+// leaflet.css NOT imported globally — Tailwind v4 + Astro CSS resolver bug.
+// Import page-locally where needed (ilan detail map view).
+import PublicDynamicIslandHeader from '@/components/header/PublicDynamicIslandHeader'
+import { PersonaSwitcher } from '@landx/ui/persona-switcher'
+import PublicAppDock from '@/components/shell/PublicAppDock'
+import PublicAssistant from '@/components/shell/PublicAssistant'
+import SiteFooter from '@/components/SiteFooter.astro'
+import InstallPromptBanner from '@/components/pwa/InstallPromptBanner.tsx'
+import OnboardingTour from '@/components/onboarding/OnboardingTour'
+import NewsletterSignupModal from '@/components/newsletter/SignupModal'
+import CookieConsent from '@/components/CookieConsent.astro'
+import CookieConsentModal from '@/components/CookieConsentModal.tsx'
+import CommandPaletteMount from '@/components/command/CommandPaletteMount.tsx'
+import { themeInitScript } from '@landx/ui/theme'
+import { AnimatedGrid, GridTweaksPanel } from '@landx/ui/shell'
+import { GlassFilter } from '@landx/ui/primitives'
+import { slugFromPath } from '@/lib/og-template'
+import { detectLocaleFromPath, getAlternateUrl, type Locale } from '@/i18n'
+// Wave F22.B — Astro 5 view transitions (SPA-like navigation).
+// `<ClientRouter />` lives in <head>; critical mounts (theme init, cookie
+// consent banner/modal, PWA/onboarding/newsletter islands) carry
+// `transition:persist` so they survive cross-page swaps without re-mounting.
+import { ClientRouter } from 'astro:transitions'
+
+export interface Props {
+  title: string
+  description?: string
+  ogImage?: string
+  /**
+   * Override the locale. By default RootLayout detects locale from the URL
+   * (`/en/*` → `en`, everything else → `tr`). Pages that pre-compute a locale
+   * (e.g. dynamic `getStaticPaths` per locale) may override.
+   */
+  locale?: Locale
+  /**
+   * inLanguage value for JSON-LD / hreflang. Auto-derived from locale; can be
+   * overridden for region-specific variants.
+   */
+  inLanguage?: string
+}
+
+const pathname = Astro.url.pathname
+const detectedLocale = detectLocaleFromPath(pathname)
+const locale: Locale = Astro.props.locale ?? detectedLocale
+const htmlLang = locale === 'en' ? 'en-US' : 'tr-TR'
+const inLanguage = Astro.props.inLanguage ?? htmlLang
+const defaultDescription =
+  locale === 'en'
+    ? "arsam.net — Turkey's marketplace for land, fields and olive groves."
+    : "arsam.net — Türkiye'nin arsa, tarla ve zeytinlik pazarı."
+
+// Wave F23.A — WCAG 2.2 AA bypass-block requirement.
+// Visible only on keyboard focus (Tab from address bar), invisible otherwise.
+const skipLinkLabel = locale === 'en' ? 'Skip to content' : 'İçeriğe geç'
+
+const { title, description = defaultDescription, ogImage } = Astro.props
+
+const canonical = new URL(pathname, Astro.site)
+// hreflang alternates — canonical pair (TR at `/`, EN at `/en/`).
+const trAlternate = new URL(getAlternateUrl(pathname, 'tr'), Astro.site)
+const enAlternate = new URL(getAlternateUrl(pathname, 'en'), Astro.site)
+
+// Default OG image — Wave F22.C migrated from .svg to .png so crawlers without
+// `image/svg+xml` support (Facebook, LinkedIn pre-2024 caches, WhatsApp on some
+// Android builds) still get a preview. The legacy SVG endpoint stays online
+// for modern scrapers.
+//
+// Legacy safety: pre-F31.B callsite'larında hâlâ .svg geçen override olabilir;
+// F22.C sonrası PNG default, F31.B sonrası ofisler/schema-builders callsite'ları
+// temizlendi. SVG endpoint route'ları korunuyor (production analytic-driven
+// deprecation — bkz. docs/og-image-policy.md).
+const ogSlug = slugFromPath(pathname)
+const defaultOgImage = new URL(`/og/${ogSlug}.png`, Astro.site).toString()
+const overrideOgImage = ogImage?.endsWith('.svg') ? ogImage.replace(/\.svg$/, '.png') : ogImage
+const resolvedOgImage = overrideOgImage ?? defaultOgImage
+---
+
+<!doctype html>
+<html lang={htmlLang}>
+  <head>
+    {/* Theme bootstrap — must run BEFORE any paint to prevent dark/light FOUC. */}
+    <script is:inline set:html={themeInitScript} transition:persist="theme-init"></script>
+    {/* Astro 5 view transitions — SPA-like nav across same-origin links. */}
+    <ClientRouter />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href={canonical.toString()} />
+    <link rel="alternate" hreflang="tr-TR" href={trAlternate.toString()} />
+    <link rel="alternate" hreflang="en-US" href={enAlternate.toString()} />
+    <link rel="alternate" hreflang="x-default" href={trAlternate.toString()} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- OG -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.toString()} />
+    <meta property="og:locale" content={htmlLang.replace('-', '_')} />
+    <meta property="og:locale:alternate" content={locale === 'tr' ? 'en_US' : 'tr_TR'} />
+    <meta property="og:image" content={resolvedOgImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:secure_url" content={resolvedOgImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={resolvedOgImage} />
+
+    <!-- robots -->
+    <meta name="robots" content="index, follow" />
+
+    <!-- PWA manifest (Faz 9.18) -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+
+    <!-- Theme color (browser chrome / status bar tint, light + dark) -->
+    <meta name="theme-color" content="#faf7f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1c1917" media="(prefers-color-scheme: dark)" />
+
+    <!-- Mobile UX -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <!-- Content-language hint (complements <html lang>) -->
+    <meta http-equiv="content-language" content={htmlLang} />
+
+    <!-- Page-level head injection slot (used by listing detail for OSM tile preconnect, etc.) -->
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-background text-foreground antialiased" data-inlanguage={inLanguage}>
+    <GlassFilter client:load transition:persist="glass-filter" />
+    <AnimatedGrid client:idle transition:persist="animated-grid" />
+    <GridTweaksPanel client:idle transition:persist="grid-tweaks-panel" />
+
+    {/* Skip link — WCAG 2.2 SC 2.4.1 bypass blocks. Hidden until keyboard focus. */}
+    <a
+      href="#main"
+      data-skip-link
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-foreground focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-background focus:shadow-lg"
+    >
+      {skipLinkLabel}
+    </a>
+
+    <slot name="header">
+      <PublicDynamicIslandHeader client:load locale={locale} pathname={pathname} />
+    </slot>
+
+    <div class="fixed right-4 top-4 z-50 pointer-events-auto">
+      <PersonaSwitcher client:only="react" />
+    </div>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <slot name="footer">
+      <SiteFooter locale={locale} />
+    </slot>
+
+    <PublicAppDock client:idle locale={locale} pathname={pathname} />
+    <PublicAssistant client:idle transition:persist="public-assistant" />
+
+    <InstallPromptBanner client:idle transition:persist="pwa-install" />
+    <OnboardingTour client:idle transition:persist="onboarding-tour" />
+    <NewsletterSignupModal client:idle transition:persist="newsletter-modal" />
+    <CookieConsent locale={locale} transition:persist="cookie-consent" />
+    <CookieConsentModal client:idle transition:persist="cookie-consent-modal" />
+    <CommandPaletteMount client:idle transition:persist="command-palette" />
+
+    <script>
+      // KVKK consent durumu — Wave F13.D'de gerçek banner devraldı, ancak
+      // sayfa CSS'leri için `data-kvkk-consent` body niteliğini koruyoruz.
+      import { getConsent, onConsentChanged } from '@/lib/cookie-consent'
+
+      function applyAttr() {
+        const c = getConsent()
+        document.body.dataset.kvkkConsent = c ? 'decided' : 'pending'
+      }
+      applyAttr()
+      onConsentChanged(applyAttr)
+    </script>
+
+    <script>
+      // PWA service worker registration (Faz 9.18). Module side-effect.
+      import '@/components/pwa/sw-register.client.ts'
+    </script>
+
+    <script>
+      // Web Vitals client init (Faz 9.19, owned by Agent-A60).
+      // Wave F13.D gating: only register the listeners after the user has
+      // opted into the `analytics` cookie category. If consent is granted
+      // later (via banner / modal), we react to the `cookie-consent:changed`
+      // event and lazy-init at that moment.
+      import { EVENT_NAME, isAllowed } from '@/lib/cookie-consent'
+
+      async function maybeInitWebVitals() {
+        if (!isAllowed('analytics')) return
+        try {
+          const mod = await import('@/lib/web-vitals-client')
+          mod.initWebVitals?.()
+        } catch {
+          // web-vitals-client.ts not available — silent no-op.
+        }
+      }
+
+      maybeInitWebVitals()
+      window.addEventListener(EVENT_NAME, () => {
+        maybeInitWebVitals()
+      })
+    </script>
+
+    <script>
+      // Wave F25.A — Sentry client init. Same consent gate as web-vitals:
+      // initSentry only runs when the user has opted into `analytics`. The
+      // helper falls back to console.error if no DSN is configured, so dev /
+      // preview environments stay quiet without ceremony.
+      import { EVENT_NAME, isAllowed } from '@/lib/cookie-consent'
+      import { initSentry } from '@landx/ui/lib'
+
+      let started = false
+      function maybeInitSentry() {
+        if (started) return
+        if (!isAllowed('analytics')) return
+        started = true
+        void initSentry({
+          dsn: import.meta.env.PUBLIC_SENTRY_DSN ?? null,
+          environment: import.meta.env.MODE === 'production' ? 'production' : 'development',
+          release: 'f25',
+        })
+      }
+
+      maybeInitSentry()
+      window.addEventListener(EVENT_NAME, () => {
+        maybeInitSentry()
+      })
+    </script>
+  </body>
+</html>

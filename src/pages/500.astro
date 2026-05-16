@@ -1,0 +1,32 @@
+---
+// F5.D — Custom 500 (locale-aware).
+// NOTE: Astro SSG does NOT auto-route this file for server-side errors. It lives
+// here as a regular route at `/500` for direct-nav fallback and future SSR
+// readiness. detectLocaleFromPath works because the path is literally `/500`
+// (TR default) — there is no `/en/500` mirror by design.
+import RootLayout from '@/layouts/RootLayout.astro'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+const labels = locale === 'en'
+  ? { title: '500 — Something went wrong', h1: 'Something went wrong', desc: 'An unexpected error occurred. Please try again, or contact us if the problem continues.', retry: 'Try again', home: 'Home', contact: 'support@arsam.net' }
+  : { title: '500 — Bir şeyler ters gitti', h1: 'Bir şeyler ters gitti', desc: 'Beklenmedik bir hata oluştu. Lütfen tekrar deneyin veya sorun devam ederse bizimle iletişime geçin.', retry: 'Tekrar dene', home: 'Ana sayfa', contact: 'support@arsam.net' }
+---
+<RootLayout title={labels.title} description={labels.desc}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
+
+  <section class="mx-auto max-w-[800px] px-4 py-16 text-center md:py-24" data-testid="error-500">
+    <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">500</p>
+    <h1 class="mt-3 text-3xl font-medium text-foreground md:text-4xl">{labels.h1}</h1>
+    <p class="mt-4 text-sm text-muted-foreground">{labels.desc}</p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3">
+      <button type="button" onclick="window.location.reload()" class="inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background transition hover:opacity-90" data-testid="error-500-retry">{labels.retry}</button>
+      <a href={`${prefix}/`} class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-medium text-foreground transition hover:bg-accent">{labels.home}</a>
+      <a href={`mailto:${labels.contact}`} class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-xs font-medium text-foreground transition hover:bg-accent">{labels.contact}</a>
+    </div>
+  </section>
+</RootLayout>

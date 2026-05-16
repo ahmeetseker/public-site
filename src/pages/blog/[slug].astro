@@ -1,0 +1,93 @@
+---
+// Wave F8 / Agent-F8A — /blog/[slug] post detail page (TR canonical).
+import { render } from 'astro:content'
+import RootLayout from '@/layouts/RootLayout.astro'
+import Breadcrumb from '@/components/help/Breadcrumb.astro'
+import PostHeader from '@/components/blog/PostHeader.astro'
+import PostBody from '@/components/blog/PostBody.astro'
+import RelatedPosts from '@/components/blog/RelatedPosts.astro'
+import { getAllPosts, getRelatedPosts, postSlug } from '@/lib/blog'
+import { t, LOCALE_BCP47 } from '@/i18n'
+
+export async function getStaticPaths() {
+  // Generate ONLY TR posts at the canonical /blog/[slug] route.
+  // EN companions render at /en/blog/[slug] (see pages/en/blog/[slug].astro).
+  const posts = await getAllPosts('tr')
+  return posts.map((post) => ({
+    params: { slug: postSlug(post) },
+    props: { post },
+  }))
+}
+
+const { post } = Astro.props
+const locale = 'tr' as const
+const slug = postSlug(post)
+const { Content, headings } = await render(post)
+const related = await getRelatedPosts(post, 3)
+
+// RootLayout emits the canonical <link>; we still build the URL inline for
+// the structured-data graph below.
+const canonical = `https://arsam.net/blog/${slug}`
+const title = post.data.title
+const description = post.data.description
+
+// Article JSON-LD — required for Google's Article rich results.
+const articleJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  inLanguage: LOCALE_BCP47[locale],
+  headline: title,
+  description,
+  datePublished: post.data.date.toISOString(),
+  url: canonical,
+  author: { '@type': 'Organization', name: 'arsam.net' },
+  publisher: { '@type': 'Organization', name: 'arsam.net' },
+  articleSection: post.data.category,
+  keywords: post.data.tags.join(', '),
+}
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  inLanguage: LOCALE_BCP47[locale],
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: t('blog.hub.breadcrumbHome', locale), item: 'https://arsam.net/' },
+    { '@type': 'ListItem', position: 2, name: t('blog.hub.breadcrumbBlog', locale), item: 'https://arsam.net/blog' },
+    { '@type': 'ListItem', position: 3, name: title, item: canonical },
+  ],
+}
+
+const bodyText = post.body ?? ''
+---
+<RootLayout title={title} description={description}>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} slot="head" />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} slot="head" />
+
+  <article class="mx-auto max-w-[860px] px-4 py-12 lg:py-16">
+    <Breadcrumb items={[
+      { label: t('blog.hub.breadcrumbHome', locale), href: '/' },
+      { label: t('blog.hub.breadcrumbBlog', locale), href: '/blog' },
+      { label: title },
+    ]} />
+
+    <PostHeader post={post} locale={locale} body={bodyText} />
+
+    <PostBody>
+      <Content />
+    </PostBody>
+
+    {headings.length > 0 && (
+      <aside class="mt-12 hidden" aria-hidden="true">
+        {/* TOC placeholder — not rendered in v1, kept for /blog/[slug] richness. */}
+      </aside>
+    )}
+
+    <RelatedPosts posts={related} locale={locale} />
+
+    <footer class="mt-10">
+      <a href="/blog" class="text-sm text-muted-foreground transition hover:text-foreground">
+        {t('blog.post.backToBlog', locale)}
+      </a>
+    </footer>
+  </article>
+</RootLayout>

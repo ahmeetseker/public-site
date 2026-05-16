@@ -1,0 +1,48 @@
+---
+// Wave F32 W1A — /hesabim/islemler/[id]: tek işlem detayı.
+//
+// `getStaticPaths` TRANSACTIONS_INDIVIDUAL'a göre 35 route üretir. Mock veri
+// dışı (post-mount oluşturulmuş) ID'ler için island "Bulunamadı" branch'i
+// gösterir.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import TransactionDetail from '@/components/billing/TransactionDetail.tsx'
+import { TRANSACTIONS_INDIVIDUAL } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+export function getStaticPaths() {
+  return TRANSACTIONS_INDIVIDUAL.map((t) => ({
+    params: { id: t.id },
+  }))
+}
+
+const { id } = Astro.params as { id: string }
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+const title = locale === 'en' ? `Transaction ${id} — LandX` : `İşlem ${id} — LandX`
+const description =
+  locale === 'en'
+    ? 'Detailed wallet transaction record with reason, amount and balance.'
+    : 'Tek işlem ayrıntısı — sebep, tutar ve bakiye bilgisi.'
+
+const labels = {
+  eyebrow: locale === 'en' ? 'ACCOUNT · TRANSACTION' : 'HESAP · İŞLEM',
+  pageTitle: locale === 'en' ? 'Transaction' : 'İşlem',
+  emphasis: id,
+}
+---
+
+<RootLayout title={title} description={description}>
+  <AuthGuard />
+  <AccountLayout active="islemler">
+    <PageHeader
+      eyebrow={labels.eyebrow}
+      title={labels.pageTitle}
+      emphasis={labels.emphasis}
+    />
+
+    <TransactionDetail client:only="react" locale={locale} txId={id} />
+  </AccountLayout>
+</RootLayout>

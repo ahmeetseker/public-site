@@ -1,0 +1,14 @@
+/*
+  Public-site global styles.
+  _theme.css = packages/ui/src/styles/theme.css'in kopyası (Tailwind v4 + Astro CSS
+  resolver workspace symlink'i tam çözemediği için local kopya tutuyoruz; UI paket
+  theme update edilirse buraya da yansıt — Faz 9 polish'te şared bir build step
+  ile sync edilecek).
+*/
+@import "./_theme.css";
+
+/* @landx/ui paketindeki sınıfları da tara (Tailwind v4 default sadece kendi app'i tarıyor) */
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
+/* Astro .astro dosyaları + island'lar */
+@source "../**/*.{astro,ts,tsx}";

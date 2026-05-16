@@ -1,0 +1,48 @@
+---
+// Wave-7 / Agent-33 / Faz-13.e — region cover image with deterministic placeholder.
+//
+// FUTURE: once `src/assets/regions/<slug>.webp` exists, swap to astro:assets
+// `<Image>` — public API unchanged.
+import { dimsForRatio, placeholderDataUri, type PlaceholderRatio } from '@/lib/placeholder-image'
+
+export interface Props {
+  regionSlug: string
+  /** Region display name — first ~4 chars are shown on the placeholder. */
+  name: string
+  ratio?: PlaceholderRatio
+  className?: string
+  alt?: string
+  loading?: 'lazy' | 'eager'
+}
+
+const {
+  regionSlug,
+  name,
+  ratio = '4/3',
+  className = '',
+  alt,
+  loading = 'lazy',
+} = Astro.props
+
+const label = name.slice(0, 4)
+const src = placeholderDataUri({
+  seed: `region-${regionSlug}`,
+  label,
+  ratio,
+  size: 'lg',
+})
+const altText = alt ?? `${name} bölge görseli`
+const dims = dimsForRatio(ratio)
+---
+
+<img
+  src={src}
+  alt={altText}
+  loading={loading}
+  decoding="async"
+  width={dims.w}
+  height={dims.h}
+  class:list={['block h-full w-full object-cover', className]}
+  data-placeholder="true"
+  data-region-slug={regionSlug}
+/>

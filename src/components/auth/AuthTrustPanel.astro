@@ -1,0 +1,43 @@
+---
+// Right-side trust signal panel on /giris and /kayit.
+// Communicates platform credibility without making promises we can't keep.
+const POINTS = [
+  { stat: '47', label: 'doğrulanmış emlak ofisi', sub: 'Atölye Emlak, Çeşme Arsa, Datça Koy ve dahası' },
+  { stat: '1.240+', label: 'aktif arsa, zeytinlik & tarla', sub: 'Ege ve Akdeniz kıyıları odaklı' },
+  { stat: '%100', label: 'aracısız iletişim', sub: 'Doğrudan ofislerle konuşursun' },
+]
+---
+<aside class="hidden flex-col gap-6 rounded-3xl border border-border bg-card p-8 md:flex">
+  <div class="flex flex-col gap-2">
+    <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      ARSAM.NET · TR
+    </span>
+    <h2 class="font-serif text-2xl leading-tight tracking-tight">
+      Türkiye'nin <em class="font-normal italic">doğrulanmış</em> arsa pazarı.
+    </h2>
+    <p class="text-sm leading-relaxed text-muted-foreground">
+      Hesabını oluştur; favorilerini, kayıtlı aramalarını ve ofislerle
+      konuşmalarını tek yerde topla.
+    </p>
+  </div>
+
+  <ul class="flex flex-col gap-4">
+    {POINTS.map((p) => (
+      <li class="flex items-start gap-4">
+        <div class="font-serif text-3xl font-normal leading-none tracking-tight tabular-nums text-foreground">
+          {p.stat}
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-medium leading-tight">{p.label}</div>
+          <div class="text-xs leading-snug text-muted-foreground">{p.sub}</div>
+        </div>
+      </li>
+    ))}
+  </ul>
+
+  <div class="mt-auto rounded-2xl border border-border bg-background/60 p-4 text-xs leading-relaxed text-muted-foreground">
+    Hesap açarak <a href="/kullanim-sartlari" class="underline underline-offset-2 hover:text-foreground">Kullanım Şartları</a>
+    {' '}ve <a href="/kvkk" class="underline underline-offset-2 hover:text-foreground">KVKK Aydınlatma Metni</a>'ni
+    kabul etmiş olursun.
+  </div>
+</aside>

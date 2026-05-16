@@ -1,0 +1,214 @@
+---
+import { t, useDict, interpolate, detectLocaleFromPath, type Locale } from '@/i18n'
+import CategoryTabs from './CategoryTabs.tsx'
+import ArsaFilters from './category-filter-blocks/ArsaFilters.astro'
+import KonutFilters from './category-filter-blocks/KonutFilters.astro'
+import VillaFilters from './category-filter-blocks/VillaFilters.astro'
+import IsyeriFilters from './category-filter-blocks/IsyeriFilters.astro'
+
+export type Category = 'arsa' | 'konut' | 'villa' | 'isyeri'
+
+export interface Props {
+  q: string
+  tip: string
+  il: string
+  priceMax: string
+  sort: string
+  cities: string[]
+  types: string[]
+  resultCount: number
+  locale?: Locale
+  /** F37 Faz 4.0 — Kategori-aware filtre bloğu seçimi (URL `?kat=`). */
+  category?: Category
+}
+
+const { q, tip, il, priceMax, sort, cities, types, resultCount } = Astro.props
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const category: Category = Astro.props.category ?? 'arsa'
+const prefix = locale === 'en' ? '/en' : ''
+const dict = useDict('search', locale) as Record<string, string>
+const titleParts = dict.filterTitle.split('{accent}')
+---
+<aside class="md:sticky md:top-[68px] md:w-72 md:shrink-0 md:self-start" data-filter-sidebar>
+  <form
+    method="GET"
+    action={`${prefix}/ara`}
+    class="rounded-2xl border border-border bg-card p-4 md:p-5"
+  >
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{dict.filterEyebrow}</div>
+    <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+      {titleParts.map((part, i) => (
+        <>
+          {i > 0 && <em class="italic font-normal">{dict.filterTitleAccent}</em>}
+          {part}
+        </>
+      ))}
+    </h2>
+
+    {/* F37 Faz 4.0 — Kategori sekmeleri (arsa | konut | villa | isyeri) */}
+    <div class="mt-4">
+      <CategoryTabs client:load defaultCategory={category} />
+    </div>
+    {/* form GET ile `kat` query'sini koru — submit sonrası kategori sıfırlanmaz */}
+    <input type="hidden" name="kat" value={category} />
+
+    <div class="mt-4 space-y-3">
+      <details
+        open
+        data-filter-group="q"
+        class="group rounded-xl border border-border/60 bg-background/30 [&[open]>summary>span:last-child]:rotate-90"
+      >
+        <summary class="flex cursor-pointer list-none items-center justify-between px-3 py-2 [&::-webkit-details-marker]:hidden">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{dict.filterKeyword}</span>
+          <span aria-hidden class="font-mono text-xs text-muted-foreground transition">›</span>
+        </summary>
+        <div class="px-3 pb-3">
+          <input
+            type="search"
+            name="q"
+            value={q}
+            placeholder={dict.filterKeywordPlaceholder}
+            class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none"
+          />
+        </div>
+      </details>
+
+      <details
+        open
+        data-filter-group="tip"
+        class="group rounded-xl border border-border/60 bg-background/30 [&[open]>summary>span:last-child]:rotate-90"
+      >
+        <summary class="flex cursor-pointer list-none items-center justify-between px-3 py-2 [&::-webkit-details-marker]:hidden">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{dict.filterType}</span>
+          <span aria-hidden class="font-mono text-xs text-muted-foreground transition">›</span>
+        </summary>
+        <div class="px-3 pb-3">
+          <select
+            name="tip"
+            class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-foreground/30 focus:outline-none"
+          >
+            <option value="Tümü" selected={tip === 'Tümü'}>{dict.filterTypeAll}</option>
+            {types.map((ty) => (
+              <option value={ty} selected={tip === ty}>{ty}</option>
+            ))}
+          </select>
+        </div>
+      </details>
+
+      <details
+        open
+        data-filter-group="il"
+        class="group rounded-xl border border-border/60 bg-background/30 [&[open]>summary>span:last-child]:rotate-90"
+      >
+        <summary class="flex cursor-pointer list-none items-center justify-between px-3 py-2 [&::-webkit-details-marker]:hidden">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{dict.filterCity}</span>
+          <span aria-hidden class="font-mono text-xs text-muted-foreground transition">›</span>
+        </summary>
+        <div class="px-3 pb-3">
+          <select
+            name="il"
+            class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-foreground/30 focus:outline-none"
+          >
+            <option value="Tümü" selected={il === 'Tümü'}>{dict.filterCityAll}</option>
+            {cities.map((c) => (
+              <option value={c} selected={il === c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </details>
+
+      <details
+        open
+        data-filter-group="priceMax"
+        class="group rounded-xl border border-border/60 bg-background/30 [&[open]>summary>span:last-child]:rotate-90"
+      >
+        <summary class="flex cursor-pointer list-none items-center justify-between px-3 py-2 [&::-webkit-details-marker]:hidden">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{dict.filterPriceMax}</span>
+          <span aria-hidden class="font-mono text-xs text-muted-foreground transition">›</span>
+        </summary>
+        <div class="px-3 pb-3">
+          <input
+            type="number"
+            name="priceMax"
+            value={priceMax}
+            min="0"
+            step="100000"
+            placeholder={dict.filterPriceMaxPlaceholder}
+            class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none"
+          />
+        </div>
+      </details>
+
+      {/* preserve sort across filter submits */}
+      {sort && sort !== 'lastUpdate' && <input type="hidden" name="sort" value={sort} />}
+
+      {/* F37 Faz 4.0 — Kategori-özgü filtre bloğu */}
+      {category === 'arsa'   && <ArsaFilters />}
+      {category === 'konut'  && <KonutFilters />}
+      {category === 'villa'  && <VillaFilters />}
+      {category === 'isyeri' && <IsyeriFilters />}
+    </div>
+
+    <div class="mt-5 flex flex-wrap items-center gap-2">
+      <button
+        type="submit"
+        class="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+      >
+        {dict.filterApply}
+      </button>
+      <a
+        href={`${prefix}/ara`}
+        class="inline-flex items-center justify-center rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+      >
+        {dict.filterReset}
+      </a>
+    </div>
+
+    <div class="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
+      {(() => {
+        const parts = dict.filterFooter.split('{count}')
+        return (
+          <>
+            <span class="font-mono tabular-nums">{resultCount}</span>{parts[1] ?? ''}
+          </>
+        )
+      })()}
+    </div>
+  </form>
+</aside>
+
+<script>
+  // Persist <details> collapse state per filter group in sessionStorage.
+  // Key: arsam.filter.collapsed -> { [group]: true (collapsed) | false (open) }
+  ;(() => {
+    const STORAGE_KEY = 'arsam.filter.collapsed'
+    const sidebar = document.querySelector('[data-filter-sidebar]')
+    if (!sidebar) return
+
+    let state: Record<string, boolean> = {}
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY)
+      if (raw) state = JSON.parse(raw) as Record<string, boolean>
+    } catch {
+      state = {}
+    }
+
+    const groups = sidebar.querySelectorAll<HTMLDetailsElement>('details[data-filter-group]')
+    groups.forEach((el) => {
+      const key = el.dataset.filterGroup
+      if (!key) return
+      // If we have a stored "collapsed" preference, apply it; otherwise leave default (open).
+      if (Object.prototype.hasOwnProperty.call(state, key)) {
+        el.open = !state[key]
+      }
+      el.addEventListener('toggle', () => {
+        state[key] = !el.open
+        try {
+          sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+        } catch {
+          /* sessionStorage quota / unavailable — ignore */
+        }
+      })
+    })
+  })()
+</script>

@@ -1,0 +1,76 @@
+---
+import ArticleLayout from '@/components/help/ArticleLayout.astro'
+---
+<ArticleLayout slug="hesap-yonetimi" dateModified="2026-05-09">
+  <p>
+    arsam.net hesabı, kayıtlı aramalar ve favori ilanlar gibi kişisel özelliklere erişim sağlar. Hesabınızla
+    ilgili her şeyi <a href="/hesabim">/hesabim</a> altında bulabilirsiniz. Bu makale, en sık başvurulan
+    güvenlik ve hesap işlemlerini açıklar.
+  </p>
+
+  <h2>Şifre değişikliği</h2>
+  <p>
+    <a href="/hesabim/profil">/hesabim/profil</a> sayfasında <strong>"Şifre değiştir"</strong> bölümü vardır.
+    Mevcut şifrenizi, yeni şifrenizi ve tekrarını girmeniz gerekir. Yeni şifre en az 10 karakter, en az 1 büyük
+    harf, 1 rakam ve 1 sembol içermelidir. Şifre değiştirildiğinde tüm aktif oturumlar (diğer cihazlar) otomatik
+    olarak kapatılır.
+  </p>
+
+  <h2>İki adımlı doğrulama (2FA)</h2>
+  <p>
+    Hesabınıza ekstra güvenlik katmanı eklemek için <strong>2FA</strong>'yı açabilirsiniz. Şu an iki yöntem
+    desteklenir:
+  </p>
+  <ul>
+    <li><strong>SMS</strong> — Kayıtlı telefon numaranıza tek kullanımlık kod gönderilir.</li>
+    <li><strong>Authenticator uygulaması</strong> — Google Authenticator, Authy veya 1Password ile uyumlu.</li>
+  </ul>
+  <p>
+    2FA aktivasyonu sırasında yedek kodlar (8 adet, tek kullanımlık) gösterilir; bunları güvenli bir yerde
+    saklayın. Telefon erişimini kaybederseniz hesabınıza yedek kodlarla girebilirsiniz.
+  </p>
+
+  <h2>Aktif oturumlar</h2>
+  <p>
+    <a href="/hesabim/guvenlik">/hesabim/guvenlik</a> sayfasında hesabınıza giriş yapmış cihazların listesi
+    görünür: tarayıcı, işletim sistemi, son IP ve son aktivite zamanı. Tanımadığınız bir oturum varsa
+    <strong>"Bu oturumu kapat"</strong> butonuyla hemen sonlandırabilirsiniz. "Diğer tüm oturumları kapat"
+    butonu, mevcut tarayıcı dışındaki tüm cihazları çıkış yapar.
+  </p>
+
+  <h2>E-posta ve telefon güncelleme</h2>
+  <p>
+    E-posta adresinizi değiştirmek için yeni adresi girip onay linkine tıklamanız gerekir; eski adresinize de
+    bildirim mailı gider. Telefon değişiminde yeni numaraya SMS OTP kodu gelir; doğrulamadan değişiklik
+    kaydedilmez.
+  </p>
+
+  <h2>Veri indirme (KVKK m.11)</h2>
+  <p>
+    <a href="/hesabim/profil">/hesabim/profil</a> altındaki <strong>"Verilerimi indir"</strong> butonu, kayıtlı
+    tüm verilerinizi (profil, kayıtlı aramalar, favori ilanlar, mesaj geçmişi) JSON formatında 24 saat içinde
+    e-postanıza gönderir. Bu, 6698 sayılı KVKK m.11 kapsamındaki "bilgi talep etme" hakkınızın otomatik
+    karşılığıdır.
+  </p>
+
+  <h2>Hesap silme</h2>
+  <p>
+    Hesabınızı silmek için <a href="/hesabim/profil">/hesabim/profil</a> sayfasının altındaki
+    <strong>"Hesabımı sil"</strong> butonunu kullanın. 30 günlük geri alma süresi başlatılır; bu süre içinde
+    tekrar giriş yaparsanız silme işlemi iptal olur. 30 gün sonunda verileriniz <strong>KVKK m.7</strong>
+    kapsamında kalıcı olarak yok edilir, sadece yasal saklama yükümlülüğü olanlar (örn. fatura kayıtları)
+    anonimleştirilerek tutulur.
+  </p>
+
+  <h2>İpuçları</h2>
+  <ul>
+    <li>Her cihazınızda farklı şifre kullanmak yerine bir parola yöneticisi kullanın.</li>
+    <li>SMS 2FA yerine authenticator uygulamasını tercih edin; SIM swap saldırılarına karşı daha güvenlidir.</li>
+    <li>Şüpheli bir oturum görürseniz önce şifreyi değiştirin, sonra tüm oturumları kapatın.</li>
+  </ul>
+
+  <p>
+    KVKK haklarınızla ilgili daha fazla bilgi için <a href="/yardim/kvkk-haklarim">KVKK haklarım</a>
+    makalemize bakabilirsiniz.
+  </p>
+</ArticleLayout>

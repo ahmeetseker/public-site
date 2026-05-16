@@ -1,0 +1,52 @@
+---
+import type { Listing } from '@landx/data'
+import ListingCard from '@/components/search/ListingCard.astro'
+
+export interface Props {
+  region: string
+  listings: Listing[]
+}
+
+const { region, listings } = Astro.props
+const searchHref = `/ara?q=${encodeURIComponent(region)}`
+---
+
+<section class="mx-auto max-w-[1280px] px-4 py-16 md:py-20">
+  <div class="mb-8 flex items-end justify-between gap-4">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        BÖLGE İLANLARI
+      </div>
+      <h2 class="mt-2 font-serif text-3xl font-normal tracking-tight md:text-4xl">
+        {region}'da <em class="font-serif italic font-normal">portföy</em>
+      </h2>
+    </div>
+    <a
+      href={searchHref}
+      class="hidden text-sm text-muted-foreground transition hover:text-foreground md:inline"
+    >
+      Tüm sonuçlar →
+    </a>
+  </div>
+
+  {
+    listings.length === 0 ? (
+      <div class="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+        <div class="font-serif text-xl font-normal tracking-tight">Şu an aktif ilan yok</div>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Yakında yeni parseller eklenecek. Aramayı kaydetmek için bildirim oluşturabilirsiniz.
+        </p>
+        <a
+          href="/ara"
+          class="mt-5 inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm transition hover:bg-accent hover:text-accent-foreground"
+        >
+          Tüm ilanlara dön
+        </a>
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {listings.map((l) => <ListingCard listing={l} />)}
+      </div>
+    )
+  }
+</section>

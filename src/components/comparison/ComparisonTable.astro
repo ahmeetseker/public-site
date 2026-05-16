@@ -1,0 +1,196 @@
+---
+import type { Listing } from '@landx/data'
+import { formatTL, formatArea, timeAgo } from '@landx/ui/lib'
+import { StatusChip, TypeChip } from '@landx/ui/atoms'
+
+export interface Props {
+  listings: Listing[]
+}
+const { listings } = Astro.props
+
+// Derived metrics — highlight winners only when there's more than one listing
+const minPrice = Math.min(...listings.map((l) => l.price))
+const maxPrice = Math.max(...listings.map((l) => l.price))
+const minPpm = Math.min(...listings.map((l) => l.price / l.size))
+const maxSize = Math.max(...listings.map((l) => l.size))
+const multi = listings.length > 1
+
+const slugify = (s: string): string => {
+  const map: Record<string, string> = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' }
+  return s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => map[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+const remove = (id: string): string => {
+  const remaining = listings.filter((l) => l.id !== id).map((l) => l.id).join(',')
+  return remaining.length > 0 ? `/karsilastir?ids=${remaining}` : '/karsilastir'
+}
+
+const rowLabelCls =
+  'sticky left-0 bg-card px-3 py-3 text-left align-middle font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground'
+const rowBase = 'border-b border-border/60 last:border-0'
+const rowEmph = `${rowBase} bg-muted/20`
+---
+<div class="relative overflow-hidden rounded-2xl border border-border bg-card">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[760px]">
+      <thead>
+        <tr class="border-b border-border bg-muted/40">
+          <th
+            class="sticky left-0 z-10 bg-muted/95 px-3 py-3 text-left font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground backdrop-blur"
+            scope="col"
+          >
+            ÖZELLİK
+          </th>
+          {listings.map((l) => (
+            <th class="min-w-[240px] px-3 py-3 text-left align-top" scope="col">
+              <div class="flex items-start justify-between gap-2">
+                <a href={`/ilan/${slugify(l.title)}-${l.id}`} class="flex min-w-0 flex-1 gap-2.5">
+                  {l.images && l.images[0] && (
+                    <img
+                      src={l.images[0]}
+                      alt={l.title}
+                      loading="lazy"
+                      class="aspect-[4/3] h-14 flex-none rounded-lg object-cover ring-1 ring-border"
+                    />
+                  )}
+                  <div class="min-w-0 flex-1">
+                    <div class="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground">{l.id}</div>
+                    <h3 class="mt-1 truncate font-serif text-[15px] font-medium leading-tight">{l.title}</h3>
+                    <div class="mt-0.5 truncate text-[11.5px] text-muted-foreground">{l.district}</div>
+                  </div>
+                </a>
+                <a
+                  href={remove(l.id)}
+                  aria-label={`${l.title} karşılaştırmadan çıkar`}
+                  class="flex h-7 w-7 flex-none items-center justify-center rounded-lg text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+                >
+                  <span aria-hidden="true" class="text-base">×</span>
+                </a>
+              </div>
+            </th>
+          ))}
+        </tr>
+      </thead>
+
+      <tbody class="text-sm">
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Tip</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle"><TypeChip type={l.type} /></td>
+          ))}
+        </tr>
+
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Durum</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle"><StatusChip status={l.status} /></td>
+          ))}
+        </tr>
+
+        <tr class={rowEmph}>
+          <th class={rowLabelCls} scope="row">Fiyat</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle">
+              <div class="font-serif text-[15px] font-medium tabular-nums">{formatTL(l.price)}</div>
+              {l.price === minPrice && multi && (
+                <div class="mt-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">EN UYGUN</div>
+              )}
+              {l.price === maxPrice && multi && l.price !== minPrice && (
+                <div class="mt-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">EN YÜKSEK</div>
+              )}
+            </td>
+          ))}
+        </tr>
+
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Alan</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle tabular-nums">
+              <span class:list={['font-medium', l.size === maxSize && multi && 'text-foreground']}>
+                {formatArea(l.size)}
+              </span>
+              {l.size === maxSize && multi && (
+                <div class="mt-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-muted-foreground">EN BÜYÜK</div>
+              )}
+            </td>
+          ))}
+        </tr>
+
+        <tr class={rowEmph}>
+          <th class={rowLabelCls} scope="row">m² fiyatı</th>
+          {listings.map((l) => {
+            const ppm = l.price / l.size
+            return (
+              <td class="px-3 py-3 align-middle tabular-nums">
+                <span class="font-mono text-sm">₺ {Math.round(ppm).toLocaleString('tr-TR')}</span>
+                {ppm === minPpm && multi && (
+                  <div class="mt-0.5 font-mono text-[9px] uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">EN İYİ DEĞER</div>
+                )}
+              </td>
+            )
+          })}
+        </tr>
+
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Bölge</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle">
+              {l.district}<br /><span class="text-muted-foreground">{l.city}</span>
+            </td>
+          ))}
+        </tr>
+
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Etiketler</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle">
+              <div class="flex flex-wrap gap-1">
+                {l.tags.map((t) => (
+                  <span class="rounded-full border border-border bg-background px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </td>
+          ))}
+        </tr>
+
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Son güncelleme</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle text-muted-foreground">{timeAgo(l.lastUpdate)}</td>
+          ))}
+        </tr>
+
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Görüntülenme</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle font-mono tabular-nums">{l.views.toLocaleString('tr-TR')}</td>
+          ))}
+        </tr>
+
+        <tr class={rowBase}>
+          <th class={rowLabelCls} scope="row">Detay</th>
+          {listings.map((l) => (
+            <td class="px-3 py-3 align-middle">
+              <a
+                href={`/ilan/${slugify(l.title)}-${l.id}`}
+                class="inline-flex items-center gap-1 rounded-lg bg-foreground px-3 py-1.5 text-xs font-medium text-background transition hover:opacity-90"
+              >
+                İlanı aç →
+              </a>
+            </td>
+          ))}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="border-t border-border bg-muted/40 px-4 py-2.5 text-xs text-muted-foreground">
+    Karşılaştırma görsel olarak en uygun seçeneği vurgular — yatırım kararı için bağımsız uzman görüşü al.
+  </footer>
+</div>

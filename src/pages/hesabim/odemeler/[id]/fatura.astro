@@ -1,0 +1,57 @@
+---
+// Wave F32 W1A — /hesabim/odemeler/[id]/fatura: tek fatura görünümü.
+//
+// Astro `output: 'static'` olduğu için `getStaticPaths` ile prerender edilir.
+// PAYMENTS_INDIVIDUAL içindeki her ödeme için bir route üretilir; gerçek
+// fatura içeriği `useGetPayment` + `useGetInvoice` ile island'da fetch edilir
+// (LocalStorage CRUD'a bağlı, yeni mock ödemeler de hidrasyon sonrası
+// görünebilir — yine de prerender edilen 12 ID için 200 döner).
+//
+// Print-only stylesheet ile yazdır akışı çalışır (`window.print()`).
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import InvoiceView from '@/components/billing/InvoiceView.tsx'
+import { PAYMENTS_INDIVIDUAL } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+export function getStaticPaths() {
+  return PAYMENTS_INDIVIDUAL.map((p) => ({
+    params: { id: p.id },
+  }))
+}
+
+const { id } = Astro.params as { id: string }
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+const title = locale === 'en' ? `Invoice ${id} — LandX` : `Fatura ${id} — LandX`
+const description =
+  locale === 'en'
+    ? 'Print-friendly invoice details for the selected payment.'
+    : 'Seçilen ödemeye ait yazdırılabilir fatura.'
+
+const labels = {
+  eyebrow: locale === 'en' ? 'ACCOUNT · INVOICE' : 'HESAP · FATURA',
+  pageTitle: locale === 'en' ? 'Invoice' : 'Fatura',
+  emphasis: id,
+  pageDesc:
+    locale === 'en'
+      ? 'Detailed billing receipt with line items, VAT and totals.'
+      : 'Kalem bazında, KDV ve toplam dahil ayrıntılı fatura.',
+}
+---
+
+<RootLayout title={title} description={description}>
+  <AuthGuard />
+  <AccountLayout active="odemeler">
+    <PageHeader
+      eyebrow={labels.eyebrow}
+      title={labels.pageTitle}
+      emphasis={labels.emphasis}
+      description={labels.pageDesc}
+    />
+
+    <InvoiceView client:only="react" locale={locale} paymentId={id} />
+  </AccountLayout>
+</RootLayout>

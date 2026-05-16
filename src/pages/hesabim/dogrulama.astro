@@ -1,0 +1,54 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import VerificationStatusList from '@/components/identity/VerificationStatusList'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const isEn = locale === 'en'
+
+const labels = isEn
+  ? {
+      eyebrow: 'ACCOUNT · VERIFICATION',
+      title: 'Verification',
+      emphasis: 'status',
+      description: 'See current state for each verification type and restart if needed.',
+      cta: 'Start a new verification',
+    }
+  : {
+      eyebrow: 'HESAP · DOĞRULAMA',
+      title: 'Doğrulama',
+      emphasis: 'durumu',
+      description:
+        'Her doğrulama tipi için güncel durumu gör; gerekirse yeniden başlat.',
+      cta: 'Yeni doğrulama başlat',
+    }
+
+const startHref = isEn ? '/en/dogrula' : '/dogrula'
+---
+
+<RootLayout
+  title={isEn ? 'Verification status — arsam.net' : 'Doğrulama durumu — arsam.net'}
+  description={labels.description}
+>
+  <AuthGuard />
+  <AccountLayout active="profil">
+    <PageHeader
+      eyebrow={labels.eyebrow}
+      title={labels.title}
+      emphasis={labels.emphasis}
+      description={labels.description}
+    />
+    <div class="mb-6 flex justify-end">
+      <a
+        href={startHref}
+        class="inline-flex items-center rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-medium transition hover:bg-foreground/5"
+      >
+        {labels.cta} →
+      </a>
+    </div>
+    <VerificationStatusList client:idle locale={locale} />
+  </AccountLayout>
+</RootLayout>

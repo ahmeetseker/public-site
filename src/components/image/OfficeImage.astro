@@ -1,0 +1,57 @@
+---
+// Wave-7 / Agent-33 / Faz-13.e — office image with deterministic placeholder.
+//
+// FUTURE: once `src/assets/offices/<slug>.webp` (cover) or
+// `<slug>-logo.webp` (square) exists, swap this body for `<Image>` from
+// astro:assets — API stays the same.
+import { dimsForRatio, placeholderDataUri, type PlaceholderRatio } from '@/lib/placeholder-image'
+
+export interface Props {
+  officeSlug: string
+  /** Used to derive 1–2 char initials for the placeholder label. */
+  name: string
+  ratio?: PlaceholderRatio
+  className?: string
+  alt?: string
+  loading?: 'lazy' | 'eager'
+}
+
+const {
+  officeSlug,
+  name,
+  ratio = '1/1',
+  className = '',
+  alt,
+  loading = 'lazy',
+} = Astro.props
+
+const initials =
+  name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || name.slice(0, 2).toUpperCase()
+
+const src = placeholderDataUri({
+  seed: officeSlug,
+  label: initials,
+  ratio,
+  size: 'lg',
+})
+const altText = alt ?? `${name} logosu`
+const dims = dimsForRatio(ratio)
+---
+
+<img
+  src={src}
+  alt={altText}
+  loading={loading}
+  decoding="async"
+  width={dims.w}
+  height={dims.h}
+  class:list={['block h-full w-full object-cover', className]}
+  data-placeholder="true"
+  data-office-slug={officeSlug}
+/>

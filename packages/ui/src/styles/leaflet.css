@@ -1,0 +1,123 @@
+/* Leaflet base + Liquid Glass / Squircle uyumlu override'lar */
+@import 'leaflet/dist/leaflet.css';
+
+/* Marker icon path fix — default marker icon bundler tarafından kopyalanmayabilir.
+   Custom divIcon kullandığımız için bu kritik değil ama Marker bileşeni native ikona düşerse fallback. */
+
+/* Konteyner — kart estetiği */
+.leaflet-container {
+  font-family: inherit;
+  background: hsl(var(--muted));
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.dark .leaflet-container {
+  background: hsl(var(--muted));
+}
+
+/* Tile loading flicker yumuşat */
+.leaflet-tile {
+  transition: opacity 0.18s ease-out;
+}
+
+/* Custom marker (divIcon) — pin görünümü */
+.landx-marker {
+  background: transparent !important;
+  border: 0 !important;
+}
+
+.landx-marker-pin {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: ui-monospace, 'SF Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: hsl(var(--background));
+  background: hsl(var(--foreground));
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  transition: transform 0.14s ease-out, box-shadow 0.14s ease-out;
+}
+
+.landx-marker-pin > span {
+  transform: rotate(45deg);
+}
+
+.landx-marker:hover .landx-marker-pin {
+  transform: rotate(-45deg) scale(1.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.landx-marker-pin[data-status='Aktif'] {
+  background: rgb(16 185 129); /* emerald-500 */
+}
+.landx-marker-pin[data-status='Pasif'] {
+  background: rgb(120 113 108); /* stone-500 */
+}
+.landx-marker-pin[data-status='Taslak'] {
+  background: rgb(245 158 11); /* amber-500 */
+}
+
+/* Popup glass kart */
+.leaflet-popup-content-wrapper {
+  background: hsl(var(--card));
+  color: hsl(var(--foreground));
+  border-radius: 1rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid hsl(var(--border));
+  padding: 0;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  min-width: 220px;
+}
+
+.leaflet-popup-tip {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+}
+
+.leaflet-popup-close-button {
+  color: hsl(var(--muted-foreground)) !important;
+  padding: 8px !important;
+}
+
+/* Zoom kontrolleri */
+.leaflet-bar {
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.leaflet-bar a {
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+.leaflet-bar a:hover {
+  background: hsl(var(--muted)) !important;
+}
+
+/* Attribution */
+.leaflet-control-attribution {
+  background: hsl(var(--card) / 0.85) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  border-radius: 0.5rem 0 0 0 !important;
+  font-size: 10px !important;
+}
+
+.leaflet-control-attribution a {
+  color: hsl(var(--foreground)) !important;
+}

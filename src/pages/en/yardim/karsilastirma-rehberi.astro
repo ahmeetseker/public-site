@@ -1,0 +1,9 @@
+---
+import ArticleLayout from '@/components/help/ArticleLayout.astro'
+import { findArticle } from '@/lib/help-index'
+
+const article = findArticle('karsilastirma-rehberi')!
+---
+<ArticleLayout slug="karsilastirma-rehberi" dateModified="2026-05-09">
+  <Fragment set:html={article.bodyEn} />
+</ArticleLayout>

@@ -1,0 +1,133 @@
+---
+import '@/styles/global.css'
+import { t, detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  title: string
+  description?: string
+  /**
+   * 0 = intro / pre-wizard
+   * 1..5 = wizard steps
+   * 6 = preview (onizleme)
+   * 7 = success (tesekkurler) — progress bar hidden
+   */
+  step?: number
+  locale?: Locale
+}
+
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const htmlLang = locale === 'en' ? 'en-US' : 'tr-TR'
+const defaultDesc = locale === 'en'
+  ? 'List a property on arsam.net — 5 steps to publish.'
+  : 'arsam.net üzerinde ilan ver — 5 adımda yayına gönder.'
+const { title, description = defaultDesc, step = 0 } = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site)
+
+const STEPS = [
+  { n: 1, key: 'konum', label: t('ilanVer.step1', locale) },
+  { n: 2, key: 'bilgi', label: t('ilanVer.step2', locale) },
+  { n: 3, key: 'fiyat', label: t('ilanVer.step3', locale) },
+  { n: 4, key: 'gorsel', label: t('ilanVer.step4', locale) },
+  { n: 5, key: 'iletisim', label: t('ilanVer.step5', locale) },
+]
+
+const showProgress = step >= 1 && step <= 6
+const isPreview = step === 6
+const percent = isPreview
+  ? 100
+  : step >= 1 && step <= 5
+    ? Math.round((step / 5) * 100)
+    : 0
+---
+
+<!doctype html>
+<html lang={htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="canonical" href={canonical.toString()} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.toString()} />
+
+    <meta name="robots" content="noindex, follow" />
+  </head>
+  <body class="min-h-screen bg-background text-foreground antialiased">
+    <header class="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
+      <div class="mx-auto flex max-w-[1024px] items-center justify-between gap-4 px-4 py-3">
+        <a href={locale === 'en' ? '/en/' : '/'} class="flex items-center gap-3">
+          <span class="font-serif text-xl tracking-tight">arsam<em class="italic font-normal text-muted-foreground">.net</em></span>
+          <span class="hidden font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground md:inline">{t('ilanVer.heading', locale)}</span>
+        </a>
+        {showProgress && (
+          <div class="flex items-center gap-3 text-xs text-muted-foreground">
+            <span class="tabular-nums">{locale === 'en' ? `${percent}% complete` : `%${percent} tamamlandı`}</span>
+            <a href={locale === 'en' ? '/en/' : '/'} class="rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:text-foreground">
+              {locale === 'en' ? 'Cancel' : 'İptal et'}
+            </a>
+          </div>
+        )}
+      </div>
+      {showProgress && (
+        <nav class="mx-auto max-w-[1024px] px-4 pb-3" aria-label="İlan ver adımları">
+          <ol class="grid grid-cols-5 gap-2">
+            {STEPS.map((s) => {
+              const done = isPreview || s.n < step
+              const current = !isPreview && s.n === step
+              return (
+                <li class="flex flex-col items-start gap-1.5">
+                  <div
+                    class={`h-1 w-full rounded-full ${
+                      done ? 'bg-foreground/70' : current ? 'bg-foreground/40' : 'bg-foreground/10'
+                    }`}
+                    aria-hidden="true"
+                  ></div>
+                  <div class="flex items-center gap-1.5">
+                    <span
+                      class={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-medium tabular-nums ${
+                        done
+                          ? 'bg-foreground text-background'
+                          : current
+                            ? 'border border-foreground/60 text-foreground'
+                            : 'border border-border text-muted-foreground'
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {s.n}
+                    </span>
+                    <span class={`text-xs ${current ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>{s.label}</span>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+        </nav>
+      )}
+    </header>
+
+    <main id="main" class="mx-auto max-w-2xl px-4 py-10 md:py-16">
+      <slot />
+    </main>
+
+    <footer class="mx-auto max-w-2xl px-4 pb-10 text-center text-xs text-muted-foreground">
+      {locale === 'en' ? (
+        <p>
+          Listing on arsam.net is free. Our team reviews each listing before publishing.
+          <a href="/en/kullanim-sartlari" class="underline-offset-2 hover:underline">Terms of use</a>
+          and <a href="/en/kvkk" class="underline-offset-2 hover:underline">privacy (KVKK)</a> apply.
+        </p>
+      ) : (
+        <p>
+          İlan vermek arsam.net üzerinde ücretsiz. Yayınlamadan önce ekibimiz inceler.
+          <a href="/kullanim-sartlari" class="underline-offset-2 hover:underline">Kullanım şartları</a>
+          ve <a href="/kvkk" class="underline-offset-2 hover:underline">KVKK</a> geçerlidir.
+        </p>
+      )}
+    </footer>
+  </body>
+</html>

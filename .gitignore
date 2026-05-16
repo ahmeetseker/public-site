@@ -1,0 +1,16 @@
+node_modules
+dist
+.astro
+.env
+.env.local
+
+# Playwright RESULTS (transient)
+test-results/
+playwright-report/
+playwright/.cache/
+.last-run.json
+
+# Playwright SNAPSHOTS (commit baselines for visual regression)
+# Playwright defaults to tests/e2e/<spec>.spec.ts-snapshots/ — do NOT ignore.
+!tests/e2e/**-snapshots/
+!tests/e2e/**-snapshots/**

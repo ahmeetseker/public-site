@@ -1,0 +1,94 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import Breadcrumb from '@/components/help/Breadcrumb.astro'
+import CategoryCard from '@/components/help/CategoryCard.astro'
+import HelpSearch from '@/components/help/HelpSearch.tsx'
+import { HELP_ARTICLES, HELP_CATEGORIES, articlesByCategory } from '@/lib/help-index'
+import { t, LOCALE_BCP47, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const canonical = `https://arsam.net${prefix}/yardim`
+
+// TODO i18n: help-article bodies stay TR-canonical (regulatory/operational prose).
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  inLanguage: LOCALE_BCP47[locale],
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: t('search.breadcrumbHome', locale), item: `https://arsam.net${prefix}/` },
+    { '@type': 'ListItem', position: 2, name: t('helpPage.heading', locale), item: canonical },
+  ],
+}
+
+// Sort articles for the "Son eklenenler" list — keep declaration order
+// (latest at the end of help-index.ts → newest goes first).
+const recent = [...HELP_ARTICLES].reverse().slice(0, 5)
+---
+<RootLayout
+  title={t('helpPage.title', locale)}
+  description={t('helpPage.description', locale)}
+>
+  <link rel="canonical" href={canonical} slot="head" />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} slot="head" />
+
+  <article class="mx-auto max-w-[1200px] px-4 py-12 lg:py-16">
+    <Breadcrumb items={[{ label: 'Anasayfa', href: '/' }, { label: 'Yardım' }]} />
+
+    <header class="mb-10 max-w-[64ch]">
+      <div class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">YARDIM MERKEZİ</div>
+      <h1 class="font-serif text-4xl font-normal tracking-tight md:text-5xl">Sana nasıl <em class="font-serif italic font-normal">yardımcı olabiliriz</em>?</h1>
+      <p class="mt-4 text-base leading-relaxed text-foreground/85">
+        İlan vermek, ilan karşılaştırmak, doğrulanmış emlak ofisine ulaşmak veya hesabını yönetmek — arsam.net'te
+        yapabileceklerinin kısa rehberleri burada. Aradığını bulamazsan <a class="underline underline-offset-2" href="/iletisim">iletişim sayfası</a> her zaman açık.
+      </p>
+    </header>
+
+    <section class="mb-10">
+      <div class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">ARAMA</div>
+      <HelpSearch client:load />
+    </section>
+
+    <section class="mb-12">
+      <div class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">KATEGORİLER</div>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3" data-testid="help-categories">
+        {HELP_CATEGORIES.map((cat) => (
+          <CategoryCard
+            label={cat.label}
+            description={cat.description}
+            articles={articlesByCategory(cat.id)}
+          />
+        ))}
+      </div>
+    </section>
+
+    <section class="mb-12">
+      <div class="mb-4 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">SON EKLENENLER</div>
+      <ul class="flex flex-col gap-2">
+        {recent.map((a) => (
+          <li class="rounded-xl border border-border bg-card/40 p-4 transition hover:bg-card">
+            <a href={a.path} class="block">
+              <div class="font-medium text-foreground">{a.title}</div>
+              <div class="mt-1 text-sm text-muted-foreground">{a.summary}</div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <div class="rounded-2xl border border-border bg-card p-6">
+      <div class="font-serif text-xl font-medium tracking-tight">Hâlâ takılı kaldığın bir şey var mı?</div>
+      <p class="mt-1.5 max-w-[50ch] text-sm leading-relaxed text-muted-foreground">
+        2 iş günü içinde dönüş yapıyoruz. Pazartesi-Cuma 09:00-18:00 arası canlı destek de mevcut.
+      </p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <a href="/iletisim" class="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-accent">
+          İletişim formu →
+        </a>
+        <a href="/sss" class="inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-accent">
+          Sıkça sorulan sorular →
+        </a>
+      </div>
+    </div>
+  </article>
+</RootLayout>

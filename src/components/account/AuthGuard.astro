@@ -1,0 +1,27 @@
+---
+// Client-side auth guard for /hesabim/* and /en/hesabim/* pages.
+// Public-site is `output: 'static'` so server middleware can't run; this script
+// runs before any meaningful paint and redirects unauthenticated visitors to
+// the locale-appropriate login URL.
+// `is:inline` ensures no module wrapper / hydration delay.
+//
+// Also injects noindex meta (RootLayout sets `index, follow` for SEO; account
+// pages are cookie-gated user-private content and shouldn't be indexed).
+//
+// Wave F23.B — locale-aware redirect. The inline script reads
+// `location.pathname` at runtime, so a single component works for both TR and
+// EN entry points without prop passing.
+---
+<script is:inline>
+  (function () {
+    // Override robots meta to noindex for account pages — RootLayout has no head slot.
+    const robots = document.querySelector('meta[name="robots"]')
+    if (robots) robots.setAttribute('content', 'noindex, nofollow')
+
+    if (!document.cookie.split('; ').some((c) => c.startsWith('arsam_buyer_demo='))) {
+      var isEn = location.pathname === '/en' || location.pathname.indexOf('/en/') === 0
+      var loginUrl = isEn ? '/en/giris' : '/giris'
+      location.replace(loginUrl + '?next=' + encodeURIComponent(location.pathname))
+    }
+  })()
+</script>

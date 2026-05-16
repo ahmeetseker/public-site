@@ -1,0 +1,110 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import { t } from '@/i18n'
+
+// Wave F5 / Agent-F5B — EN mirror of /ilan-ver/ landing.
+// Resume-detection script reads `arsam.ilan-draft.v1` and points the CTA at
+// /en/ilan-ver/{step} instead of /ilan-ver/{step}.
+const locale = 'en' as const
+---
+<WizardLayout
+  title={t('ilanVer.title', locale)}
+  description="Publish your land, field or olive grove on arsam.net in 5 minutes."
+  step={0}
+  locale={locale}
+>
+  <div class="text-center">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      List a property · free · 5 minutes
+    </div>
+    <h1 class="mt-3 font-serif text-4xl font-normal tracking-tight md:text-5xl">
+      Take <em class="italic font-normal">5 minutes</em> to list a property
+    </h1>
+    <p class="mx-auto mt-4 max-w-xl text-sm text-muted-foreground md:text-base">
+      Reach the right buyer for your land, field or olive grove. 4 steps: location, features,
+      price and contact. Every listing is reviewed by our team before going live.
+    </p>
+
+    <div
+      id="ilan-ver-cta"
+      class="mt-8 flex flex-wrap items-center justify-center gap-3"
+      data-resume-cta=""
+    >
+      <a
+        href="/en/ilan-ver/1"
+        id="ilan-ver-primary"
+        data-ilan-cta="start"
+        class="inline-flex min-h-11 items-center gap-2 rounded-xl bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-90"
+      >
+        Start
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="mt-14 grid gap-4 md:grid-cols-3">
+    <div class="rounded-2xl border border-border bg-card p-5">
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Direct</div>
+      <h2 class="mt-2 font-serif text-lg font-normal tracking-tight">Verified buyers</h2>
+      <p class="mt-1 text-xs text-muted-foreground">Buyers join with their profile; offices with their license — arsam.net is direct, no middlemen.</p>
+    </div>
+    <div class="rounded-2xl border border-border bg-card p-5">
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Publishing</div>
+      <h2 class="mt-2 font-serif text-lg font-normal tracking-tight">Editor approval</h2>
+      <p class="mt-1 text-xs text-muted-foreground">Every listing is reviewed by our team before going live; we'll come back to you if anything is missing.</p>
+    </div>
+    <div class="rounded-2xl border border-border bg-card p-5">
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Free</div>
+      <h2 class="mt-2 font-serif text-lg font-normal tracking-tight">No commission</h2>
+      <p class="mt-1 text-xs text-muted-foreground">Listing is free. We only charge a service fee if a deal closes.</p>
+    </div>
+  </div>
+
+  <div class="mt-14 rounded-2xl border border-dashed border-border bg-card/40 p-5">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Before you start</div>
+    <h2 class="mt-2 font-serif text-lg font-normal tracking-tight">Have these handy</h2>
+    <ul class="mt-3 space-y-1.5 text-sm text-muted-foreground">
+      <li>· Title deed copy (you can type the details from it)</li>
+      <li>· Approximate parcel area (m²) and frontage</li>
+      <li>· At least 3 photos — drone shots are even better</li>
+      <li>· A phone number where buyers can reach you</li>
+    </ul>
+  </div>
+
+  <script is:inline>
+    // Resume detection — read arsam.ilan-draft.v1 and inject "Continue" + "Start fresh"
+    // CTAs if a draft is present. Runs only in the browser (Astro static build).
+    try {
+      const raw = localStorage.getItem('arsam.ilan-draft.v1')
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        const lastStep = parsed && typeof parsed.lastStep === 'number' ? parsed.lastStep : 1
+        const resumeStep = Math.min(Math.max(lastStep, 1), 4)
+        const ctaWrap = document.getElementById('ilan-ver-cta')
+        const primary = document.getElementById('ilan-ver-primary')
+        if (ctaWrap && primary) {
+          // Repoint primary CTA to resume target.
+          primary.setAttribute('href', '/en/ilan-ver/' + resumeStep)
+          primary.textContent = 'Continue'
+          primary.appendChild(Object.assign(document.createElement('span'), {
+            ariaHidden: 'true',
+            textContent: ' →',
+          }))
+          primary.setAttribute('data-ilan-cta', 'resume')
+
+          const fresh = document.createElement('button')
+          fresh.type = 'button'
+          fresh.className = 'inline-flex min-h-11 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-foreground/5'
+          fresh.textContent = 'Start fresh'
+          fresh.setAttribute('data-ilan-cta', 'fresh')
+          fresh.addEventListener('click', function () {
+            try { localStorage.removeItem('arsam.ilan-draft.v1') } catch {}
+            try { localStorage.removeItem('arsam:ilan-ver:state') } catch {}
+            location.href = '/en/ilan-ver/1'
+          })
+          ctaWrap.appendChild(fresh)
+        }
+      }
+    } catch {}
+  </script>
+</WizardLayout>

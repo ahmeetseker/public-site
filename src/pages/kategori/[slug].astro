@@ -1,0 +1,112 @@
+---
+// Wave F32 / W4 — Kategori arşiv sayfası (SSG, react island filter chip).
+// CategoryArchive metadata + LISTINGS mock filtered by `type` (Astro
+// frontmatter); island sadece chip filter + grid render yapıyor.
+import RootLayout from '@/layouts/RootLayout.astro'
+import { CATEGORY_ARCHIVES, LISTINGS } from '@landx/data'
+import type { CategoryArchive, Listing, ListingType } from '@landx/data'
+import CategoryListingsIsland from '@/components/content/CategoryListingsIsland.tsx'
+import { breadcrumbListSchema, toJsonLd } from '@/lib/schema-builders'
+import { detectLocaleFromPath, LOCALE_BCP47 } from '@/i18n'
+
+export function getStaticPaths() {
+  // Mapping: CategoryArchive.slug → Listing.type
+  // (CategoryArchive.listingIds mock seed'de placeholder olduğu için type eşleştirmesi
+  // daha sağlıklı bir filtreleme veriyor.)
+  // NOTE: `getStaticPaths` Astro tarafında izole bir context'te çalışır —
+  // module-level const'lar her zaman erişilemez, bu yüzden mapping'i içeride
+  // tanımlıyoruz.
+  const SLUG_TO_TYPE: Record<string, ListingType> = {
+    'imarli-parsel': 'İmarlı',
+    tarla: 'Tarla',
+    zeytinlik: 'Zeytinlik',
+    'villa-arsasi': 'Villa Arsası',
+  }
+  return CATEGORY_ARCHIVES.map((category) => {
+    const type = SLUG_TO_TYPE[category.slug]
+    const listings = type ? LISTINGS.filter((l) => l.type === type) : []
+    return {
+      params: { slug: category.slug },
+      props: { category, listings },
+    }
+  })
+}
+
+interface PageProps {
+  category: CategoryArchive
+  listings: Listing[]
+}
+
+const { category, listings } = Astro.props as PageProps
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+const labels = {
+  eyebrow: locale === 'en' ? 'CATEGORY' : 'KATEGORİ',
+  count: locale === 'en' ? 'listings' : 'ilan',
+  searchAll: locale === 'en' ? 'See all on search' : 'Tümünü aramada gör',
+  breadcrumbHome: locale === 'en' ? 'Home' : 'Ana sayfa',
+  breadcrumbHub: locale === 'en' ? 'Categories' : 'Kategoriler',
+  emphasis: locale === 'en' ? 'archive.' : 'arşivi.',
+}
+
+const title = locale === 'en'
+  ? `${category.title} — arsam.net`
+  : `${category.title} ilanları — arsam.net`
+const description = category.description
+
+const canonical = new URL(`${prefix}/kategori/${category.slug}`, Astro.site).toString()
+
+const breadcrumbJsonLd: Record<string, unknown> = {
+  ...(breadcrumbListSchema([
+    { name: labels.breadcrumbHome, url: new URL(`${prefix}/`, Astro.site).toString() },
+    { name: labels.breadcrumbHub, url: new URL(`${prefix}/ara`, Astro.site).toString() },
+    { name: category.title, url: canonical },
+  ]) as Record<string, unknown>),
+  inLanguage: LOCALE_BCP47[locale],
+}
+---
+<RootLayout title={title} description={description}>
+  <script is:inline type="application/ld+json" set:html={toJsonLd(breadcrumbJsonLd)} />
+
+  <section class="mx-auto max-w-[1280px] px-4 py-10 md:py-14">
+    {/* Breadcrumb */}
+    <nav aria-label="breadcrumb" class="mb-6 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
+      <a href={`${prefix}/`} class="hover:text-foreground">{labels.breadcrumbHome}</a>
+      <span class="mx-2">/</span>
+      <a href={`${prefix}/ara`} class="hover:text-foreground">{labels.breadcrumbHub}</a>
+      <span class="mx-2">/</span>
+      <span class="text-foreground">{category.title}</span>
+    </nav>
+
+    {/* Header */}
+    <header class="mb-8 flex flex-col gap-4 md:mb-10">
+      <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {labels.eyebrow}
+      </p>
+      <h1 class="font-serif text-3xl font-normal leading-tight tracking-tight md:text-5xl">
+        {category.title}{' '}
+        <em class="font-serif italic font-normal text-foreground/70">{labels.emphasis}</em>
+      </h1>
+      <p class="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+        {description}
+      </p>
+      <div class="flex flex-wrap items-center gap-3 pt-2">
+        <span class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+          {listings.length} {labels.count}
+        </span>
+        <a
+          href={`${prefix}${category.filterHref}`}
+          class="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-foreground/5"
+        >
+          {labels.searchAll} →
+        </a>
+      </div>
+    </header>
+
+    {/* Listings island */}
+    <section data-category-island-wrap="">
+      <CategoryListingsIsland client:idle listings={listings} locale={locale} />
+    </section>
+  </section>
+</RootLayout>

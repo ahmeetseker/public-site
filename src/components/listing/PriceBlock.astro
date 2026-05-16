@@ -1,0 +1,44 @@
+---
+import type { Listing } from '@landx/data'
+import { formatTL, formatTLCompact } from '@landx/ui/lib'
+import { StatusChip } from '@landx/ui/atoms'
+
+export interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props
+const unitPrice = Math.round(listing.price / listing.size)
+---
+<section
+  aria-label="Fiyat"
+  class="rounded-2xl border border-border bg-card p-5 md:sticky md:top-[76px]"
+>
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Fiyat</div>
+      <div class="mt-1 font-serif text-4xl font-normal tracking-tight tabular-nums">
+        {formatTLCompact(listing.price)}
+      </div>
+      <div class="mt-1 text-xs text-muted-foreground tabular-nums">
+        {formatTL(listing.price)}
+      </div>
+    </div>
+    <StatusChip status={listing.status} />
+  </div>
+
+  <div class="mt-4 flex items-end justify-between border-t border-border pt-3">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Birim fiyat</div>
+      <div class="mt-1 font-serif text-lg font-medium tabular-nums">
+        ₺ {unitPrice.toLocaleString('tr-TR')} <span class="text-xs font-normal text-muted-foreground">/ m²</span>
+      </div>
+    </div>
+    <div class="text-right">
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Alan</div>
+      <div class="mt-1 font-serif text-lg font-medium tabular-nums">
+        {listing.size.toLocaleString('tr-TR')} <span class="text-xs font-normal text-muted-foreground">m²</span>
+      </div>
+    </div>
+  </div>
+</section>

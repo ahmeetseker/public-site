@@ -1,0 +1,67 @@
+---
+// Wave F9.D — 4 placeholder photo thumbnails for /bolge/[slug].
+// Captions are mock (Sahil/Tarla/Tepelik/Merkez) so the section feels seeded
+// even though real imagery isn't shipped yet.
+import { placeholderDataUri } from '@/lib/placeholder-image'
+
+export interface Props {
+  slug: string
+  regionName: string
+  /** Localized title + 4 captions. */
+  copy: {
+    title: string
+    captions: [string, string, string, string]
+  }
+}
+
+const { slug, regionName, copy } = Astro.props
+
+const photos = copy.captions.map((caption, i) => ({
+  caption,
+  src: placeholderDataUri({
+    seed: `${slug}-photo-${i}`,
+    label: caption,
+    ratio: '4/3',
+    size: 'sm',
+  }),
+}))
+---
+
+<section
+  data-region-photos=""
+  data-region-slug={slug}
+  class="mx-auto max-w-[1280px] px-4 py-12 md:py-16"
+>
+  <div class="mb-6">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      BÖLGE FOTOĞRAFLARI
+    </div>
+    <h2 class="mt-2 font-serif text-2xl font-normal tracking-tight md:text-3xl">
+      {copy.title.replace('{region}', regionName)}
+    </h2>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+    {photos.map((p, i) => (
+      <figure
+        data-region-photo={String(i)}
+        class="overflow-hidden rounded-2xl border border-border bg-card"
+      >
+        <div class="aspect-[4/3] w-full overflow-hidden">
+          <img
+            src={p.src}
+            alt={`${regionName} — ${p.caption}`}
+            width="320"
+            height="240"
+            loading="lazy"
+            decoding="async"
+            class="h-full w-full object-cover"
+          />
+        </div>
+        <figcaption class="px-3 py-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          {p.caption}
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+</section>

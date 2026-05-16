@@ -1,0 +1,14 @@
+# Place listing photos here as {listing-id}-{1..N}.webp
+# Example: 28.AY.0142-1.webp, 28.AY.0142-2.webp ...
+#
+# Convention (matches ListingImage.astro):
+# - File ext: .webp preferred (smaller than .jpg). .jpg/.png also accepted.
+# - Filename: `<listing.id>-<index>.<ext>` where index is 1-based.
+# - Aspect: source images >= 1600×1200 (4/3) or 1920×1080 (16/9). Astro
+#   resizes/optimises at build via astro:assets.
+# - Hero (Gallery): index=1 → rendered 16/9.
+# - Thumbs (Gallery): index=2..N → rendered 1/1 (square crop).
+# - Search/Featured cards: only index=1 is consumed, rendered 4/3.
+#
+# Until a real file exists at this path, ListingImage falls back to a
+# deterministic SVG placeholder seeded by `${listing.id}-${index}`.

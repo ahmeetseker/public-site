@@ -1,0 +1,51 @@
+---
+import { FAVORITE_LISTING_IDS, SAVED_SEARCHES, MOCK_CONVERSATIONS } from '@landx/data'
+
+const unreadCount = MOCK_CONVERSATIONS.reduce((sum, c) => sum + c.unread, 0)
+
+const STATS = [
+  {
+    href: '/hesabim/favori',
+    label: 'Favorilerim',
+    value: FAVORITE_LISTING_IDS.length,
+    suffix: 'ilan',
+    sub: 'Son ekleme bugün',
+  },
+  {
+    href: '/hesabim/aramalar',
+    label: 'Kayıtlı arama',
+    value: SAVED_SEARCHES.length,
+    suffix: 'arama',
+    sub: `${SAVED_SEARCHES.filter((s) => s.alerts).length} bildirim açık`,
+  },
+  {
+    href: '/hesabim/mesajlar',
+    label: 'Okunmamış mesaj',
+    value: unreadCount,
+    suffix: unreadCount === 1 ? 'mesaj' : 'mesaj',
+    sub:
+      unreadCount > 0
+        ? `${MOCK_CONVERSATIONS.length} aktif konuşma`
+        : 'Yeni mesaj yok',
+  },
+]
+---
+<div class="grid gap-3 sm:grid-cols-3">
+  {STATS.map((s) => (
+    <a
+      href={s.href}
+      class="group flex flex-col gap-1 rounded-2xl border border-border bg-card p-4 transition hover:border-foreground/20"
+    >
+      <div class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        {s.label}
+      </div>
+      <div class="flex items-baseline gap-2">
+        <span class="font-serif text-3xl font-normal tracking-tight tabular-nums">
+          {s.value}
+        </span>
+        <span class="text-xs text-muted-foreground">{s.suffix}</span>
+      </div>
+      <div class="text-xs text-muted-foreground">{s.sub}</div>
+    </a>
+  ))}
+</div>

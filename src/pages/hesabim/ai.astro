@@ -1,0 +1,28 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import PersonalAiChat from '@/components/ai/PersonalAiChat.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+---
+
+<RootLayout
+  title={locale === 'en' ? 'AI assistant — arsam.net' : 'AI asistan — arsam.net'}
+  description={locale === 'en'
+    ? 'Personal AI chat — search land, value listings, check tapu, all in one conversation.'
+    : 'Kişisel AI sohbet — arsa ara, ilan değerleme, tapu kontrolü tek sohbette.'}
+>
+  <AuthGuard />
+  <AccountLayout active="ai">
+    <PageHeader
+      eyebrow="HESAP · AI ASİSTAN"
+      title="AI ile sohbet"
+      emphasis="bireysel oturumlar"
+      description="Arsa fiyatları, bölge raporları, tapu kontrolü — bir sohbet penceresinde tüm AI araçlarına eriş."
+    />
+    <PersonalAiChat client:only="react" />
+  </AccountLayout>
+</RootLayout>

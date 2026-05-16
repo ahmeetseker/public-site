@@ -1,0 +1,141 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import OfficeHero from '@/components/office/OfficeHero.astro'
+import Description from '@/components/office/Description.astro'
+import PortfolioGrid from '@/components/office/PortfolioGrid.astro'
+import PortfolioGallery from '@/components/office/PortfolioGallery.astro'
+import TeamRoster from '@/components/office/TeamRoster.astro'
+import Reviews from '@/components/office/Reviews.astro'
+import ContactCard from '@/components/office/ContactCard.astro'
+import BadgesCard from '@/components/office/BadgesCard.astro'
+import AgentList from '@/components/office/AgentList'
+import ContactForm from '@/components/office/ContactForm'
+import OpeningHours from '@/components/office/OpeningHours'
+import OfficeMap from '@/components/office/OfficeMap'
+
+import { OFFICES, REVIEWS_BY_OFFICE, LISTINGS, type Office } from '@landx/data'
+import { t, LOCALE_BCP47, detectLocaleFromPath } from '@/i18n'
+import {
+  localBusinessSchema,
+  breadcrumbListSchema,
+  toJsonLd,
+} from '@/lib/schema-builders'
+
+export function getStaticPaths() {
+  return OFFICES.map((o) => ({
+    params: { slug: o.slug },
+    props: { office: o },
+  }))
+}
+
+interface Props {
+  office: Office
+}
+
+const { office } = Astro.props
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+// Match listings whose district mentions this office's district name
+// (handles compound labels like "Ayvalık · Cunda" or "Çeşme · Alaçatı").
+const officeListings = LISTINGS.filter((l) => l.district.includes(office.district)).slice(0, 9)
+
+const reviews = REVIEWS_BY_OFFICE[office.id] ?? []
+
+const seoTitle = locale === 'en'
+  ? `${office.name} — Real-estate office · ${office.district}, ${office.city} — arsam.net`
+  : `${office.name} — Emlak ofisi · ${office.district}, ${office.city} — arsam.net`
+const seoDescription = locale === 'en'
+  ? `${office.description} ${office.agentCount} agents, ${office.listingCount} active listings.`
+  : `${office.description} ${office.agentCount} satış uzmanı, ${office.listingCount} aktif ilan.`
+
+// F22.A — RealEstateAgent JSON-LD via F22.0 builder. We layer the local
+// fields (inLanguage, founding date, rating, areaServed) on top because the
+// shared builder is locale + business-agnostic.
+const canonicalOfficeUrl = `https://arsam.net${prefix}/ofis/${office.slug}`
+const officeBase = localBusinessSchema({
+  name: office.name,
+  description: office.description,
+  url: canonicalOfficeUrl,
+  telephone: office.phone,
+  email: office.email,
+  city: office.city,
+  district: office.district,
+  street: office.address,
+  openingHours: office.hours ? [office.hours] : undefined,
+}) as Record<string, unknown>
+
+const officeJsonLd: Record<string, unknown> = {
+  ...officeBase,
+  inLanguage: LOCALE_BCP47[locale],
+  foundingDate: String(office.founded),
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: office.rating,
+    reviewCount: office.reviewCount,
+  },
+  areaServed: { '@type': 'Place', name: `${office.district}, ${office.city}` },
+}
+
+const officeBreadcrumbJsonLd = breadcrumbListSchema([
+  { name: t('search.breadcrumbHome', locale), url: `https://arsam.net${prefix}/` },
+  { name: t('officesHub.heading', locale), url: `https://arsam.net${prefix}/ofisler` },
+  { name: office.name, url: canonicalOfficeUrl },
+])
+---
+
+<RootLayout title={seoTitle} description={seoDescription}>
+  <script is:inline type="application/ld+json" set:html={toJsonLd(officeJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={toJsonLd(officeBreadcrumbJsonLd)} />
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" class="border-b border-border bg-background">
+    <ol class="mx-auto flex max-w-[1280px] items-center gap-1.5 px-4 py-3 text-xs text-muted-foreground">
+      <li><a href={`${prefix}/`} class="transition hover:text-foreground">{t('search.breadcrumbHome', locale)}</a></li>
+      <li aria-hidden class="text-muted-foreground/60">/</li>
+      <li><a href={`${prefix}/ofisler`} class="transition hover:text-foreground">{t('officesHub.heading', locale)}</a></li>
+      <li aria-hidden class="text-muted-foreground/60">/</li>
+      <li><span class="text-foreground">{office.name}</span></li>
+    </ol>
+  </nav>
+
+  <OfficeHero office={office} />
+
+  <div class="mx-auto max-w-[1280px] px-4 py-8 md:py-10">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+      <!-- LEFT: main content -->
+      <div class="space-y-6 md:col-span-2">
+        <Description office={office} />
+        <PortfolioGallery office={office} locale={locale} prefix={prefix} />
+        <PortfolioGrid listings={officeListings} officeName={office.name} />
+        <AgentList client:load officeId={office.id} locale={locale} />
+        <TeamRoster office={office} />
+        <OpeningHours client:load officeId={office.id} locale={locale} />
+        <OfficeMap
+          client:visible
+          officeId={office.id}
+          officeName={office.name}
+          district={office.district}
+          city={office.city}
+          address={office.address}
+          locale={locale}
+        />
+        <ContactForm
+          client:load
+          officeId={office.id}
+          officeName={office.name}
+          locale={locale}
+        />
+        <Reviews reviews={reviews} />
+      </div>
+
+      <!-- RIGHT: sticky sidebar -->
+      <div class="space-y-6">
+        <div class="md:sticky md:top-20 md:space-y-6">
+          <ContactCard office={office} />
+          <BadgesCard office={office} />
+        </div>
+      </div>
+    </div>
+  </div>
+</RootLayout>

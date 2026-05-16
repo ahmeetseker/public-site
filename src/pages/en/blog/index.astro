@@ -1,0 +1,90 @@
+---
+// Wave F8 / Agent-F8A — /en/blog hub page (EN mirror).
+import RootLayout from '@/layouts/RootLayout.astro'
+import Breadcrumb from '@/components/help/Breadcrumb.astro'
+import BlogCard from '@/components/blog/BlogCard.astro'
+import CategoryFilter from '@/components/blog/CategoryFilter.astro'
+import { getAllPosts, getPostsByCategory, BLOG_CATEGORIES } from '@/lib/blog'
+import { t, LOCALE_BCP47 } from '@/i18n'
+
+const locale = 'en' as const
+// RootLayout emits the canonical <link>; we keep this for the JSON-LD graph.
+const canonical = 'https://arsam.net/en/blog'
+
+const posts = await getAllPosts(locale)
+const grouped = await getPostsByCategory(locale)
+const counts: Record<string, number> = {}
+for (const cat of BLOG_CATEGORIES) {
+  counts[cat] = grouped[cat].length
+}
+
+const blogJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  inLanguage: LOCALE_BCP47[locale],
+  url: canonical,
+  name: t('blog.hub.title', locale),
+  description: t('blog.hub.description', locale),
+  blogPost: posts.map((p) => ({
+    '@type': 'BlogPosting',
+    headline: p.data.titleEn,
+    datePublished: p.data.date.toISOString(),
+    url: `https://arsam.net/en/blog/${p.id.split('/').slice(1).join('/')}`,
+  })),
+}
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  inLanguage: LOCALE_BCP47[locale],
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: t('blog.hub.breadcrumbHome', locale), item: 'https://arsam.net/en/' },
+    { '@type': 'ListItem', position: 2, name: t('blog.hub.breadcrumbBlog', locale), item: canonical },
+  ],
+}
+---
+<RootLayout
+  title={t('blog.hub.title', locale)}
+  description={t('blog.hub.description', locale)}
+  locale={locale}
+>
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(blogJsonLd)} slot="head" />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} slot="head" />
+
+  <article class="mx-auto max-w-[1200px] px-4 py-12 lg:py-16">
+    <Breadcrumb items={[
+      { label: t('blog.hub.breadcrumbHome', locale), href: '/en/' },
+      { label: t('blog.hub.breadcrumbBlog', locale) },
+    ]} />
+
+    <header class="mb-10 max-w-[64ch]">
+      <div class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {t('blog.hub.eyebrow', locale)}
+      </div>
+      <h1 class="font-serif text-4xl font-normal tracking-tight md:text-5xl">
+        {t('blog.hub.heading', locale)}
+      </h1>
+      <p class="mt-4 text-base leading-relaxed text-foreground/85">
+        {t('blog.hub.description', locale)}
+      </p>
+    </header>
+
+    <section class="mb-8">
+      <CategoryFilter locale={locale} counts={counts} />
+    </section>
+
+    <section
+      class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+      data-testid="blog-grid"
+    >
+      {posts.map((post) => <BlogCard post={post} locale={locale} />)}
+    </section>
+
+    <p
+      data-testid="blog-empty"
+      class="mt-8 hidden text-sm text-muted-foreground"
+    >
+      {t('blog.hub.empty', locale)}
+    </p>
+  </article>
+</RootLayout>

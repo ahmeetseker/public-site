@@ -1,0 +1,67 @@
+---
+import ArticleLayout from '@/components/help/ArticleLayout.astro'
+---
+<ArticleLayout slug="ilan-yayinla" dateModified="2026-05-08">
+  <p>
+    arsam.net üzerinde ilan yayınlamak, doğrulanmış emlak ofisi hesabıyla yapılabilen 5 adımlık bir akıştır.
+    Bireysel sahiplerin ilan verme akışı Faz 3 yol haritasındadır; şimdilik kayıtlı emlak ofisi profilinizden
+    ilerlemeniz gerekir. Aşağıdaki rehber, MVP sürümündeki <code>/ilan-ver</code> sihirbazını anlatır.
+  </p>
+
+  <h2>1. Hesap doğrulaması</h2>
+  <p>
+    İlan vermeden önce ofis hesabınızın <strong>"Doğrulanmış"</strong> rozetini taşıması gerekir. Yeni kayıtlarda
+    vergi numarası, MERSİS no ve yetkili kişi telefon doğrulaması istenir. İlk 1-2 ilan manuel inceleme (24 saat)
+    sürecinden geçer; sonrasında yayın anlık olur.
+  </p>
+
+  <h2>2. Sihirbazı başlatma</h2>
+  <p>
+    Üst menüdeki "İlan ver" düğmesinden veya doğrudan <a href="/ilan-ver">/ilan-ver</a> URL'sinden sihirbaza
+    girersiniz. Sihirbaz dört bölüme ayrılır: <strong>Temel bilgiler</strong>, <strong>Konum ve parsel</strong>,
+    <strong>Görseller</strong> ve <strong>Yayın önizleme</strong>.
+  </p>
+
+  <h3>Temel bilgiler</h3>
+  <ul>
+    <li>İlan başlığı (60 karakter sınırı, anahtar bölge adı önerilir).</li>
+    <li>Kategori: arsa, tarla veya zeytinlik.</li>
+    <li>İmar durumu: konut, ticari, tarım, sanayi veya imarsız.</li>
+    <li>Tapu cinsi: müstakil, hisseli veya kat irtifakı.</li>
+    <li>Fiyat, m² alan ve TL/m² (otomatik hesaplanır).</li>
+  </ul>
+
+  <h3>Konum ve parsel</h3>
+  <ul>
+    <li>İl/ilçe/mahalle hiyerarşik seçim; aramalarda filtre olarak kullanılır.</li>
+    <li>Ada ve parsel numarası (opsiyonel ama önerilir — şeffaflık skorunu artırır).</li>
+    <li>Harita üzerinde nokta veya parsel sınırı çizimi.</li>
+    <li>Yola cephe, elektrik ve su durumu bilgileri.</li>
+  </ul>
+
+  <h2>3. Görseller</h2>
+  <p>
+    En az 1 fotoğraf zorunludur; öneri 5-8 görsel ve 1 parsel/uydu çizimidir. Fotoğrafsız ilanlar arama
+    listelerinde alt sıralarda gösterilir. Görseller JPEG veya WebP formatında, en az 1200 piksel genişliğinde
+    olmalıdır. Sihirbaz, yüklenen görselleri otomatik olarak WebP'ye çevirir ve birden fazla boyutta saklar.
+  </p>
+
+  <h2>4. Önizleme ve yayın</h2>
+  <p>
+    Son adımda ilanınız arama listesinde nasıl görüneceği şekliyle önizlenir. Doğrulanmış ofis rozetiniz, ilan
+    kartında otomatik olarak yer alır. "Yayınla" düğmesine bastıktan sonra ilan canlıya çıkar ve sitemap'e
+    eklenir.
+  </p>
+
+  <h2>5. Yayın sonrası yönetim</h2>
+  <p>
+    İlanlarınızı <a href="/panel">ofis panelinden</a> düzenleyebilir, pasifleştirebilir veya "Satıldı" olarak
+    işaretleyebilirsiniz. 60 günden eski yenilenmemiş ilanlar otomatik pasifleşir; tek tıkla yenilenebilir.
+    İlanı yeniden yayına aldığınızda "Güncellendi" rozetiyle arama listesinde yukarı çıkar.
+  </p>
+
+  <p>
+    Daha fazla detay için <a href="/sss#ilan-verme">SSS · İlan verme</a> bölümümüze veya doğrudan
+    <a href="/iletisim">iletişim sayfamıza</a> bakabilirsiniz.
+  </p>
+</ArticleLayout>

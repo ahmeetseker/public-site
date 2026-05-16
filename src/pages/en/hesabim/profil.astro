@@ -1,0 +1,166 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import ProfileForm from '@/components/account/ProfileForm.tsx'
+import DeleteAccountDialog from '@/components/account/DeleteAccountDialog.tsx'
+import { BUYER } from '@landx/data'
+
+const locale = 'en' as const
+
+const joinedFormatted = new Date(BUYER.joinedISO).toLocaleDateString('en-US', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+})
+
+const NOTIF_TOGGLES = [
+  { id: 'notif-match', label: 'New match', desc: 'When your saved searches find new listings', defaultOn: true },
+  { id: 'notif-price', label: 'Price change', desc: 'When the price of a favorite changes', defaultOn: true },
+  { id: 'notif-msg', label: 'Office message', desc: 'When an office sends you a message', defaultOn: true },
+  { id: 'notif-weekly', label: 'Weekly digest', desc: 'Every Monday morning, summary from your regions', defaultOn: false },
+]
+---
+
+<RootLayout
+  locale={locale}
+  title="Profile settings — arsam.net"
+  description="arsam.net account, notification preferences, security and KVKK settings."
+>
+  <AuthGuard />
+  <AccountLayout active="profil">
+    <PageHeader
+      eyebrow="ACCOUNT · SETTINGS"
+      title="Profile"
+      emphasis="settings"
+      description={`Member since ${joinedFormatted}`}
+    />
+
+    <!-- Wave F5.A — bilingual ProfileForm picks locale from html lang -->
+    <section data-profile-island-wrap="" class="pb-6">
+      <ProfileForm client:idle />
+    </section>
+
+    <section data-delete-island-wrap="" class="pb-6">
+      <DeleteAccountDialog client:idle />
+    </section>
+
+    <div class="flex flex-col gap-5">
+      <!-- Notification preferences -->
+      <section class="rounded-2xl border border-border bg-card p-5">
+        <div class="pb-3">
+          <h2 class="font-serif text-xl tracking-tight">Notification preferences</h2>
+          <p class="text-xs text-muted-foreground">Choose which notifications you want to receive by email.</p>
+        </div>
+        <ul class="flex flex-col divide-y divide-border">
+          {NOTIF_TOGGLES.map((toggle) => (
+            <li class="flex items-center justify-between gap-4 py-3">
+              <div class="min-w-0 flex-1">
+                <label for={toggle.id} class="block text-sm font-medium">{toggle.label}</label>
+                <p class="text-xs text-muted-foreground">{toggle.desc}</p>
+              </div>
+              <input
+                id={toggle.id}
+                type="checkbox"
+                checked={toggle.defaultOn}
+                class="h-4 w-4 rounded border-border accent-foreground"
+                aria-label={toggle.label}
+              />
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <!-- Security -->
+      <section class="rounded-2xl border border-border bg-card p-5">
+        <div class="pb-3">
+          <h2 class="font-serif text-xl tracking-tight">Security</h2>
+          <p class="text-xs text-muted-foreground">Password and two-factor authentication.</p>
+        </div>
+        <ul class="flex flex-col divide-y divide-border">
+          <li class="flex items-center justify-between gap-4 py-3">
+            <div>
+              <div class="text-sm font-medium">Password</div>
+              <p class="text-xs text-muted-foreground">Last changed: unknown</p>
+            </div>
+            <button
+              id="sec-password-btn"
+              type="button"
+              data-msg="Password change ships in Phase 10.2."
+              class="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-medium transition hover:bg-foreground/5"
+            >
+              Change password
+            </button>
+          </li>
+          <li class="flex items-center justify-between gap-4 py-3">
+            <div>
+              <div class="text-sm font-medium">Two-factor authentication (2FA)</div>
+              <p class="text-xs text-muted-foreground">Extra protection via SMS or authenticator app.</p>
+            </div>
+            <input
+              id="sec-2fa"
+              type="checkbox"
+              class="h-4 w-4 rounded border-border accent-foreground"
+              aria-label="Two-factor authentication"
+            />
+          </li>
+        </ul>
+      </section>
+
+      <!-- KVKK & privacy -->
+      <section class="rounded-2xl border border-rose-500/20 bg-rose-500/[0.03] p-5 dark:border-rose-400/20 dark:bg-rose-400/[0.03]">
+        <div class="pb-3">
+          <h2 class="font-serif text-xl tracking-tight">KVKK & privacy</h2>
+          <p class="text-xs text-muted-foreground">
+            See
+            {' '}
+            <a href="/en/kvkk" class="underline underline-offset-2 hover:text-foreground">KVKK Notice</a> about your data.
+          </p>
+        </div>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <button
+            id="kvkk-export-btn"
+            type="button"
+            data-msg="Data download ships in Phase 10.2 — KVKK-mandated, in progress."
+            class="rounded-xl border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-foreground/5"
+          >
+            Download my data (JSON)
+          </button>
+          <button
+            id="kvkk-delete-btn"
+            type="button"
+            data-confirm="Permanently delete your account? This cannot be undone."
+            data-msg="Account deletion ships in Phase 10.2."
+            class="rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-500/15 dark:border-rose-400/40 dark:bg-rose-400/10 dark:text-rose-300"
+          >
+            Delete my account
+          </button>
+        </div>
+      </section>
+    </div>
+  </AccountLayout>
+
+  <script is:inline>
+    (function () {
+      function bindAlert(id) {
+        const el = document.getElementById(id)
+        if (el) {
+          el.addEventListener('click', function () {
+            alert(el.getAttribute('data-msg') || '')
+          })
+        }
+      }
+      bindAlert('sec-password-btn')
+      bindAlert('kvkk-export-btn')
+      const del = document.getElementById('kvkk-delete-btn')
+      if (del) {
+        del.addEventListener('click', function () {
+          if (confirm(del.getAttribute('data-confirm') || '')) {
+            alert(del.getAttribute('data-msg') || '')
+          }
+        })
+      }
+    })()
+  </script>
+</RootLayout>

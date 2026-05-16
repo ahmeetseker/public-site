@@ -1,0 +1,112 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import FavoriteCard from '@/components/account/FavoriteCard.astro'
+import FavoritesList from '@/components/account/FavoritesList.tsx'
+import FavoritesTrends from '@/components/account/FavoritesTrends.tsx'
+import { FAVORITE_LISTING_IDS } from '@landx/data'
+import { LISTINGS } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: account body labels stay TR-canonical (low-priority surface).
+const favorites = FAVORITE_LISTING_IDS
+  .map((id) => LISTINGS.find((l) => l.id === id))
+  .filter((l): l is NonNullable<typeof l> => l !== undefined)
+
+// Wave F3 / Agent-F3E — serialize a minimal listing dict for the React
+// island. We only ship fields the card actually renders so the hydration
+// payload stays small.
+const listingDict = Object.fromEntries(
+  LISTINGS.map((l) => [
+    l.id,
+    {
+      id: l.id,
+      title: l.title,
+      city: l.city,
+      district: l.district,
+      type: l.type,
+      size: l.size,
+      price: l.price,
+    },
+  ]),
+)
+---
+
+<RootLayout
+  title={locale === 'en' ? 'My favorites — arsam.net' : 'Favorilerim — arsam.net'}
+  description={locale === 'en' ? 'Land, olive grove and field listings you saved on arsam.net.' : 'arsam.net üzerinde kaydettiğin arsa, zeytinlik ve tarla ilanları.'}
+>
+  <AuthGuard />
+  <AccountLayout active="favori">
+    <PageHeader
+      eyebrow="HESAP · FAVORİLER"
+      title="Favorilerim"
+      emphasis={`${favorites.length} ilan`}
+      description="Kaydettiğin ilanlar — fiyat değişikliği veya yeni eşleşme olduğunda haber alırsın."
+    />
+
+    <!-- Wave F3 / Agent-F3E — live localStorage-backed favorites island. -->
+    <section data-favorites-island-wrap="" class="pb-6">
+      <FavoritesList listings={listingDict} client:idle />
+    </section>
+
+    <FavoritesTrends client:visible />
+
+    <div class="mb-6 border-t border-dashed border-border pt-6">
+      <h2 class="font-serif text-base tracking-tight">Demo seed favoriler</h2>
+      <p class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        Statik · sahibinden mock veri
+      </p>
+    </div>
+
+    {favorites.length > 0 ? (
+      <>
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {favorites.map((listing) => (
+            <FavoriteCard listing={listing} />
+          ))}
+        </div>
+
+        <div class="mt-8 rounded-2xl border border-dashed border-border bg-card/50 p-5 text-center text-sm text-muted-foreground">
+          Yeni favoriler ekle:
+          {' '}
+          <a href="/ara" class="font-medium text-foreground underline underline-offset-2">arsa ara →</a>
+        </div>
+      </>
+    ) : (
+      <div class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-card/50 p-12 text-center">
+        <span class="font-serif text-4xl font-normal text-muted-foreground" aria-hidden="true">♡</span>
+        <h2 class="font-serif text-xl tracking-tight">Henüz favori eklemedin.</h2>
+        <p class="max-w-sm text-sm text-muted-foreground">
+          Beğendiğin ilanları favorilere ekle; fiyat değişimlerini ve benzer
+          ilanları sana bildirelim.
+        </p>
+        <a
+          href="/ara"
+          class="mt-2 inline-flex items-center rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+        >
+          Arsa ara →
+        </a>
+      </div>
+    )}
+  </AccountLayout>
+
+  <script is:inline>
+    document.querySelectorAll('[data-remove-favorite]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault()
+        const id = btn.getAttribute('data-remove-favorite')
+        const card = btn.closest('[data-favorite-id]')
+        if (card && confirm(`${id} ilanını favorilerden çıkar?`)) {
+          card.style.opacity = '0.3'
+          card.style.transition = 'opacity 0.2s'
+          // Demo only — real removal in Faz 10.2.
+          setTimeout(() => alert('Favori kaldırma Faz 10.2\'de aktif olacak.'), 100)
+        }
+      })
+    })
+  </script>
+</RootLayout>

@@ -1,0 +1,82 @@
+---
+import type { Listing } from '@landx/data'
+import { formatTLCompact, formatArea } from '@landx/ui/lib'
+import { TypeChip } from '@landx/ui/atoms'
+
+export interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props
+
+function slugify(s: string): string {
+  const map: Record<string, string> = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' }
+  return s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => map[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+const href = `/ilan/${slugify(listing.title)}-${listing.id}`
+const initial = listing.district.split('·').pop()?.trim() ?? listing.district
+
+function gradientFor(seed: string): string {
+  let h = 0
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0
+  const a = h % 360
+  const b = (a + 36) % 360
+  return `linear-gradient(135deg, hsl(${a} 26% 84%) 0%, hsl(${b} 22% 78%) 100%)`
+}
+const gradient = gradientFor(listing.district)
+---
+<article
+  class="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground/20 hover:shadow-sm"
+  data-favorite-id={listing.id}
+>
+  <a href={href} class="flex flex-col" aria-label={`${listing.title} ilanını aç`}>
+    <div class="relative h-40 w-full overflow-hidden" style={`background: ${gradient};`}>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <span class="font-serif text-3xl font-normal tracking-tight text-foreground/30">{initial}</span>
+      </div>
+      <div class="absolute left-3 top-3">
+        <TypeChip type={listing.type} />
+      </div>
+      <div class="absolute right-3 top-3 rounded-full bg-background/85 px-2 py-0.5 font-mono text-xs tabular-nums text-muted-foreground backdrop-blur">
+        {listing.id}
+      </div>
+    </div>
+
+    <div class="flex flex-1 flex-col gap-2 p-4 pb-3">
+      <h3 class="line-clamp-2 font-serif text-base leading-snug tracking-tight">
+        {listing.title}
+      </h3>
+      <div class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        {listing.city} · {listing.district}
+      </div>
+      <div class="mt-auto flex items-end justify-between gap-3 pt-2">
+        <div class="font-serif text-lg font-medium tracking-tight">
+          {formatTLCompact(listing.price)}
+        </div>
+        <div class="font-mono text-xs tabular-nums text-muted-foreground">
+          {formatArea(listing.size)}
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <div class="flex items-center justify-between gap-2 border-t border-border px-4 py-2.5 text-xs">
+    <span class="inline-flex items-center gap-1.5 text-rose-600 dark:text-rose-400">
+      <span aria-hidden="true">♥</span>
+      <span>Favoride</span>
+    </span>
+    <button
+      type="button"
+      data-remove-favorite={listing.id}
+      class="rounded-full px-2 py-1 text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+      aria-label={`${listing.title} ilanını favorilerden çıkar`}
+    >
+      Çıkar
+    </button>
+  </div>
+</article>

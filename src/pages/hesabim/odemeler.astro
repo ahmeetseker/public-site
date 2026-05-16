@@ -1,0 +1,46 @@
+---
+// Wave F32 W1A — /hesabim/odemeler: ödeme geçmişi.
+//
+// AccountLayout shell + PaymentsTable island (TanStack Query + filter +
+// pagination). Bu sayfa /hesabim/aboneliklerim'den ayrı: aboneliklerim plan
+// vitrin + abonelik faturalarına odaklı, odemeler ise tüm ödeme tiplerini
+// (boost, üyelik, yükleme, başarısız, iade) listeler.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import PaymentsTable from '@/components/billing/PaymentsTable.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+const title = locale === 'en' ? 'Payments — LandX Account' : 'Ödemelerim — LandX Hesabım'
+const description =
+  locale === 'en'
+    ? 'All your LandX payments: subscriptions, boosts, top-ups and refunds.'
+    : 'Tüm LandX ödemeleriniz: abonelik, öne çıkarma, kredi yükleme ve iadeler.'
+
+const labels = {
+  eyebrow: locale === 'en' ? 'ACCOUNT · PAYMENTS' : 'HESAP · ÖDEMELER',
+  pageTitle: locale === 'en' ? 'Payments' : 'Ödemelerim',
+  emphasis: locale === 'en' ? 'all activity' : 'tüm hareketler',
+  pageDesc:
+    locale === 'en'
+      ? 'Filter by status, view linked invoices, and download receipts.'
+      : 'Duruma göre filtreleyin, bağlı faturayı görüntüleyin, makbuz indirin.',
+}
+---
+
+<RootLayout title={title} description={description}>
+  <AuthGuard />
+  <AccountLayout active="odemeler">
+    <PageHeader
+      eyebrow={labels.eyebrow}
+      title={labels.pageTitle}
+      emphasis={labels.emphasis}
+      description={labels.pageDesc}
+    />
+
+    <PaymentsTable client:only="react" locale={locale} />
+  </AccountLayout>
+</RootLayout>

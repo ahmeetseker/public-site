@@ -1,0 +1,356 @@
+---
+// Wave F32 / W4 — Rehber/makale detay sayfası (SSG, Astro-pure).
+// Mock seed: GUIDES (6 makale). Faz 1 hook (`useGuide`) Astro yerine react
+// island'larda kullanılabilir; statik render için frontmatter'da doğrudan
+// import ediyoruz (SSG hız + JSON-LD inline).
+import RootLayout from '@/layouts/RootLayout.astro'
+import { GUIDES } from '@landx/data'
+import type { Guide } from '@landx/data'
+import { articleSchema, breadcrumbListSchema, toJsonLd } from '@/lib/schema-builders'
+import { detectLocaleFromPath, LOCALE_BCP47 } from '@/i18n'
+
+export function getStaticPaths() {
+  return GUIDES.map((guide) => ({
+    params: { slug: guide.slug },
+    props: { guide },
+  }))
+}
+
+interface PageProps {
+  guide: Guide
+}
+
+const { guide } = Astro.props as PageProps
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+const labels = {
+  eyebrow: locale === 'en' ? 'GUIDE' : 'REHBER',
+  by: locale === 'en' ? 'By' : 'Yazan',
+  reading: locale === 'en' ? 'min read' : 'dk okuma',
+  toc: locale === 'en' ? 'On this page' : 'Bu sayfada',
+  related: locale === 'en' ? 'Related guides' : 'İlgili rehberler',
+  back: locale === 'en' ? '← All guides' : '← Tüm rehberler',
+  breadcrumbHome: locale === 'en' ? 'Home' : 'Ana sayfa',
+  breadcrumbHub: locale === 'en' ? 'Guides' : 'Rehber',
+}
+
+// Markdown body → minimal HTML render (regex-based; serialized güvenlik için
+// {} kontrolünden geçiriyoruz: <script> bloklarına izin yok). Mock content
+// güvenli kaynak — yine de runtime XSS yüzeyini daraltıyoruz.
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function renderInline(s: string): string {
+  // **bold** then *italic* then `code` then [text](url)
+  let out = escapeHtml(s)
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  out = out.replace(/`([^`]+)`/g, '<code class="rounded bg-foreground/10 px-1 py-0.5 font-mono text-[0.9em]">$1</code>')
+  out = out.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    '<a href="$2" class="underline decoration-foreground/30 underline-offset-2 transition hover:decoration-foreground">$1</a>',
+  )
+  return out
+}
+
+interface Heading {
+  id: string
+  level: number
+  text: string
+}
+
+const headings: Heading[] = []
+
+function slugifyHeading(text: string): string {
+  const map: Record<string, string> = { ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' }
+  return text
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => map[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function renderMarkdown(body: string): string {
+  const lines = body.split(/\r?\n/)
+  const out: string[] = []
+  let i = 0
+  let inTable = false
+  let tableHeaderHandled = false
+  let inList = false
+
+  const closeList = () => {
+    if (inList) {
+      out.push('</ul>')
+      inList = false
+    }
+  }
+  const closeTable = () => {
+    if (inTable) {
+      out.push('</tbody></table></div>')
+      inTable = false
+      tableHeaderHandled = false
+    }
+  }
+
+  while (i < lines.length) {
+    const raw = lines[i]
+    const line = raw.trim()
+
+    // Blank line
+    if (line === '') {
+      closeList()
+      closeTable()
+      i++
+      continue
+    }
+
+    // Heading
+    const h = /^(#{1,6})\s+(.+)$/.exec(line)
+    if (h) {
+      closeList()
+      closeTable()
+      const level = h[1].length
+      const text = h[2].trim()
+      const id = slugifyHeading(text)
+      // H1 = page title (zaten hero'da render ediliyor) → atla
+      if (level === 1) {
+        i++
+        continue
+      }
+      headings.push({ id, level, text })
+      const sizeClass =
+        level === 2
+          ? 'mt-10 font-serif text-2xl tracking-tight md:text-3xl'
+          : level === 3
+          ? 'mt-7 font-serif text-xl tracking-tight md:text-2xl'
+          : 'mt-5 font-serif text-lg tracking-tight'
+      out.push(`<h${level} id="${id}" class="${sizeClass}">${renderInline(text)}</h${level}>`)
+      i++
+      continue
+    }
+
+    // Table row
+    if (line.startsWith('|') && line.endsWith('|')) {
+      closeList()
+      const cells = line
+        .slice(1, -1)
+        .split('|')
+        .map((c) => c.trim())
+      // Separator row → skip
+      if (cells.every((c) => /^:?-+:?$/.test(c))) {
+        i++
+        continue
+      }
+      if (!inTable) {
+        out.push(
+          '<div class="my-5 overflow-x-auto"><table class="w-full border-collapse text-sm"><thead>',
+        )
+        out.push(
+          '<tr>' +
+            cells
+              .map(
+                (c) =>
+                  `<th class="border-b border-border px-3 py-2 text-left font-mono text-xs uppercase tracking-wide text-muted-foreground">${renderInline(c)}</th>`,
+              )
+              .join('') +
+            '</tr></thead><tbody>',
+        )
+        inTable = true
+        tableHeaderHandled = true
+        i++
+        continue
+      }
+      // Body row
+      out.push(
+        '<tr>' +
+          cells
+            .map(
+              (c) =>
+                `<td class="border-b border-border/60 px-3 py-2 align-top">${renderInline(c)}</td>`,
+            )
+            .join('') +
+          '</tr>',
+      )
+      i++
+      continue
+    } else {
+      closeTable()
+    }
+
+    // List item (- or 1.)
+    if (/^(?:-|\d+\.)\s+/.test(line)) {
+      if (!inList) {
+        out.push('<ul class="my-4 flex flex-col gap-2 pl-5 [list-style:disc]">')
+        inList = true
+      }
+      const text = line.replace(/^(?:-|\d+\.)\s+/, '')
+      out.push(`<li class="text-base leading-relaxed text-foreground">${renderInline(text)}</li>`)
+      i++
+      continue
+    } else {
+      closeList()
+    }
+
+    // Paragraph
+    out.push(
+      `<p class="my-4 text-base leading-relaxed text-foreground/90">${renderInline(line)}</p>`,
+    )
+    i++
+  }
+
+  closeList()
+  closeTable()
+  // unused-var koruması (verbatimModuleSyntax + noUnusedLocals)
+  void tableHeaderHandled
+  return out.join('\n')
+}
+
+const bodyHtml = renderMarkdown(guide.body)
+
+const related: Guide[] = guide.related
+  .map((slug) => GUIDES.find((g) => g.slug === slug))
+  .filter((g): g is Guide => Boolean(g))
+  .slice(0, 3)
+
+const dateFmt = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'tr-TR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+}).format(new Date(guide.publishedAt))
+
+const canonical = new URL(`${prefix}/rehber/${guide.slug}`, Astro.site).toString()
+
+const articleJsonLd: Record<string, unknown> = {
+  ...(articleSchema({
+    headline: guide.title,
+    url: canonical,
+    description: guide.subtitle,
+    datePublished: guide.publishedAt,
+    author: guide.author,
+  }) as Record<string, unknown>),
+  inLanguage: LOCALE_BCP47[locale],
+}
+
+const breadcrumbJsonLd: Record<string, unknown> = {
+  ...(breadcrumbListSchema([
+    { name: labels.breadcrumbHome, url: new URL(`${prefix}/`, Astro.site).toString() },
+    { name: labels.breadcrumbHub, url: new URL(`${prefix}/rehber`, Astro.site).toString() },
+    { name: guide.title, url: canonical },
+  ]) as Record<string, unknown>),
+  inLanguage: LOCALE_BCP47[locale],
+}
+---
+<RootLayout title={`${guide.title} — ${labels.breadcrumbHub}`} description={guide.subtitle}>
+  <script is:inline type="application/ld+json" set:html={toJsonLd(articleJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={toJsonLd(breadcrumbJsonLd)} />
+
+  <article class="mx-auto max-w-[1100px] px-4 py-10 md:py-14">
+    {/* Breadcrumb */}
+    <nav aria-label="breadcrumb" class="mb-6 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
+      <a href={`${prefix}/`} class="hover:text-foreground">{labels.breadcrumbHome}</a>
+      <span class="mx-2">/</span>
+      <a href={`${prefix}/rehber`} class="hover:text-foreground">{labels.breadcrumbHub}</a>
+      <span class="mx-2">/</span>
+      <span class="text-foreground">{guide.title}</span>
+    </nav>
+
+    {/* Hero */}
+    <header class="mb-8 flex flex-col gap-4 md:mb-10">
+      <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {labels.eyebrow}
+      </p>
+      <h1 class="font-serif text-3xl font-normal leading-[1.15] tracking-tight md:text-5xl">
+        {guide.title}
+      </h1>
+      <p class="max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+        {guide.subtitle}
+      </p>
+      <div class="flex flex-wrap items-center gap-3 pt-2 font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        <span>{labels.by} <span class="text-foreground">{guide.author}</span></span>
+        <span aria-hidden="true">·</span>
+        <time datetime={guide.publishedAt}>{dateFmt}</time>
+        <span aria-hidden="true">·</span>
+        <span>{guide.readingMinutes} {labels.reading}</span>
+      </div>
+      {guide.tags.length > 0 && (
+        <div class="flex flex-wrap gap-1.5 pt-1">
+          {guide.tags.map((t) => (
+            <span class="rounded-full bg-foreground/5 px-2.5 py-0.5 text-xs text-muted-foreground">
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <div class="grid gap-10 lg:grid-cols-[220px_1fr]">
+      {/* ToC sticky desktop */}
+      {headings.length > 1 && (
+        <aside class="hidden lg:sticky lg:top-24 lg:block lg:self-start">
+          <p class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            {labels.toc}
+          </p>
+          <ul class="flex flex-col gap-2 border-l border-border pl-3 text-sm">
+            {headings.map((h) => (
+              <li class={h.level === 3 ? 'pl-3' : ''}>
+                <a
+                  href={`#${h.id}`}
+                  class="block text-muted-foreground transition hover:text-foreground"
+                >
+                  {h.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )}
+
+      <div class="min-w-0">
+        <div data-rehber-body="" set:html={bodyHtml} />
+      </div>
+    </div>
+
+    {/* Related */}
+    {related.length > 0 && (
+      <section class="mt-14 border-t border-border pt-8" aria-label={labels.related}>
+        <h2 class="mb-5 font-serif text-2xl tracking-tight">
+          {labels.related}
+        </h2>
+        <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {related.map((r) => (
+            <li>
+              <a
+                href={`${prefix}/rehber/${r.slug}`}
+                class="group flex h-full flex-col gap-2 rounded-2xl border border-border bg-card p-4 transition hover:border-foreground/20"
+              >
+                <span class="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                  {labels.eyebrow}
+                </span>
+                <h3 class="font-serif text-lg leading-snug tracking-tight text-foreground">
+                  {r.title}
+                </h3>
+                <p class="line-clamp-2 text-sm text-muted-foreground">{r.subtitle}</p>
+                <div class="mt-auto pt-2 font-mono text-xs uppercase tracking-wide text-muted-foreground">
+                  {r.readingMinutes} {labels.reading}
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <footer class="mt-10">
+      <a
+        href={`${prefix}/rehber`}
+        class="text-sm text-muted-foreground transition hover:text-foreground"
+      >
+        {labels.back}
+      </a>
+    </footer>
+  </article>
+</RootLayout>

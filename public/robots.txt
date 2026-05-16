@@ -1,0 +1,44 @@
+# arsam.net — Türkiye'nin arsa pazarı
+
+User-agent: *
+Allow: /
+Disallow: /panel
+Disallow: /ops
+Disallow: /hesabim
+Disallow: /_mock-
+Disallow: /sitemap-debug
+
+# Allow OG image directory (placeholder — gerçek görseller eklendikçe revize)
+Allow: /og/
+
+# Sitemap
+Sitemap: https://arsam.net/sitemap.xml
+
+# Major crawlers
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+# AI crawlers — by default block; if/when arsam.net wants AI training inclusion, switch
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+# Interactive lookups OK (user explicitly asked ChatGPT a question)
+User-agent: ChatGPT-User
+Allow: /

@@ -1,0 +1,219 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import DemoBadge from '@/components/auth/DemoBadge.astro'
+import AuthTrustPanel from '@/components/auth/AuthTrustPanel.astro'
+import SocialLoginButtons from '@/components/auth/SocialLoginButtons'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: signup form copy stays TR-canonical (low-priority i18n surface).
+---
+
+<RootLayout
+  title={t('auth.signupTitle', locale)}
+  description={t('auth.signupIntro', locale)}
+>
+  <script is:inline>
+    (function () {
+      const r = document.querySelector('meta[name="robots"]')
+      if (r) r.setAttribute('content', 'noindex, nofollow')
+    })()
+  </script>
+
+  <div class="mx-auto max-w-[1280px] px-4 py-10 sm:px-6 md:px-8 md:py-16 lg:px-10">
+    <div class="grid items-start gap-10 md:grid-cols-2 md:gap-12 lg:gap-16">
+      <div class="mx-auto w-full max-w-md md:max-w-none">
+        <div class="flex flex-col gap-2">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            HESAP · KAYIT
+          </span>
+          <h1 class="font-serif text-3xl leading-tight tracking-tight md:text-4xl lg:text-5xl">
+            Hesabını <em class="font-normal italic">birkaç saniyede</em> oluştur.
+          </h1>
+          <p class="text-sm leading-relaxed text-muted-foreground md:text-base">
+            Favorileri kaydet, arama bildirimleri al, doğrulanmış ofislerle
+            doğrudan konuş.
+          </p>
+        </div>
+
+        <div class="mt-6">
+          <DemoBadge />
+        </div>
+
+        <div class="mt-6">
+          <SocialLoginButtons client:idle locale={locale} />
+          <div class="mt-4 flex items-center gap-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            <span class="h-px flex-1 bg-border" aria-hidden="true"></span>
+            <span>{t('auth.social.divider', locale)}</span>
+            <span class="h-px flex-1 bg-border" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <form
+          id="register-form"
+          method="get"
+          action="/hesabim/"
+          class="mt-6 flex flex-col gap-4 rounded-2xl border border-border bg-card p-6"
+          novalidate
+        >
+          <div class="flex flex-col gap-1.5">
+            <label for="reg-name" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Ad Soyad
+            </label>
+            <input
+              id="reg-name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              required
+              placeholder="Ad Soyad"
+              class="min-h-[44px] rounded-xl border border-border bg-background px-3 py-2.5 text-base sm:text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="reg-email" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              E-posta
+            </label>
+            <input
+              id="reg-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+              placeholder="ornek@arsam.net"
+              class="min-h-[44px] rounded-xl border border-border bg-background px-3 py-2.5 text-base sm:text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="reg-phone" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Telefon
+            </label>
+            <input
+              id="reg-phone"
+              name="phone"
+              type="tel"
+              autocomplete="tel"
+              required
+              placeholder="+90 5XX XXX XX XX"
+              class="min-h-[44px] rounded-xl border border-border bg-background px-3 py-2.5 text-base sm:text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+            />
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="flex flex-col gap-1.5">
+              <label for="reg-password" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Parola
+              </label>
+              <input
+                id="reg-password"
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="8"
+                placeholder="En az 8 karakter"
+                class="min-h-[44px] rounded-xl border border-border bg-background px-3 py-2.5 text-base sm:text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+              />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label for="reg-password2" class="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Parola (tekrar)
+              </label>
+              <input
+                id="reg-password2"
+                name="password2"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="8"
+                placeholder="Aynı parolayı tekrar gir"
+                class="min-h-[44px] rounded-xl border border-border bg-background px-3 py-2.5 text-base sm:text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+              />
+            </div>
+          </div>
+
+          <label class="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <input
+              id="reg-kvkk"
+              name="kvkk"
+              type="checkbox"
+              required
+              class="mt-0.5 h-4 w-4 shrink-0 rounded border-border accent-foreground"
+            />
+            <span>
+              <a href="/kvkk" class="font-medium text-foreground underline underline-offset-2">KVKK Aydınlatma Metni</a>'ni
+              {' '}ve <a href="/kullanim-sartlari" class="font-medium text-foreground underline underline-offset-2">Kullanım Şartları</a>'nı
+              okudum, kabul ediyorum. <span class="text-rose-600 dark:text-rose-400">(zorunlu)</span>
+            </span>
+          </label>
+
+          <label class="flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
+            <input
+              id="reg-marketing"
+              name="marketing"
+              type="checkbox"
+              class="mt-0.5 h-4 w-4 shrink-0 rounded border-border accent-foreground"
+            />
+            <span>
+              Yeni ilanlar ve özelliklerden e-posta ile haberdar olmak istiyorum.
+              <span class="text-muted-foreground/70">(isteğe bağlı)</span>
+            </span>
+          </label>
+
+          <button
+            type="submit"
+            class="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-base font-medium text-accent-foreground transition-opacity hover:opacity-90 sm:text-sm"
+          >
+            Hesap oluştur
+          </button>
+
+          <div id="register-error" class="hidden text-center text-xs text-rose-600 dark:text-rose-400" role="alert"></div>
+
+          <div class="text-center text-sm text-muted-foreground">
+            Zaten hesabın var mı?
+            {' '}
+            <a id="login-link" href="/giris" class="font-medium text-foreground underline underline-offset-2">
+              Giriş yap →
+            </a>
+          </div>
+        </form>
+      </div>
+
+      <AuthTrustPanel />
+    </div>
+  </div>
+
+  <script is:inline>
+    (function () {
+      const form = document.getElementById('register-form')
+      const loginLink = document.getElementById('login-link')
+      const errEl = document.getElementById('register-error')
+      const params = new URLSearchParams(location.search)
+      const next = params.get('next') || '/hesabim/'
+
+      if (loginLink && params.get('next')) {
+        loginLink.href = '/giris?next=' + encodeURIComponent(next)
+      }
+
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault()
+          const pw = document.getElementById('reg-password').value
+          const pw2 = document.getElementById('reg-password2').value
+          if (pw !== pw2) {
+            if (errEl) {
+              errEl.textContent = 'Parolalar eşleşmiyor.'
+              errEl.classList.remove('hidden')
+            }
+            return
+          }
+          if (errEl) errEl.classList.add('hidden')
+          document.cookie = 'arsam_buyer_demo=1; path=/; max-age=2592000; SameSite=Lax'
+          location.href = next
+        })
+      }
+    })()
+  </script>
+</RootLayout>

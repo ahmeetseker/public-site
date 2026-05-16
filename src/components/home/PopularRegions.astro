@@ -1,0 +1,99 @@
+---
+import { LISTINGS } from '@landx/data'
+import { t, useDict, interpolate, detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  locale?: Locale
+}
+
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const dict = useDict('homepage.popularRegions', locale) as Record<string, string>
+const titleParts = dict.title.split('{accent}')
+
+// slugify TR
+const slugify = (s: string) =>
+  s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' })[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+type Region = { name: string; il: string }
+const REGIONS: Region[] = [
+  { name: 'Ayvalık', il: 'Balıkesir' },
+  { name: 'Çeşme', il: 'İzmir' },
+  { name: 'Datça', il: 'Muğla' },
+  { name: 'Fethiye', il: 'Muğla' },
+  { name: 'Urla', il: 'İzmir' },
+  { name: 'Marmaris', il: 'Muğla' },
+  { name: 'Söke', il: 'Aydın' },
+  { name: 'Edremit', il: 'Balıkesir' },
+]
+
+const regions = REGIONS.map((r) => ({
+  ...r,
+  count: LISTINGS.filter((l) => l.district.includes(r.name)).length,
+  slug: slugify(r.name),
+}))
+---
+
+<section class="mx-auto max-w-[1280px] px-4 py-16 md:py-20">
+  <div class="mb-8 flex items-end justify-between gap-4">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {dict.eyebrow}
+      </div>
+      <h2 class="mt-2 font-serif text-3xl font-normal tracking-tight md:text-4xl">
+        {titleParts.map((part, i) => (
+          <>
+            {i > 0 && <em class="font-serif italic font-normal">{dict.titleAccent}</em>}
+            {part}
+          </>
+        ))}
+      </h2>
+    </div>
+    <a
+      href={`${prefix}/bolge`}
+      class="hidden text-sm text-muted-foreground transition hover:text-foreground md:inline"
+    >
+      {dict.viewAll}
+    </a>
+  </div>
+
+  <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+    {
+      regions.map((r) => (
+        <a
+          href={`${prefix}/bolge/${r.slug}`}
+          class="group flex flex-col justify-between rounded-xl border border-border bg-card p-4 transition hover:bg-accent hover:text-accent-foreground md:p-5"
+        >
+          <div>
+            <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground group-hover:text-accent-foreground/70">
+              {r.il}
+            </div>
+            <div class="mt-1 font-serif text-xl tracking-tight md:text-2xl">{r.name}</div>
+          </div>
+          <div class="mt-6 flex items-center justify-between">
+            <span class="text-xs text-muted-foreground group-hover:text-accent-foreground/70">
+              {interpolate(dict.listingCount, { count: r.count })}
+            </span>
+            <svg
+              class="h-3.5 w-3.5 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-accent-foreground"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14" />
+              <path d="m12 5 7 7-7 7" />
+            </svg>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>

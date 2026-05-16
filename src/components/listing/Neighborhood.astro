@@ -1,0 +1,37 @@
+---
+import type { Listing } from '@landx/data'
+
+export interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props
+
+// Mock proximity data — district'e göre belirli alanları öne çıkarıyoruz
+const isCoastal = /Ayvalık|Cunda|Akçay|Çeşme|Alaçatı|Datça|Marmaris|Fethiye|Sahilkent/.test(listing.district)
+const items = [
+  { label: 'Denize uzaklık', value: isCoastal ? '80 – 600 m' : '12 – 18 km' },
+  { label: 'Market / bakkal', value: '450 m' },
+  { label: 'Otobüs / minibüs durağı', value: '300 m' },
+  { label: 'Belediye merkezi', value: '2.4 km' },
+  { label: 'En yakın havalimanı', value: listing.city === 'İzmir' ? 'ADB · 45 km' : listing.city === 'Muğla' ? 'DLM · 65 km' : 'EDO · 110 km' },
+  { label: 'Komşu parsel kullanımı', value: 'Konut + bahçe' },
+]
+---
+<section aria-label="Çevre bilgisi" class="rounded-2xl border border-border bg-card p-5">
+  <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Çevre bilgisi</div>
+  <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+    Yakın <em class="not-italic font-normal">çevre</em>
+  </h2>
+
+  <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+    {items.map((i) => (
+      <li class="flex items-baseline justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2">
+        <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          {i.label}
+        </span>
+        <span class="text-sm tabular-nums">{i.value}</span>
+      </li>
+    ))}
+  </ul>
+</section>

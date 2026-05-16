@@ -1,0 +1,102 @@
+---
+// Wave F8 / Agent-F8A — Category filter chips.
+// Renders the chip strip and a tiny inline script that toggles a CSS-driven
+// filter on `[data-testid="blog-card"]` items. Keeping this in vanilla JS
+// (no React island) avoids hydration cost on the hub page.
+import { BLOG_CATEGORIES } from '@/lib/blog'
+import { t, type Locale } from '@/i18n'
+
+export interface Props {
+  locale: Locale
+  /**
+   * Counts per category so chips can show "(N)" hints. Categories with 0
+   * items still render so the strip is stable — clicking them simply shows
+   * the empty state.
+   */
+  counts: Record<string, number>
+}
+
+const { locale, counts } = Astro.props
+const allLabel = t('blog.categories.all', locale)
+const totalCount = Object.values(counts).reduce((sum, n) => sum + n, 0)
+---
+<div
+  class="flex flex-wrap gap-2"
+  role="group"
+  aria-label={t('blog.hub.filterAriaLabel', locale)}
+  data-testid="blog-category-filter"
+>
+  <button
+    type="button"
+    class="blog-chip rounded-full border px-3 py-1.5 text-xs font-medium transition aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-background border-border bg-background text-foreground hover:bg-accent"
+    data-category="all"
+    aria-pressed="true"
+  >
+    {allLabel}
+    <span class="ml-1 opacity-70">({totalCount})</span>
+  </button>
+  {BLOG_CATEGORIES.map((cat) => {
+    const count = counts[cat] ?? 0
+    return (
+      <button
+        type="button"
+        class="blog-chip rounded-full border px-3 py-1.5 text-xs font-medium transition aria-pressed:border-foreground aria-pressed:bg-foreground aria-pressed:text-background border-border bg-background text-foreground hover:bg-accent disabled:opacity-40 disabled:cursor-not-allowed"
+        data-category={cat}
+        aria-pressed="false"
+        disabled={count === 0}
+      >
+        {t(`blog.categories.${cat}`, locale)}
+        <span class="ml-1 opacity-70">({count})</span>
+      </button>
+    )
+  })}
+</div>
+
+<script is:inline>
+  // Client-side chip filter. Pure aria-pressed toggling — styling is driven
+  // entirely by the `aria-pressed:*` Tailwind variant on each chip, so the
+  // script only mutates one attribute per chip and the card display rule.
+  //
+  // Important: this <script> sits between the chip strip and the card grid
+  // in source order, so the grid does not exist when the script first runs.
+  // We defer wiring until DOMContentLoaded (or run immediately if the
+  // document is already past `interactive`).
+  (function () {
+    function init() {
+      var root = document.querySelector('[data-testid="blog-category-filter"]')
+      var grid = document.querySelector('[data-testid="blog-grid"]')
+      if (!root || !grid) return
+      var chips = root.querySelectorAll('button.blog-chip')
+      function setActive(chip) {
+        for (var i = 0; i < chips.length; i++) {
+          chips[i].setAttribute('aria-pressed', chips[i] === chip ? 'true' : 'false')
+        }
+      }
+      function applyFilter(cat) {
+        var cards = grid.querySelectorAll('[data-testid="blog-card"]')
+        var visible = 0
+        for (var i = 0; i < cards.length; i++) {
+          var match = cat === 'all' || cards[i].getAttribute('data-category') === cat
+          cards[i].style.display = match ? '' : 'none'
+          if (match) visible++
+        }
+        var empty = document.querySelector('[data-testid="blog-empty"]')
+        if (empty) empty.style.display = visible === 0 ? '' : 'none'
+      }
+      for (var i = 0; i < chips.length; i++) {
+        (function (chip) {
+          chip.addEventListener('click', function () {
+            var cat = chip.getAttribute('data-category') || 'all'
+            setActive(chip)
+            applyFilter(cat)
+          })
+        })(chips[i])
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init)
+    } else {
+      init()
+    }
+  })()
+</script>

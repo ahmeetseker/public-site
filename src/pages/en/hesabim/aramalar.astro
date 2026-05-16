@@ -1,0 +1,72 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import SavedSearchRow from '@/components/account/SavedSearchRow.astro'
+import SavedSearchesList from '@/components/account/SavedSearchesList.tsx'
+import { LISTINGS, SAVED_SEARCHES } from '@landx/data'
+import { interpolate, t } from '@/i18n'
+
+const locale = 'en' as const
+
+const alertsOn = SAVED_SEARCHES.filter((s) => s.alerts).length
+const totalMatches = SAVED_SEARCHES.reduce((s, x) => s + x.matchCount, 0)
+
+const listingsForMatch = LISTINGS.map((l) => ({
+  id: l.id,
+  title: l.title,
+  city: l.city,
+  district: l.district,
+  type: l.type,
+  price: l.price,
+}))
+---
+
+<RootLayout
+  locale={locale}
+  title="My saved searches — arsam.net"
+  description="Search criteria and matches you saved on arsam.net."
+>
+  <AuthGuard />
+  <AccountLayout active="aramalar">
+    <PageHeader
+      eyebrow="ACCOUNT · SEARCHES"
+      title={t('account.savedSearchesPage.title', locale)}
+      emphasis={interpolate(t('account.savedSearchesPage.count', locale), { count: SAVED_SEARCHES.length })}
+      description={interpolate(t('account.savedSearchesPage.summary', locale), { alerts: alertsOn, matches: totalMatches })}
+    />
+
+    <section data-saved-searches-island="" class="pb-6">
+      <SavedSearchesList listings={listingsForMatch} client:idle />
+    </section>
+
+    <div class="mb-6 border-t border-dashed border-border pt-6">
+      <h2 class="font-serif text-base tracking-tight">{t('account.savedSearchesPage.seedHeading', locale)}</h2>
+      <p class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        {t('account.savedSearchesPage.seedNote', locale)}
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      {SAVED_SEARCHES.map((search) => (
+        <SavedSearchRow search={search} />
+      ))}
+    </div>
+
+    <div class="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/50 p-5 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 class="font-serif text-base tracking-tight">{t('account.savedSearchesPage.saveNew', locale)}</h2>
+        <p class="text-xs text-muted-foreground">
+          {t('account.savedSearchesPage.saveNewHelp', locale)}
+        </p>
+      </div>
+      <a
+        href="/en/ara"
+        class="inline-flex items-center rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+      >
+        {t('account.savedSearchesPage.startSearch', locale)} →
+      </a>
+    </div>
+  </AccountLayout>
+</RootLayout>

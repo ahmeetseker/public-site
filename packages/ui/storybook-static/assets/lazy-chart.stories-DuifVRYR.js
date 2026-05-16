@@ -1,0 +1,13 @@
+import{l as e}from"./iframe-DXHzNi9d.js";import{t}from"./react-B4BxEtKI.js";import{t as n}from"./jsx-runtime-Yq6KkvIc.js";import{t as r}from"./cn-BiX_BwfA.js";var i=e(t(),1),a=n();function o({height:e=220,className:t,children:n}){return(0,a.jsx)(`div`,{className:r(`relative w-full`,t),style:{height:e},children:(0,a.jsx)(i.Suspense,{fallback:(0,a.jsx)(s,{height:e}),children:n})})}function s({height:e}){return(0,a.jsx)(`div`,{className:`absolute inset-0 grid place-items-center rounded-xl bg-muted/40`,"aria-hidden":`true`,children:(0,a.jsxs)(`div`,{className:`flex flex-col items-center gap-2 text-muted-foreground`,children:[(0,a.jsx)(`div`,{className:`flex h-6 items-end gap-1`,children:[40,70,55,90,65,80,50].map((t,n)=>(0,a.jsx)(`span`,{className:`w-1.5 animate-pulse rounded-full bg-foreground/15`,style:{height:`${t/100*(e/8+8)}px`,animationDelay:`${n*80}ms`}},n))}),(0,a.jsx)(`span`,{className:`font-mono text-[10px] uppercase tracking-[0.14em]`,children:`Grafik yükleniyor…`})]})})}try{o.displayName=`LazyChart`,o.__docgenInfo={description:``,displayName:`LazyChart`,props:{height:{defaultValue:{value:`220`},description:``,name:`height`,required:!1,type:{name:`number | undefined`}},className:{defaultValue:null,description:``,name:`className`,required:!1,type:{name:`string | undefined`}}}}}catch{}var c={title:`Charts/LazyChart`,component:o,parameters:{layout:`centered`,docs:{description:{component:`Suspense boundary tailored for lazy-loaded chart bundles. Skeleton mimics a bar chart so the loading state matches the eventual content geometry.`}}},tags:[`autodocs`]},l={render:()=>(0,a.jsx)(`div`,{className:`w-[420px]`,children:(0,a.jsx)(o,{children:(0,a.jsx)(d,{})})})},u={render:()=>(0,a.jsx)(`div`,{className:`w-[420px]`,children:(0,a.jsx)(o,{height:320,children:(0,a.jsx)(d,{})})})};function d(){throw new Promise(()=>{})}l.parameters={...l.parameters,docs:{...l.parameters?.docs,source:{originalSource:`{
+  render: () => <div className="w-[420px]">
+      <LazyChart>
+        <Hanging />
+      </LazyChart>
+    </div>
+}`,...l.parameters?.docs?.source}}},u.parameters={...u.parameters,docs:{...u.parameters?.docs,source:{originalSource:`{
+  render: () => <div className="w-[420px]">
+      <LazyChart height={320}>
+        <Hanging />
+      </LazyChart>
+    </div>
+}`,...u.parameters?.docs?.source}}};var f=[`SkeletonFallback`,`Tall`];export{l as SkeletonFallback,u as Tall,f as __namedExportsOrder,c as default};

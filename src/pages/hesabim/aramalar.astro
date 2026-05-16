@@ -1,0 +1,85 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import SavedSearchRow from '@/components/account/SavedSearchRow.astro'
+import SavedSearchesList from '@/components/account/SavedSearchesList.tsx'
+import { SAVED_SEARCHES, LISTINGS } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const alertsOn = SAVED_SEARCHES.filter((s) => s.alerts).length
+const totalMatches = SAVED_SEARCHES.reduce((s, x) => s + x.matchCount, 0)
+// TODO i18n: account body labels stay TR-canonical (low-priority surface).
+
+// Wave F3 / Agent-F3E — minimal listing slice for matching-count computation
+// inside the React island.
+const listingsForMatch = LISTINGS.map((l) => ({
+  id: l.id,
+  title: l.title,
+  city: l.city,
+  district: l.district,
+  type: l.type,
+  price: l.price,
+}))
+---
+
+<RootLayout
+  title={locale === 'en' ? 'My saved searches — arsam.net' : 'Kayıtlı aramalarım — arsam.net'}
+  description={locale === 'en' ? 'Search criteria and matches you saved on arsam.net.' : 'arsam.net üzerinde kaydettiğin arama kriterleri ve eşleşmeleri.'}
+>
+  <AuthGuard />
+  <AccountLayout active="aramalar">
+    <PageHeader
+      eyebrow="HESAP · ARAMALAR"
+      title="Kayıtlı aramalarım"
+      emphasis={`${SAVED_SEARCHES.length} arama`}
+      description={`${alertsOn} arama bildirim alıyor · toplam ${totalMatches} eşleşme bekliyor.`}
+    />
+
+    <!-- Wave F3 / Agent-F3E — live localStorage-backed saved searches. -->
+    <section data-saved-searches-island="" class="pb-6">
+      <SavedSearchesList listings={listingsForMatch} client:idle />
+    </section>
+
+    <div class="mb-6 border-t border-dashed border-border pt-6">
+      <h2 class="font-serif text-base tracking-tight">Demo seed aramalar</h2>
+      <p class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+        Statik · sahibinden mock veri
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-3">
+      {SAVED_SEARCHES.map((search) => (
+        <SavedSearchRow search={search} />
+      ))}
+    </div>
+
+    <div class="mt-8 flex flex-col items-start gap-3 rounded-2xl border border-dashed border-border bg-card/50 p-5 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h2 class="font-serif text-base tracking-tight">Yeni arama kaydet</h2>
+        <p class="text-xs text-muted-foreground">
+          /ara sayfasında filtreleri ayarla, ardından "Aramayı kaydet" seçeneğini kullan.
+        </p>
+      </div>
+      <a
+        href="/ara"
+        class="inline-flex items-center rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+      >
+        Aramaya başla →
+      </a>
+    </div>
+  </AccountLayout>
+
+  <script is:inline>
+    document.querySelectorAll('[data-delete-search]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-delete-search')
+        if (confirm('Bu kayıtlı aramayı silmek istediğine emin misin?')) {
+          alert('Kayıtlı arama silme Faz 10.2\'de aktif olacak (id: ' + id + ').')
+        }
+      })
+    })
+  </script>
+</RootLayout>

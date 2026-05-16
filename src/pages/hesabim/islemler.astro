@@ -1,0 +1,44 @@
+---
+// Wave F32 W1A — /hesabim/islemler: kredi/cüzdan işlem geçmişi.
+//
+// AccountLayout shell + TransactionsList island. Filtre: tip (credit/debit).
+// Bakiye en güncel kayıttan (`balanceAfter`) hesaplanır.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import TransactionsList from '@/components/billing/TransactionsList.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+const title = locale === 'en' ? 'Wallet activity — LandX Account' : 'Kredi işlemleri — LandX Hesabım'
+const description =
+  locale === 'en'
+    ? 'Credit top-ups, listing publish/boost spends, refunds and balance changes.'
+    : 'Kredi yüklemeleri, ilan yayınlama/öne çıkarma harcamaları, iadeler ve bakiye değişimleri.'
+
+const labels = {
+  eyebrow: locale === 'en' ? 'ACCOUNT · WALLET' : 'HESAP · CÜZDAN',
+  pageTitle: locale === 'en' ? 'Wallet activity' : 'Kredi işlemleri',
+  emphasis: locale === 'en' ? 'all events' : 'tüm hareketler',
+  pageDesc:
+    locale === 'en'
+      ? 'Filter by top-up or spend, click any row to see the full record.'
+      : 'Yükleme veya harcamaya göre filtreleyin, satıra tıklayarak tüm detayları görün.',
+}
+---
+
+<RootLayout title={title} description={description}>
+  <AuthGuard />
+  <AccountLayout active="islemler">
+    <PageHeader
+      eyebrow={labels.eyebrow}
+      title={labels.pageTitle}
+      emphasis={labels.emphasis}
+      description={labels.pageDesc}
+    />
+
+    <TransactionsList client:only="react" locale={locale} />
+  </AccountLayout>
+</RootLayout>

@@ -1,0 +1,27 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import PublishedListings from '@/components/account/PublishedListings.tsx'
+import { detectLocaleFromPath, t } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+---
+<RootLayout
+  title={t('account.publishedPage.title', locale) + ' — arsam.net'}
+  description={t('account.publishedPage.description', locale)}
+>
+  <AuthGuard />
+  <AccountLayout active="published">
+    <PageHeader
+      eyebrow="HESAP · İLANLARIM"
+      title={t('account.publishedPage.title', locale)}
+      description={t('account.publishedPage.description', locale)}
+    />
+
+    <section data-published-island-wrap="" class="pb-6">
+      <PublishedListings client:idle />
+    </section>
+  </AccountLayout>
+</RootLayout>

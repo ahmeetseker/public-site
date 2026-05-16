@@ -1,0 +1,33 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import WizardShell from '@/components/ilan-ver/WizardShell.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+export function getStaticPaths() {
+  return [
+    { params: { step: '1' } },
+    { params: { step: '2' } },
+    { params: { step: '3' } },
+    { params: { step: '4' } },
+  ]
+}
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// Wave F4 / Agent-F4A — /ilan-ver wizard rewired as React island.
+// Outer WizardLayout receives step=0 so it suppresses its own 5-step indicator;
+// the in-island StepIndicator owns the 4-step progress now (the wizard moved
+// from 5 → 4 steps: Konum / Özellikler / Fiyat / İletişim).
+
+const stepParam = Number(Astro.params.step)
+const step = (Number.isFinite(stepParam) && stepParam >= 1 && stepParam <= 4 ? stepParam : 1) as 1 | 2 | 3 | 4
+---
+<WizardLayout
+  title={locale === 'en'
+    ? `List a property · Step ${step} — arsam.net`
+    : `İlan ver · Adım ${step} — arsam.net`}
+  description={locale === 'en' ? 'Publish your land in 4 steps on arsam.net.' : 'arsam.net üzerinde 4 adımda ilan ver.'}
+  step={0}
+  locale={locale}
+>
+  <WizardShell client:load step={step} />
+</WizardLayout>

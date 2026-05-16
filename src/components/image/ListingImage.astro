@@ -1,0 +1,61 @@
+---
+// Wave-7 / Agent-33 / Faz-13.e — listing image with deterministic placeholder.
+//
+// NOTE (Wave-10 / Agent-46 / Faz-13.i): This is now the SIMPLE-PLACEHOLDER
+// variant kept for backwards compatibility (cards, OG fallback, anywhere a
+// quick non-responsive gradient is enough). For galleries / hero areas that
+// benefit from full responsive `srcset` + content-collection metadata, prefer
+// `<ResponsiveListingImage>`. Both render the same SVG placeholder while no
+// real `.webp` assets exist, so the visual identity stays consistent.
+//
+// FUTURE: once `src/assets/listings/<id>-<index>.webp` exists, swap this body
+// for Astro's `<Image>` (astro:assets) — the public API stays identical so
+// every consumer keeps working. For now the placeholder lib renders a stable
+// gradient + district label so each listing has consistent visual identity.
+import { dimsForRatio, placeholderDataUri, type PlaceholderRatio } from '@/lib/placeholder-image'
+
+export interface Props {
+  listingId: string
+  district: string
+  ratio?: PlaceholderRatio
+  /** 1-based — gallery thumbnails increment this so each tile has a distinct hue. */
+  index?: number
+  className?: string
+  alt?: string
+  /** Set `eager` for above-the-fold heroes; leave default for cards/thumbs. */
+  loading?: 'lazy' | 'eager'
+}
+
+const {
+  listingId,
+  district,
+  ratio = '4/3',
+  index = 1,
+  className = '',
+  alt,
+  loading = 'lazy',
+} = Astro.props
+
+const seed = `${listingId}-${index}`
+const src = placeholderDataUri({
+  seed,
+  label: district,
+  ratio,
+  size: index === 1 ? 'lg' : 'md',
+})
+const altText = alt ?? `${district} ilanı görseli ${index}`
+const dims = dimsForRatio(ratio)
+---
+
+<img
+  src={src}
+  alt={altText}
+  loading={loading}
+  decoding="async"
+  width={dims.w}
+  height={dims.h}
+  class:list={['block h-full w-full object-cover', className]}
+  data-placeholder="true"
+  data-listing-id={listingId}
+  data-index={index}
+/>

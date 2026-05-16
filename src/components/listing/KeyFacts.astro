@@ -1,0 +1,47 @@
+---
+import type { Listing } from '@landx/data'
+
+export interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props
+
+// Mock alt-fiyat aralığı (district için ±%15 band)
+const bandLow = Math.round((listing.price * 0.85) / listing.size).toLocaleString('tr-TR')
+const bandHigh = Math.round((listing.price * 1.15) / listing.size).toLocaleString('tr-TR')
+
+const facts: Array<{ label: string; value: string }> = [
+  { label: 'Arsa tipi', value: listing.type },
+  { label: 'Alan', value: `${listing.size.toLocaleString('tr-TR')} m²` },
+  {
+    label: 'İmar durumu',
+    value:
+      listing.type === 'Zeytinlik'
+        ? 'Tarım — Zeytinlik vasfı'
+        : listing.type === 'Tarla'
+          ? 'Tarım — Kuru tarım'
+          : 'Konut + Ticari (TAKS 0.30 / KAKS 0.60)',
+  },
+  { label: 'Tapu durumu', value: 'Müstakil tapu, hisseli değil' },
+  { label: 'Bölge fiyat aralığı', value: `₺ ${bandLow} – ₺ ${bandHigh} / m²` },
+  { label: 'İlan no', value: listing.id },
+]
+---
+<section aria-label="Künye" class="rounded-2xl border border-border bg-card p-5">
+  <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Künye</div>
+  <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+    Temel <em class="not-italic font-normal">bilgiler</em>
+  </h2>
+
+  <dl class="mt-4 divide-y divide-border">
+    {facts.map((f) => (
+      <div class="grid grid-cols-[140px_1fr] items-baseline gap-4 py-2.5 sm:grid-cols-[180px_1fr]">
+        <dt class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          {f.label}
+        </dt>
+        <dd class="text-sm tabular-nums">{f.value}</dd>
+      </div>
+    ))}
+  </dl>
+</section>

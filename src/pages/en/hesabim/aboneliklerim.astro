@@ -1,0 +1,35 @@
+---
+// Wave F7.B — /en/hesabim/aboneliklerim (EN mirror).
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import SubscriptionPlans from '@/components/account/SubscriptionPlans.tsx'
+import InvoiceHistory from '@/components/account/InvoiceHistory.tsx'
+import { t } from '@/i18n'
+
+const locale = 'en' as const
+---
+
+<RootLayout
+  locale={locale}
+  title={t('account.subscription.pageTitle', locale)}
+  description={t('account.subscription.description', locale)}
+>
+  <AuthGuard />
+  <AccountLayout active="aboneliklerim">
+    <PageHeader
+      eyebrow={t('account.subscription.eyebrow', locale)}
+      title={t('account.subscription.title', locale)}
+      description={t('account.subscription.description', locale)}
+    />
+
+    <section data-subscription-plans-wrap="" class="pb-2">
+      <SubscriptionPlans client:visible />
+    </section>
+
+    <section class="mt-8" data-invoice-history-wrap="">
+      <InvoiceHistory client:visible />
+    </section>
+  </AccountLayout>
+</RootLayout>

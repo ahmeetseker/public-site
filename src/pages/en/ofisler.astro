@@ -1,0 +1,115 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import PageHeader from '@/components/ofisler/PageHeader.astro'
+import SearchBar from '@/components/ofisler/SearchBar.astro'
+import OfficesGrid from '@/components/ofisler/OfficesGrid.astro'
+import FAQ from '@/components/ofisler/FAQ.astro'
+import { OFFICES } from '@landx/data'
+import { t, LOCALE_BCP47, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+
+// Wave-5 / Agent-25 / Faz 9.11 — Public office directory page.
+// Filters (?il=…&q=…) applied server-side at static build (URLs become
+// distinct prerendered queries via the form GET pattern — no client JS needed
+// for state; each filter click is a new server request just like /ara).
+
+const url = new URL(Astro.url)
+const filterIl = url.searchParams.get('il')?.trim() ?? 'Tümü'
+const q = url.searchParams.get('q')?.trim() ?? ''
+const qLower = q.toLocaleLowerCase('tr-TR')
+
+const cities = Array.from(new Set(OFFICES.map((o) => o.city))).sort((a, b) =>
+  a.localeCompare(b, 'tr-TR'),
+)
+
+const filteredOffices = OFFICES.filter((o) => {
+  if (filterIl !== 'Tümü' && o.city !== filterIl) return false
+  if (qLower) {
+    const blob = `${o.name} ${o.city} ${o.district} ${o.specialties.join(' ')}`.toLocaleLowerCase(
+      'tr-TR',
+    )
+    if (!blob.includes(qLower)) return false
+  }
+  return true
+})
+
+const avgRating =
+  OFFICES.reduce((acc, o) => acc + o.rating, 0) / Math.max(OFFICES.length, 1)
+
+const cityCount = new Set(OFFICES.map((o) => o.city)).size
+
+const title = t('officesHub.title', locale)
+const description = locale === 'en'
+  ? `Turkey's verified real-estate offices. ${OFFICES.length} offices · ${cityCount} cities · average ${avgRating.toFixed(1)}/5 rating.`
+  : `Türkiye'nin doğrulanmış emlak ofisleri. ${OFFICES.length} ofis · ${cityCount} il · ortalama ${avgRating.toFixed(1)}/5 müşteri puanı. Ayvalık, Çeşme, Datça, Fethiye.`
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? 'https://arsam.net'
+const ogImage = `${siteUrl}/og/home.png`
+
+const itemListJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  inLanguage: LOCALE_BCP47[locale],
+  numberOfItems: OFFICES.length,
+  itemListElement: OFFICES.map((o, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    item: {
+      '@type': 'RealEstateAgent',
+      name: o.name,
+      url: `${siteUrl}/ofis/${o.slug}`,
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: o.district,
+        addressRegion: o.city,
+        addressCountry: 'TR',
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: o.rating,
+        reviewCount: o.reviewCount,
+      },
+    },
+  })),
+}
+
+const breadcrumbJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  inLanguage: LOCALE_BCP47[locale],
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: t('search.breadcrumbHome', locale), item: `${siteUrl}${prefix}/` },
+    { '@type': 'ListItem', position: 2, name: t('officesHub.heading', locale), item: `${siteUrl}${prefix}/ofisler` },
+  ],
+}
+---
+
+<RootLayout title={title} description={description} ogImage={ogImage}>
+  <nav aria-label="Breadcrumb" class="border-b border-border bg-background">
+    <ol
+      class="mx-auto flex max-w-[1280px] items-center gap-1.5 px-4 py-3 text-xs text-muted-foreground"
+    >
+      <li><a href={`${prefix}/`} class="transition hover:text-foreground">{t('search.breadcrumbHome', locale)}</a></li>
+      <li aria-hidden class="text-muted-foreground/60">/</li>
+      <li><span class="text-foreground">{t('officesHub.heading', locale)}</span></li>
+    </ol>
+  </nav>
+
+  <PageHeader officeCount={OFFICES.length} cityCount={cityCount} avgRating={avgRating} />
+
+  <SearchBar
+    cities={cities}
+    activeIl={filterIl}
+    q={q}
+    resultCount={filteredOffices.length}
+  />
+
+  <OfficesGrid offices={filteredOffices} />
+
+  <FAQ />
+
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(itemListJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} />
+</RootLayout>

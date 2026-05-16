@@ -1,0 +1,11 @@
+import{t as e}from"./jsx-runtime-Yq6KkvIc.js";import{n as t,r as n,t as r}from"./liquid-glass-ykhoyq7r.js";var i=e(),a={title:`Primitives/LiquidGlass`,component:r,parameters:{layout:`centered`,backgrounds:{default:`paper`},docs:{description:{component:"Apple iOS 26 Liquid Glass primitive. Renders a backdrop refraction layer (Chromium-only SVG filter; gracefully degrades elsewhere to standard backdrop-blur). Pair with `<GlassFilter />` once per page."}}},tags:[`autodocs`]},o=[{alt:`Anasayfa`,label:`Anasayfa`,icon:(0,i.jsx)(`span`,{children:`🏠`})},{alt:`Arama`,label:`Arama`,icon:(0,i.jsx)(`span`,{children:`🔍`})},{alt:`Favoriler`,label:`Favoriler`,icon:(0,i.jsx)(`span`,{children:`★`}),active:!0},{alt:`Profil`,label:`Profil`,icon:(0,i.jsx)(`span`,{children:`👤`})}],s={render:()=>(0,i.jsxs)(`div`,{className:`relative grid h-[320px] w-[520px] place-items-end justify-center rounded-3xl border border-border bg-gradient-to-br from-amber-200/40 via-rose-100/30 to-sky-200/40 p-6`,children:[(0,i.jsx)(n,{}),(0,i.jsx)(r,{icons:o})]})},c={render:()=>(0,i.jsxs)(`div`,{className:`relative grid h-[420px] w-[420px] place-items-center justify-end rounded-3xl border border-border bg-gradient-to-br from-emerald-200/40 via-amber-100/30 to-rose-200/40 p-6`,children:[(0,i.jsx)(n,{}),(0,i.jsx)(t,{icons:o})]})};s.parameters={...s.parameters,docs:{...s.parameters?.docs,source:{originalSource:`{
+  render: () => <div className="relative grid h-[320px] w-[520px] place-items-end justify-center rounded-3xl border border-border bg-gradient-to-br from-amber-200/40 via-rose-100/30 to-sky-200/40 p-6">
+      <GlassFilter />
+      <GlassDock icons={ICONS} />
+    </div>
+}`,...s.parameters?.docs?.source}}},c.parameters={...c.parameters,docs:{...c.parameters?.docs,source:{originalSource:`{
+  render: () => <div className="relative grid h-[420px] w-[420px] place-items-center justify-end rounded-3xl border border-border bg-gradient-to-br from-emerald-200/40 via-amber-100/30 to-rose-200/40 p-6">
+      <GlassFilter />
+      <GlassDockVertical icons={ICONS} />
+    </div>
+}`,...c.parameters?.docs?.source}}};var l=[`HorizontalDock`,`VerticalDock`];export{s as HorizontalDock,c as VerticalDock,l as __namedExportsOrder,a as default};

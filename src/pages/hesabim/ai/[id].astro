@@ -1,0 +1,44 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import AiConversationView from '@/components/ai/AiConversationView.tsx'
+import { AI_CONVERSATIONS } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+export function getStaticPaths() {
+  return AI_CONVERSATIONS.map((c) => ({
+    params: { id: c.id },
+    props: { conversationId: c.id, title: c.title },
+  }))
+}
+
+interface Props {
+  conversationId: string
+  title: string
+}
+
+const { conversationId, title } = Astro.props as Props
+const locale = detectLocaleFromPath(Astro.url.pathname)
+---
+
+<RootLayout
+  title={locale === 'en'
+    ? `${title} — AI conversation · arsam.net`
+    : `${title} — AI konuşma · arsam.net`}
+  description={locale === 'en'
+    ? 'Replay an AI conversation, expand tool calls, export to JSON or Markdown.'
+    : 'AI konuşmasını yeniden oynat, araç çağrılarını genişlet, JSON veya Markdown indir.'}
+>
+  <AuthGuard />
+  <AccountLayout active="ai">
+    <PageHeader
+      eyebrow="HESAP · AI KONUŞMA"
+      title="Konuşma"
+      emphasis="replay & dışa aktar"
+      description="Tüm mesajları, araç çağrılarını ve sonuçları gör. JSON veya Markdown olarak indirebilirsin."
+    />
+    <AiConversationView client:only="react" conversationId={conversationId} />
+  </AccountLayout>
+</RootLayout>

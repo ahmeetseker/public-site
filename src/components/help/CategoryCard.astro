@@ -1,0 +1,25 @@
+---
+import type { HelpArticle } from '@/lib/help-index'
+
+export interface Props {
+  label: string
+  description: string
+  articles: HelpArticle[]
+}
+const { label, description, articles } = Astro.props
+---
+<section class="rounded-2xl border border-border bg-card p-5">
+  <div class="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</div>
+  <p class="text-sm leading-relaxed text-muted-foreground">{description}</p>
+  {articles.length > 0 && (
+    <ul class="mt-4 flex flex-col gap-1.5 text-sm">
+      {articles.map((a) => (
+        <li>
+          <a href={a.path} class="block rounded-md px-2 py-1.5 -mx-2 text-foreground/85 transition hover:bg-accent hover:text-foreground">
+            {a.title}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>

@@ -1,0 +1,49 @@
+---
+// Wave F8 / Agent-F8A — Blog post header.
+// Title + meta strip (category chip, date, read time).
+import type { BlogPost } from '@/lib/blog'
+import { estimateReadTimeMinutes } from '@/lib/blog'
+import { t, interpolate, type Locale } from '@/i18n'
+
+export interface Props {
+  post: BlogPost
+  locale: Locale
+  /** Raw markdown body — used to estimate read-time when given. Optional. */
+  body?: string
+}
+
+const { post, locale, body } = Astro.props
+const title = locale === 'en' ? post.data.titleEn : post.data.title
+const description = locale === 'en' ? post.data.descriptionEn : post.data.description
+const categoryLabel = t(`blog.categories.${post.data.category}`, locale)
+const dateFmt = new Intl.DateTimeFormat(locale === 'en' ? 'en-US' : 'tr-TR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+})
+const dateLabel = dateFmt.format(post.data.date)
+const minutes = body ? estimateReadTimeMinutes(body) : null
+const readTimeLabel = minutes !== null
+  ? interpolate(t('blog.post.readTime', locale), { minutes })
+  : null
+---
+<header class="mb-8 border-b border-border pb-8" data-testid="post-header">
+  <div class="mb-3 flex items-center gap-2 text-xs font-mono uppercase tracking-[0.18em] text-muted-foreground">
+    <span class="rounded-full bg-accent/40 px-2 py-0.5 text-foreground/80" data-testid="post-category">
+      {categoryLabel}
+    </span>
+    <time datetime={post.data.date.toISOString()}>{dateLabel}</time>
+    {readTimeLabel && (
+      <>
+        <span aria-hidden="true">·</span>
+        <span data-testid="post-read-time">{readTimeLabel}</span>
+      </>
+    )}
+  </div>
+  <h1 class="font-serif text-3xl font-normal tracking-tight md:text-4xl lg:text-5xl">
+    {title}
+  </h1>
+  <p class="mt-4 max-w-[64ch] text-base leading-relaxed text-foreground/85">
+    {description}
+  </p>
+</header>

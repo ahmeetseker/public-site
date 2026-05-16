@@ -1,0 +1,249 @@
+---
+/**
+ * /en/ilan/[slug] — Wave F37 / Faz 3 (F37 Task 7 EN locale paritesi).
+ *
+ * Mirror of `/ilan/[slug]` with EN locale awareness. 12 React island sections
+ * (A-L) from `@landx/ui/listing-detail`; A (Hero) and J (AI Chat) hidrate
+ * critical-path, the rest `client:visible`.
+ *
+ * Locale='en' is hardcoded (NOT detected from path) since this file lives
+ * under `/en/*` — breadcrumb texts, AnchorNav, and JSON-LD inLanguage all
+ * reflect English. Component label i18n is owned by each island; this slice
+ * only covers page-level chrome.
+ */
+
+import RootLayout from '@/layouts/RootLayout.astro'
+import {
+  ListingDetailHero,
+  IdentityCard,
+  SmartMap,
+  AiValuationDeep,
+  LegalEncumbrancePanel,
+  ZoningPanel,
+  FarmlandModule,
+  HazardRadar,
+  EnvironmentPoi,
+  ListingAiChat,
+  InlineCompare,
+  VerifiedSellerCard,
+  HeroVariant,
+  IdentityCardVariant,
+  KeyFactsVariant,
+  ListingGallery,
+} from '@landx/ui/listing-detail'
+import { AnchorNav } from '@/components/listing/AnchorNav.tsx'
+import AiInvestmentPanel from '@/components/listing/ai-invest/AiInvestmentPanel.astro'
+import InteractionPanel from '@/components/listing/interact/InteractionPanel.astro'
+import AdvancedVisualBand from '@/components/listing/intel/AdvancedVisualBand.astro'
+import MobileCtaBar from '@/components/listing/MobileCtaBar.tsx'
+import RecentTracker from '@/components/recent/RecentTracker'
+import SocialProofToast from '@/components/social-proof/SocialProofToast'
+import ShareButtons from '@/components/listing/ShareButtons.tsx'
+import '@/styles/print.css'
+
+import { LISTINGS_V2 as LISTINGS } from '@landx/data'
+import type { Listing } from '@landx/data'
+import { formatTLCompact } from '@landx/ui/lib'
+import { LOCALE_BCP47 } from '@/i18n'
+import { placeholderDataUri } from '@/lib/placeholder-image'
+import {
+  realEstateListingSchema,
+  breadcrumbListSchema,
+  toJsonLd,
+} from '@/lib/schema-builders'
+
+// Slugify pattern korundu — mevcut /en/ilan/[slug] URL'leri kırılmasın.
+const slugify = (s: string) =>
+  s
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[çğıöşü]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' })[c] || c)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+
+export function getStaticPaths() {
+  const slugifyLocal = (s: string) =>
+    s
+      .toLocaleLowerCase('tr-TR')
+      .replace(/[çğıöşü]/g, (c) => ({ ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ş: 's', ü: 'u' })[c] || c)
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+
+  return LISTINGS.map((l) => ({
+    params: { slug: `${slugifyLocal(l.title)}-${l.id}` },
+    props: { listing: l },
+  }))
+}
+
+interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props as Props
+const slug = `${slugify(listing.title)}-${listing.id}`
+// EN page — locale is fixed (no path detection needed).
+const locale = 'en' as const
+const prefix = '/en'
+
+const pageTitle = `${listing.title} · ${listing.district}, ${listing.city} — arsam.net`
+const pageDescription = `${listing.size.toLocaleString('en-US')} m² ${listing.type}, ${listing.district}, ${listing.city}. ${formatTLCompact(listing.price)}. ${listing.tags.slice(0, 2).join(', ')}.`
+
+const canonicalUrl = `https://arsam.net${prefix}/ilan/${slug}`
+const shareText = `${listing.title} — ${formatTLCompact(listing.price)}`
+
+const heroImageSrc = placeholderDataUri({
+  seed: `${listing.id}-1`,
+  label: listing.district,
+  ratio: '4/3',
+  size: 'md',
+})
+
+const baseListingSchema = realEstateListingSchema({
+  name: listing.title,
+  description: `${listing.district}, ${listing.city} — ${listing.size} m² ${listing.type}`,
+  url: canonicalUrl,
+  image: `https://arsam.net/og/listing-${listing.id}.jpg`,
+  price: listing.price,
+  priceCurrency: 'TRY',
+  area: listing.size,
+  city: listing.city,
+  district: listing.district,
+  latitude: listing.lat ?? undefined,
+  longitude: listing.lng ?? undefined,
+}) as Record<string, unknown>
+
+const listingJsonLd: Record<string, unknown> = {
+  ...baseListingSchema,
+  inLanguage: LOCALE_BCP47[locale],
+}
+if (listingJsonLd.offers && typeof listingJsonLd.offers === 'object') {
+  listingJsonLd.offers = {
+    ...(listingJsonLd.offers as Record<string, unknown>),
+    availability:
+      listing.status === 'Aktif'
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+  }
+}
+
+const breadcrumbJsonLd = breadcrumbListSchema([
+  { name: 'Home', url: `https://arsam.net${prefix}/` },
+  { name: 'Land search', url: `https://arsam.net${prefix}/ara` },
+  { name: listing.city, url: `https://arsam.net${prefix}/ara?il=${encodeURIComponent(listing.city)}` },
+  { name: listing.district, url: canonicalUrl },
+])
+
+---
+<RootLayout title={pageTitle} description={pageDescription}>
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin />
+    <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossorigin />
+    <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossorigin />
+    <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
+  </Fragment>
+
+  <script is:inline type="application/ld+json" set:html={toJsonLd(listingJsonLd)} />
+  <script is:inline type="application/ld+json" set:html={toJsonLd(breadcrumbJsonLd)} />
+
+  <RecentTracker
+    client:idle
+    slug={slug}
+    title={listing.title}
+    price={listing.price}
+    image={heroImageSrc}
+  />
+  <SocialProofToast client:idle />
+
+  <!-- Breadcrumb -->
+  <nav aria-label="Breadcrumb" class="border-b border-border bg-background">
+    <ol class="mx-auto flex max-w-[1280px] flex-wrap items-center gap-1 px-4 py-3 text-xs text-muted-foreground">
+      <li><a href={`${prefix}/`} class="hover:text-foreground">Home</a></li>
+      <li aria-hidden class="text-muted-foreground/60">/</li>
+      <li><a href={`${prefix}/ara`} class="hover:text-foreground">Land search</a></li>
+      <li aria-hidden class="text-muted-foreground/60">/</li>
+      <li>
+        <a href={`${prefix}/ara?il=${encodeURIComponent(listing.city)}`} class="hover:text-foreground">
+          {listing.city}
+        </a>
+      </li>
+      <li aria-hidden class="text-muted-foreground/60">/</li>
+      <li class="truncate text-foreground">{listing.district}</li>
+    </ol>
+  </nav>
+
+  <!-- A: ListingDetailHero (P variant) -->
+  <section id="hero" class="mx-auto max-w-[1280px] space-y-4 px-4 pt-6 md:pt-10">
+    {listing.images && listing.images.length > 0 && (
+      <ListingGallery
+        client:load
+        images={listing.images}
+        alt={listing.title}
+      />
+    )}
+    <HeroVariant client:visible listing={listing} />
+    <div class="flex justify-end">
+      <ShareButtons
+        client:idle
+        url={canonicalUrl}
+        title={listing.title}
+        text={shareText}
+      />
+    </div>
+  </section>
+
+  <!-- Sticky AnchorNav -->
+  <AnchorNav client:idle locale="en" />
+
+  <!-- 12 section islands (B-L). Section IDs match TR for shared AnchorNav hrefs. -->
+  <div class="mx-auto max-w-[1280px] space-y-8 px-4 py-8 md:py-10">
+    <section id="kimlik" data-section="B" aria-label="Identity">
+      <div class="grid gap-4 md:grid-cols-[1fr_240px]">
+        <IdentityCardVariant client:visible listing={listing} />
+        <KeyFactsVariant client:visible listing={listing} />
+      </div>
+    </section>
+    <section id="harita" data-section="C" aria-label="Map">
+      <SmartMap client:visible listingId={listing.id} />
+    </section>
+    <section id="degerleme" data-section="D" aria-label="Valuation">
+      <AiValuationDeep client:visible listingId={listing.id} />
+    </section>
+    <section id="yatirim" data-section="M" aria-label="AI Investment">
+      <AiInvestmentPanel listing={listing} />
+    </section>
+    <section id="serh" data-section="E" aria-label="Legal encumbrances">
+      <LegalEncumbrancePanel client:visible listingId={listing.id} />
+    </section>
+    <section id="imar" data-section="F" aria-label="Zoning">
+      <ZoningPanel client:visible listingId={listing.id} />
+    </section>
+    <section id="tarla" data-section="G" aria-label="Farmland">
+      <FarmlandModule client:visible listingId={listing.id} />
+    </section>
+    <section id="risk" data-section="H" aria-label="Hazard risk">
+      <HazardRadar client:visible listingId={listing.id} />
+    </section>
+    <section id="cevre" data-section="I" aria-label="Environment">
+      <EnvironmentPoi client:visible listingId={listing.id} />
+    </section>
+    <section id="gorsel" data-section="O" aria-label="Visual">
+      <AdvancedVisualBand listing={listing} />
+    </section>
+    <section id="chat" data-section="J" aria-label="AI Chat">
+      <ListingAiChat client:load listingId={listing.id} />
+    </section>
+    <section id="karsi" data-section="K" aria-label="Compare">
+      <InlineCompare client:visible listingId={listing.id} />
+    </section>
+    <section id="iletisim" data-section="L" aria-label="Seller">
+      <VerifiedSellerCard
+        client:visible
+        sellerId={listing.id}
+        sellerUsername={(listing as { sellerUsername?: string }).sellerUsername ?? 'mert-soydan'}
+      />
+    </section>
+    <section id="etkilesim" data-section="N" aria-label="Interaction">
+      <InteractionPanel listing={listing} />
+    </section>
+  </div>
+  <MobileCtaBar client:idle listingId={listing.id} />
+</RootLayout>

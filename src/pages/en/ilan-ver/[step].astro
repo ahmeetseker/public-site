@@ -1,0 +1,29 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import WizardShell from '@/components/ilan-ver/WizardShell.tsx'
+
+// Wave F5 / Agent-F5B — EN mirror of /ilan-ver/[step].astro.
+// The wizard island receives locale="en" so internal copy is in English and
+// internal navigation stays under /en/ilan-ver/*.
+
+export function getStaticPaths() {
+  return [
+    { params: { step: '1' } },
+    { params: { step: '2' } },
+    { params: { step: '3' } },
+    { params: { step: '4' } },
+  ]
+}
+
+const locale = 'en' as const
+const stepParam = Number(Astro.params.step)
+const step = (Number.isFinite(stepParam) && stepParam >= 1 && stepParam <= 4 ? stepParam : 1) as 1 | 2 | 3 | 4
+---
+<WizardLayout
+  title={`List a property · Step ${step} — arsam.net`}
+  description="Publish your land in 4 steps on arsam.net."
+  step={0}
+  locale={locale}
+>
+  <WizardShell client:load step={step} locale="en" />
+</WizardLayout>

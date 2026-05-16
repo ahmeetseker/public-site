@@ -1,0 +1,100 @@
+/* Print stylesheet for listing detail pages (Wave F4.A.1).
+ *
+ * Goal: when the visitor uses the "Yazdır / PDF" action (or Ctrl/Cmd+P), the
+ * page renders as a clean, ink-friendly handout — gallery thumbnails fit
+ * 2x2 on the first page, header/footer/share/contact widgets are hidden.
+ *
+ * Anything marked `data-print-hide` is hidden globally; per-page or per-island
+ * tweaks should prefer that attribute over targeting class names so the
+ * print layout stays decoupled from visual restyles.
+ *
+ * Wave F9.A — comparison page extension. /karsilastir prints to A4 landscape
+ * (4 listing columns fit horizontally), shows a date footer, and respects
+ * the "only differences" toggle by hiding `data-diff="false"` rows.
+ */
+@media print {
+  /* Hide non-essential UI */
+  header[data-site-header],
+  footer[data-site-footer],
+  [data-print-hide],
+  [data-testid="share-buttons"],
+  [data-testid="view-toggle"],
+  [data-testid="map-shell"],
+  [data-testid="map-bottom-sheet"],
+  nav[aria-label="Breadcrumb"],
+  nav[aria-label="Sayfa yolu"],
+  nav[aria-label="Sayfa hiyerarşisi"] {
+    display: none !important;
+  }
+  /* Reset colors for cost-friendly printing */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+  a { color: black !important; text-decoration: none !important; }
+  /* Gallery: show first 4 images in 2x2 grid */
+  [data-gallery] .grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5cm !important;
+  }
+  [data-gallery] figure { page-break-inside: avoid; }
+  /* Listing sections */
+  section, article { page-break-inside: avoid; }
+  /* Hide email but keep phone */
+  [data-print-email] { display: none !important; }
+}
+
+/* Wave F9.A — /karsilastir specific print rules. Scoped via [data-compare-root]
+ * so listing-detail pages stay untouched. */
+@media print {
+  /* Wider landscape page for a 4-column comparison. */
+  @page {
+    size: A4 landscape;
+    margin: 1cm;
+  }
+
+  [data-compare-root] [data-testid="compare-table"] {
+    display: table !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto;
+  }
+
+  [data-compare-root] [data-testid="compare-table"] th,
+  [data-compare-root] [data-testid="compare-table"] td {
+    border: 1px solid #999 !important;
+    padding: 4pt 6pt !important;
+    color: black !important;
+    background: white !important;
+    word-break: break-word;
+  }
+
+  [data-compare-root] [data-testid="compare-table"] tr {
+    page-break-inside: avoid;
+  }
+
+  /* Hide mobile stack and other non-table UI in print. */
+  [data-compare-root] [data-testid="compare-mobile"] {
+    display: none !important;
+  }
+
+  /* Print-only footer (hidden on screen). */
+  .compare-print-footer {
+    display: block !important;
+    margin-top: 0.5cm;
+    text-align: right;
+    font-size: 9pt;
+    color: #555 !important;
+  }
+}
+
+/* Wave F9.A — "Only differences" toggle. When active on [data-compare-root]
+ * we hide the equal rows in both desktop table and mobile stack. This is the
+ * screen-time CSS (no @media wrapping) so the filter applies live. */
+[data-compare-root][data-only-diff="true"] [data-testid="compare-table"] tr[data-diff="false"],
+[data-compare-root][data-only-diff="true"] [data-testid="compare-mobile"] [data-diff="false"] {
+  display: none !important;
+}

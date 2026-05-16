@@ -1,0 +1,13 @@
+---
+export interface Props {
+  eyebrow: string
+  title: string
+  body: string
+}
+const { eyebrow, title, body } = Astro.props
+---
+<div class="rounded-2xl border border-border bg-card p-5">
+  <div class="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{eyebrow}</div>
+  <div class="font-serif text-lg font-medium tracking-tight">{title}</div>
+  <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
+</div>

@@ -1,0 +1,74 @@
+---
+import type { Listing } from '@landx/data'
+
+export interface Props {
+  listings: Listing[]
+  officeName: string
+}
+
+const { listings, officeName } = Astro.props
+
+const fmtPrice = (price: number) => price.toLocaleString('tr-TR')
+const fmtSize = (size: number) => size.toLocaleString('tr-TR')
+
+// Build a slug to link to /ilan/[slug] — Agent-8 page accepts ID-based slug.
+const slugify = (l: Listing) => l.id.replace(/\./g, '-').toLowerCase()
+---
+
+<section aria-labelledby="ofis-portfoy" class="rounded-2xl border border-border bg-card p-5 md:p-6">
+  <div class="flex flex-wrap items-end justify-between gap-2">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        AKTİF PORTFÖY
+      </div>
+      <h2 id="ofis-portfoy" class="mt-1 font-serif text-2xl font-normal tracking-tight md:text-3xl">
+        {officeName} <em class="italic">ilanları</em>
+      </h2>
+    </div>
+    <span class="font-mono text-xs tabular-nums text-muted-foreground">
+      {listings.length} ilan
+    </span>
+  </div>
+
+  {listings.length === 0 ? (
+    <div class="mt-5 rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground">
+      Bu ofisin şu anda yayında olan ilanı yok.
+    </div>
+  ) : (
+    <ul class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {listings.map((l) => (
+        <li>
+          <a
+            href={`/ilan/${slugify(l)}`}
+            class="group block h-full rounded-xl border border-border bg-background p-4 transition hover:border-foreground/30 hover:bg-foreground/[0.02]"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                {l.id}
+              </span>
+              <span class="inline-flex items-center rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">
+                {l.type}
+              </span>
+            </div>
+            <h3 class="mt-2 line-clamp-2 font-serif text-[15px] font-medium leading-snug tracking-tight text-foreground transition group-hover:text-foreground">
+              {l.title}
+            </h3>
+            <div class="mt-2 text-xs text-muted-foreground">
+              {l.district}
+            </div>
+            <div class="mt-3 flex items-end justify-between gap-2 border-t border-border pt-3">
+              <div>
+                <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">m²</div>
+                <div class="font-mono text-sm tabular-nums text-foreground">{fmtSize(l.size)}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">TL</div>
+                <div class="font-serif text-base font-medium tabular-nums">{fmtPrice(l.price)}</div>
+              </div>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>

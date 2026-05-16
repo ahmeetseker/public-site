@@ -1,0 +1,45 @@
+---
+import { ACTIVITY_FEED } from '@landx/data'
+import { timeAgo } from '@landx/ui/lib'
+
+const ICON_TONES: Record<string, { bg: string; fg: string }> = {
+  heart: { bg: 'bg-rose-500/10 dark:bg-rose-400/10', fg: 'text-rose-600 dark:text-rose-400' },
+  mail: { bg: 'bg-sky-500/10 dark:bg-sky-400/10', fg: 'text-sky-600 dark:text-sky-400' },
+  search: { bg: 'bg-emerald-500/10 dark:bg-emerald-400/10', fg: 'text-emerald-600 dark:text-emerald-400' },
+  price: { bg: 'bg-amber-500/10 dark:bg-amber-400/10', fg: 'text-amber-600 dark:text-amber-400' },
+}
+
+const ICON_GLYPH: Record<string, string> = {
+  heart: '♥',
+  mail: '✉',
+  search: '⌕',
+  price: '₺',
+}
+---
+<section class="rounded-2xl border border-border bg-card p-5">
+  <header class="flex items-baseline justify-between gap-2 pb-3">
+    <h2 class="font-serif text-xl tracking-tight">Son hareketler</h2>
+    <span class="font-mono text-xs uppercase tracking-wide text-muted-foreground">SON 30 GÜN</span>
+  </header>
+  <ol class="flex flex-col">
+    {ACTIVITY_FEED.map((item, i) => {
+      const tone = ICON_TONES[item.icon] ?? ICON_TONES.search
+      return (
+        <li class={`flex items-start gap-3 py-3 ${i > 0 ? 'border-t border-border' : ''}`}>
+          <span
+            class={`mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm ${tone.bg} ${tone.fg}`}
+            aria-hidden="true"
+          >
+            {ICON_GLYPH[item.icon]}
+          </span>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm leading-snug">{item.text}</p>
+            <time datetime={item.at} class="font-mono text-xs text-muted-foreground">
+              {timeAgo(item.at)}
+            </time>
+          </div>
+        </li>
+      )
+    })}
+  </ol>
+</section>

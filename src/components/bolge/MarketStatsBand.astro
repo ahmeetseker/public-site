@@ -1,0 +1,67 @@
+---
+import type { RegionMarketStats } from '@landx/data'
+
+export interface Props {
+  stats: RegionMarketStats
+}
+
+const { stats } = Astro.props
+
+const yoyPositive = stats.yoy.trim().startsWith('+')
+const yoyTone = yoyPositive
+  ? 'text-emerald-700 dark:text-emerald-300'
+  : 'text-rose-700 dark:text-rose-300'
+
+const fmtTL = new Intl.NumberFormat('tr-TR', {
+  style: 'currency',
+  currency: 'TRY',
+  maximumFractionDigits: 0,
+})
+
+const cards = [
+  {
+    label: 'm² ortalaması',
+    value: fmtTL.format(stats.avgPricePerSqm),
+    sub: '₺/m² · son 90 gün',
+    tone: 'foreground',
+  },
+  {
+    label: 'Aktif alıcı',
+    value: String(stats.activeBuyers),
+    sub: 'son 30 günde teklif veren',
+    tone: 'foreground',
+  },
+  {
+    label: 'Satış süresi',
+    value: `${stats.avgDealDays} gün`,
+    sub: 'liste → kapanış ortalama',
+    tone: 'foreground',
+  },
+  {
+    label: 'Değer değişimi',
+    value: stats.yoy,
+    sub: 'YoY · doğrulanmış ilanlar',
+    tone: yoyTone,
+  },
+]
+---
+
+<section class="border-b border-border">
+  <div class="mx-auto max-w-[1280px] px-4 py-10 md:py-12">
+    <div class="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-4">
+      {
+        cards.map((c) => (
+          <div class="bg-card p-5 md:p-6">
+            <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              {c.label}
+            </div>
+            <div class={`mt-2 font-serif text-2xl font-normal tracking-tight tabular-nums md:text-3xl ${c.tone !== 'foreground' ? c.tone : ''}`}>
+              {c.value}
+            </div>
+            <div class="mt-1 text-xs text-muted-foreground">{c.sub}</div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

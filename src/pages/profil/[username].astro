@@ -1,0 +1,40 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import PublicProfileIsland from '@/components/identity/PublicProfileIsland'
+import { PUBLIC_PROFILES } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+export function getStaticPaths() {
+  return PUBLIC_PROFILES.map((p) => ({
+    params: { username: p.username },
+    props: {
+      displayName: p.displayName,
+      city: p.city ?? null,
+      bio: p.bio ?? null,
+    },
+  }))
+}
+
+interface Props {
+  displayName: string
+  city: string | null
+  bio: string | null
+}
+
+const { username } = Astro.params
+const { displayName, city, bio } = Astro.props
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+const seoTitle = locale === 'en'
+  ? `${displayName} — Listings & profile · arsam.net`
+  : `${displayName} — İlanlar ve profil · arsam.net`
+const seoDescription = bio
+  ? bio
+  : locale === 'en'
+    ? `${displayName}'s public profile on arsam.net${city ? ` · ${city}` : ''}.`
+    : `${displayName} kullanıcısının arsam.net profili${city ? ` · ${city}` : ''}.`
+---
+
+<RootLayout title={seoTitle} description={seoDescription}>
+  <PublicProfileIsland client:idle username={username!} locale={locale} />
+</RootLayout>

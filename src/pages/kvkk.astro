@@ -1,0 +1,159 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import LegalLayout from '@/components/legal/LegalLayout.astro'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: legal-text body is TR-canonical (regulatory content, stays Turkish).
+
+const sections = [
+  { id: 'genel', title: '1. Genel Bilgiler' },
+  { id: 'veri-sorumlusu', title: '2. Veri Sorumlusu' },
+  { id: 'veri-kategorileri', title: '3. İşlenen Kişisel Veri Kategorileri' },
+  { id: 'amaclar', title: '4. Veri İşleme Amaçları' },
+  { id: 'aktarim', title: '5. Veri Aktarımı' },
+  { id: 'toplama-yontemi', title: '6. Veri Toplama Yöntemi' },
+  { id: 'haklariniz', title: '7. Haklarınız' },
+  { id: 'basvuru', title: '8. Başvuru' },
+]
+---
+<RootLayout
+  title={t('legal.kvkkTitle', locale)}
+  description={t('legal.kvkkDescription', locale)}
+>
+  <div
+    class:list={[
+      'legal-page-shell mx-auto max-w-prose px-0',
+      'sm:px-1 sm:text-[0.95rem]',
+      'md:px-2 md:text-base',
+      'lg:px-0 lg:text-[1.0625rem]',
+    ]}
+  >
+  <LegalLayout
+    title="KVKK Aydınlatma Metni"
+    lastUpdated="2026-05-11"
+    sections={sections}
+  >
+    <h2 id="genel">1. Genel Bilgiler</h2>
+    <p>
+      Bu aydınlatma metni, <strong>6698 sayılı Kişisel Verilerin Korunması Kanunu</strong> ("KVKK") kapsamında, <strong>arsam.net</strong> ("Platform")
+      tarafından sunulan hizmetler çerçevesinde işlenen kişisel verilerinize ilişkin sizleri bilgilendirmek amacıyla hazırlanmıştır.
+      Platformu kullanarak bu metinde belirtilen veri işleme faaliyetlerinden haberdar olduğunuzu kabul edersiniz.
+    </p>
+    <p>
+      arsam.net; emlak ofisleri, alıcılar ve satıcılar arasında arsa, tarla, zeytinlik ve benzeri taşınmazların listelenmesi,
+      aranması ve iletişiminin sağlanmasına yönelik bir dijital pazaryeri hizmeti sunmaktadır.
+    </p>
+
+    <h2 id="veri-sorumlusu">2. Veri Sorumlusu</h2>
+    <p>
+      KVKK kapsamında veri sorumlusu sıfatıyla işbu hizmeti yürüten taraf:
+    </p>
+    <ul>
+      <li><strong>Unvan:</strong> [Firma adı] <em>(TODO: gerçek tüzel kişilik unvanı)</em></li>
+      <li><strong>Mersis no:</strong> [Mersis no] <em>(TODO)</em></li>
+      <li><strong>Adres:</strong> [Adres] <em>(TODO: kayıtlı merkez adresi)</em></li>
+      <li><strong>E-posta:</strong> <a href="mailto:kvkk@arsam.net">kvkk@arsam.net</a></li>
+      <li><strong>Web:</strong> <a href="https://arsam.net">arsam.net</a></li>
+    </ul>
+
+    <h2 id="veri-kategorileri">3. İşlenen Kişisel Veri Kategorileri</h2>
+    <p>
+      Platformu kullanmanız sırasında aşağıdaki kategorilerde kişisel verileriniz işlenebilir:
+    </p>
+    <ul>
+      <li><strong>Kimlik:</strong> ad, soyad, T.C. kimlik numarası (yalnızca yasal yükümlülük gerektiğinde), doğum tarihi.</li>
+      <li><strong>İletişim:</strong> e-posta adresi, telefon numarası, adres bilgisi.</li>
+      <li><strong>Müşteri işlem:</strong> ilan ekleme, favorileme, iletişim talebi, mesajlaşma kayıtları, üyelik / abonelik kayıtları.</li>
+      <li><strong>Lokasyon:</strong> ilan ve arama için kullandığınız il/ilçe, isteğe bağlı olarak paylaşılan koordinat verisi.</li>
+      <li><strong>Hukuki işlem:</strong> sözleşme süreçleri, yasal başvuru ve şikâyet kayıtları.</li>
+      <li><strong>Pazarlama:</strong> bülten tercihi, push/SMS izinleri, çerez tabanlı ilgi profili.</li>
+      <li><strong>Görsel ve işitsel kayıt:</strong> ilan görselleri, profil fotoğrafı, müşteri hizmetleri çağrı kayıtları (gerektiğinde).</li>
+      <li><strong>İşlem güvenliği:</strong> IP adresi, oturum bilgileri, log kayıtları, cihaz parmak izi (anti-fraud amaçlı).</li>
+    </ul>
+
+    <h2 id="amaclar">4. Veri İşleme Amaçları</h2>
+    <p>
+      Kişisel verileriniz, KVKK m.5/2 (sözleşmenin kurulması/ifası, hukuki yükümlülük, meşru menfaat) ve m.5/1 (açık rıza)
+      kapsamında aşağıdaki amaçlarla işlenir:
+    </p>
+    <ul>
+      <li>Üyelik kaydının oluşturulması, hesap güvenliğinin sağlanması ve oturum yönetimi.</li>
+      <li>Platform üzerinde sunulan ilan listeleme, arama, favori, mesajlaşma ve iletişim hizmetlerinin yürütülmesi.</li>
+      <li>Hizmet sözleşmesinin ifası, faturalandırma ve mali süreçlerin yürütülmesi.</li>
+      <li>Yasal yükümlülüklerin (vergi, ticaret, tüketici mevzuatı, KVKK) yerine getirilmesi ve resmi kurum taleplerine yanıt verilmesi.</li>
+      <li>Müşteri memnuniyeti, talep / şikâyet yönetimi ve destek süreçlerinin yürütülmesi.</li>
+      <li>Dolandırıcılığın, kötüye kullanımın ve hesap güvenliği ihlallerinin önlenmesi (meşru menfaat).</li>
+      <li>Hizmet kalitesinin geliştirilmesi, analiz / raporlama, ürün iyileştirme çalışmaları (anonimleştirilmiş veriyle).</li>
+      <li>Açık rıza vermeniz durumunda; ticari elektronik ileti gönderimi, kampanya / bülten ve pazarlama faaliyetleri.</li>
+    </ul>
+
+    <h2 id="aktarim">5. Veri Aktarımı</h2>
+    <p>
+      Kişisel verileriniz, yukarıdaki amaçların gerçekleştirilmesi için zorunlu olduğu ölçüde aşağıdaki üçüncü taraflarla
+      paylaşılabilir:
+    </p>
+    <ul>
+      <li><strong>Bulut altyapı ve hosting sağlayıcıları:</strong> Vercel, Cloudflare gibi sağlayıcılar (sunucu lokasyonları AB / ABD olabilir).</li>
+      <li><strong>Analitik ve ürün ölçümleme:</strong> PostHog (ürün kullanım analizi, ısı haritası).</li>
+      <li><strong>Hata izleme:</strong> Sentry veya muadili (uygulama hatalarının kaydı, kişisel veri minimize edilir).</li>
+      <li><strong>Ödeme ve faturalama:</strong> Yetkili ödeme kuruluşları (kart bilgileri Platform tarafından saklanmaz). <em>(TODO: ödeme sağlayıcı seçimi sonrası güncellenecek.)</em></li>
+      <li><strong>İletişim sağlayıcıları:</strong> e-posta gönderim servisleri (örn. SendGrid / Postmark), SMS sağlayıcıları.</li>
+      <li><strong>Yetkili kamu kurum ve kuruluşları:</strong> yasal yükümlülük çerçevesinde mahkeme, savcılık, kolluk talebi üzerine.</li>
+    </ul>
+    <p>
+      Yurt dışına yapılacak aktarımlar, KVKK m.9 kapsamında gerekli güvenceler (taahhütname, standart sözleşme hükümleri,
+      Kurul izni veya açık rıza) sağlanarak gerçekleştirilir.
+    </p>
+
+    <h2 id="toplama-yontemi">6. Veri Toplama Yöntemi</h2>
+    <p>
+      Kişisel verileriniz aşağıdaki yöntemlerle toplanmaktadır:
+    </p>
+    <ul>
+      <li><strong>Otomatik yollarla:</strong> Platforma giriş yaparken kullanılan çerezler, oturum ve log kayıtları, doldurduğunuz formlar, ilan ekleme ekranı, mesajlaşma arayüzü.</li>
+      <li><strong>Yarı otomatik yollarla:</strong> e-posta, telefon veya canlı destek üzerinden kurduğunuz iletişim.</li>
+      <li><strong>Manuel yollarla:</strong> ofis temsilcisi veya satış ekibimizle birebir paylaştığınız bilgi ve belgeler.</li>
+    </ul>
+
+    <h2 id="haklariniz">7. Haklarınız</h2>
+    <p>
+      KVKK m.11 uyarınca veri sahibi olarak aşağıdaki haklara sahipsiniz:
+    </p>
+    <ol>
+      <li>Kişisel verilerinizin işlenip işlenmediğini öğrenme.</li>
+      <li>Kişisel verileriniz işlenmişse buna ilişkin bilgi talep etme.</li>
+      <li>Kişisel verilerinizin işlenme amacını ve bunların amacına uygun kullanılıp kullanılmadığını öğrenme.</li>
+      <li>Yurt içinde veya yurt dışında kişisel verilerinizin aktarıldığı üçüncü kişileri bilme.</li>
+      <li>Kişisel verilerinizin eksik veya yanlış işlenmiş olması hâlinde bunların düzeltilmesini isteme.</li>
+      <li>KVKK m.7'de öngörülen şartlar çerçevesinde kişisel verilerinizin silinmesini veya yok edilmesini isteme.</li>
+      <li>5 ve 6. bentler uyarınca yapılan işlemlerin, kişisel verilerinizin aktarıldığı üçüncü kişilere bildirilmesini isteme.</li>
+      <li>İşlenen verilerinizin münhasıran otomatik sistemler vasıtasıyla analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme.</li>
+      <li>Kişisel verilerinizin kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme.</li>
+      <li>Verdiğiniz açık rızayı her zaman geri çekme (ileriye etkili olmak üzere).</li>
+      <li>Veri Sorumlusu'na karşı Kişisel Verileri Koruma Kurulu'na şikâyette bulunma.</li>
+    </ol>
+
+    <h2 id="basvuru">8. Başvuru</h2>
+    <p>
+      KVKK m.11 kapsamındaki haklarınızı kullanmak için başvurularınızı, kimliğinizi tevsik edici belgeler ve talebinizi içeren
+      yazılı dilekçeyle aşağıdaki kanallar üzerinden iletebilirsiniz:
+    </p>
+    <ul>
+      <li><strong>E-posta:</strong> <a href="mailto:kvkk@arsam.net">kvkk@arsam.net</a></li>
+      <li><strong>Posta:</strong> [Firma adı], [Adres] <em>(TODO)</em></li>
+      <li><strong>Kayıtlı elektronik posta (KEP):</strong> [KEP adresi] <em>(TODO)</em></li>
+    </ul>
+    <p>
+      Başvurularınız, KVKK m.13/2 uyarınca en geç <strong>30 (otuz) gün</strong> içinde sonuçlandırılır. Başvuruya ilişkin
+      ek bilgi/belge talep edilebileceği gibi, Kurul'ca ücret tarifesi belirlenmişse ilgili ücret talep edilebilir.
+    </p>
+
+    <blockquote>
+      <strong>Not:</strong> Bu metin Faz 9 MVP için hazırlanan <strong>örnek boilerplate</strong>'tir. Yayına almadan önce
+      uzman hukuk danışmanı tarafından incelenmeli; veri sorumlusu künyesi, aktarım listesi ve ücret tarifesi
+      güncel kurumsal duruma göre düzenlenmelidir.
+    </blockquote>
+  </LegalLayout>
+  </div>
+</RootLayout>

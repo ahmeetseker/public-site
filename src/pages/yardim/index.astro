@@ -1,0 +1,34 @@
+---
+// /yardim → /destek redirect (Wave F32 W2A).
+//
+// Spec der ki: yardım merkezi → destek hub'ı altında birleşti. Public-site
+// `output: 'static'` olduğu için `Astro.redirect()` çalışmaz; meta-refresh +
+// canonical + JS replace üçlüsüyle hem SEO hem UX sağlanıyor.
+//
+// Eski /yardim/[slug] rehber sayfaları (hesap-yonetimi, ilan-ver, vs.) kalır.
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const target = `${prefix}/destek`
+---
+<!doctype html>
+<html lang={locale === 'en' ? 'en' : 'tr'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, follow" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={`https://arsam.net${target}`} />
+    <title>{locale === 'en' ? 'Redirecting to Support…' : 'Destek sayfasına yönlendiriliyor…'}</title>
+    <script is:inline define:vars={{ target }}>
+      try { window.location.replace(target) } catch (_) { window.location.href = target }
+    </script>
+  </head>
+  <body style="font-family: ui-sans-serif, system-ui; padding: 2rem; color: #555;">
+    <p>
+      {locale === 'en' ? 'Redirecting…' : 'Yönlendiriliyor…'}
+      <a href={target}>{target}</a>
+    </p>
+  </body>
+</html>

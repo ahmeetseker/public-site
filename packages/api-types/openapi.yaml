@@ -1,0 +1,2155 @@
+openapi: 3.1.0
+info:
+  title: LandX API
+  version: 0.1.0-mvp
+  description: |
+    arsam.net REST API contract. Path-based deploy under arsam.net/api/v1.
+
+    Frontend apps consume this:
+    - atolye-admin (`/panel/*`) — tenant-scoped
+    - super-admin (`/ops/*`) — platform-scoped
+    - public-site — read-only public + buyer-scoped
+
+    Frontend mocks (MSW + TanStack Query hooks) follow this contract.
+    Backend implementation (LandX 33-module catalog) MUST conform.
+  contact:
+    name: arsam.net Frontend
+    email: dev@arsam.net
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://arsam.net/api/v1
+    description: Production
+  - url: http://localhost:5173/api/v1
+    description: Local dev (with MSW or proxy)
+
+tags:
+  - name: listings
+    description: Arsa ilanları
+  - name: customers
+    description: Müşteri (tenant-scoped CRM)
+  - name: deals
+    description: Satış pipeline fırsatları
+  - name: transactions
+    description: Finansal hareketler
+  - name: calendar
+    description: Takvim olayları
+  - name: messages
+    description: Müşteri-ofis mesajlaşması
+  - name: reports
+    description: Performans + bölge analitiği
+  - name: offices
+    description: Emlak ofisleri (public)
+  - name: regions
+    description: Bölge metadata + market verisi (public)
+  - name: auth
+    description: Authentication + session
+  - name: platform
+    description: Super-admin platform endpoints
+  - name: audit
+    description: Audit log + PII access (super-admin)
+  - name: finance
+    description: Finance — transactions, cashflow, aging, KPIs
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ───────────────────────── Listings (tenant + public) ─────────────────────────
+  /listings:
+    get:
+      tags: [listings]
+      summary: List listings
+      operationId: listListings
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: status
+          schema: { $ref: '#/components/schemas/ListingStatus' }
+        - in: query
+          name: type
+          schema: { $ref: '#/components/schemas/ListingType' }
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: city
+          schema: { type: string }
+        - in: query
+          name: district
+          schema: { type: string }
+        - in: query
+          name: priceMin
+          schema: { type: integer, minimum: 0 }
+        - in: query
+          name: priceMax
+          schema: { type: integer, minimum: 0 }
+        - in: query
+          name: areaMin
+          schema: { type: integer, minimum: 0 }
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [lastUpdate, price-asc, price-desc, size-desc, views]
+            default: lastUpdate
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Listing' }
+                  meta: { $ref: '#/components/schemas/ListMeta' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      tags: [listings]
+      summary: Create listing
+      operationId: createListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ListingCreateInput' }
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Listing' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /listings/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [listings]
+      summary: Get listing detail
+      operationId: getListing
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Listing' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    patch:
+      tags: [listings]
+      summary: Update listing (partial)
+      operationId: updateListing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ListingPatchInput' }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Listing' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [listings]
+      summary: Delete listing (soft)
+      operationId: deleteListing
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Customers (tenant) ─────────────────────────
+  /customers:
+    get:
+      tags: [customers]
+      summary: List customers
+      operationId: listCustomers
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: segment
+          schema: { $ref: '#/components/schemas/CustomerSegment' }
+        - in: query
+          name: stage
+          schema: { $ref: '#/components/schemas/CustomerStage' }
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Customer' }
+                  meta: { $ref: '#/components/schemas/ListMeta' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      tags: [customers]
+      summary: Create customer
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerCreateInput' }
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /customers/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [customers]
+      summary: Get customer detail
+      operationId: getCustomer
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Customer' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    patch:
+      tags: [customers]
+      summary: Update customer (partial)
+      operationId: updateCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CustomerPatchInput' }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Customer' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      tags: [customers]
+      summary: Delete customer
+      operationId: deleteCustomer
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Deals (tenant) ─────────────────────────
+  /deals:
+    get:
+      tags: [deals]
+      summary: List deals
+      operationId: listDeals
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Deal' }
+
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /deals/{id}/move:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    post:
+      tags: [deals]
+      summary: Move deal to a different pipeline stage
+      operationId: moveDealStage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [toStage]
+              properties:
+                toStage: { $ref: '#/components/schemas/CustomerStage' }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Deal' }
+
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  # ───────────────────────── Auth (public) ─────────────────────────
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Buyer or staff login
+      operationId: login
+      security: []  # public endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthLoginRequest' }
+      responses:
+        '200':
+          description: OK — issues a JWT bearer with embedded `jti` (Wave-19 / A91).
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/AuthLoginResponse' }
+        '400':
+          description: Missing email or password (envelope INVALID_INPUT)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: Invalid credentials (envelope UNAUTHORIZED)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Logout — adds the bearer token's jti to the revocation list
+      operationId: logout
+      description: |
+        Wave-19 / A91 — Faz 12.8.c. If the request carries a valid Bearer token
+        with a `jti` claim, that jti is added to an in-memory revocation set.
+        Subsequent requests reusing the same token via /auth/me, /auth/refresh
+        or any scope-gated `/api/v1/*` endpoint will receive 401 with
+        `details.reason = "revoked"`. The revocation set is process-local and
+        resets on restart — production must back this with Redis/DB.
+      responses:
+        '204':
+          description: No Content
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /auth/me:
+    get:
+      tags: [auth]
+      summary: Get current user (from Bearer token)
+      operationId: getMe
+      description: |
+        Returns the `User` for the JWT subject. Rejects (401) when:
+        - Authorization header missing/malformed
+        - token signature invalid (`details.reason = "bad-signature"`)
+        - token expired (`details.reason = "expired"`)
+        - token's `jti` is in the revocation set (Wave-19 / A91,
+          `details.reason = "revoked"`)
+        - token subject no longer exists in the user store
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthMeResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Public ─────────────────────────
+  /public/offices:
+    get:
+      tags: [offices]
+      summary: List public offices
+      operationId: listPublicOffices
+      security: []
+      parameters:
+        - in: query
+          name: city
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Office' }
+
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /public/offices/{slug}:
+    parameters:
+      - in: path
+        name: slug
+        required: true
+        schema: { type: string }
+    get:
+      tags: [offices]
+      summary: Public office profile
+      operationId: getPublicOffice
+      security: []
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Office' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /public/regions:
+    get:
+      tags: [regions]
+      summary: List public regions
+      operationId: listPublicRegions
+      security: []
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Region' }
+
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  # ───────────────────────── Super-admin platform ─────────────────────────
+  /platform/tenants:
+    get:
+      tags: [platform]
+      summary: List all tenants (super-admin)
+      operationId: listTenants
+      parameters:
+        - in: query
+          name: plan
+          schema:
+            type: string
+            enum: [Free, Pro, Enterprise]
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [Aktif, Trial, Askıda, Churned]
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Tenant' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /platform/audit:
+    get:
+      tags: [audit, platform]
+      summary: List audit log entries
+      operationId: listAuditEntries
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: actor
+          schema: { type: string }
+        - in: query
+          name: tenantId
+          schema: { type: string }
+        - in: query
+          name: action
+          schema: { type: string }
+        - in: query
+          name: outcome
+          schema:
+            type: string
+            enum: [success, failure]
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditEntry' }
+                  meta: { $ref: '#/components/schemas/ListMeta' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Calendar (tenant) ─────────────────────────
+  # Added Wave-16 / A78 — Faz 12.8 drift fix. Matches apps/api/src/routes/calendar.ts
+  # response envelope `{ data, meta }`. Inserted at the TOP of the post-existing
+  # paths block (before Finance, after platform/audit) per coordination plan.
+  /calendar/events:
+    get:
+      tags: [calendar]
+      summary: List calendar events
+      operationId: listCalendarEvents
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: type
+          schema: { $ref: '#/components/schemas/CalendarEventType' }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: owner
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/CalendarEvent' }
+                  meta: { $ref: '#/components/schemas/ListMeta' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /calendar/events/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [calendar]
+      summary: Get calendar event detail
+      operationId: getCalendarEvent
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/CalendarEvent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Messages (tenant) ─────────────────────────
+  /messages/conversations:
+    get:
+      tags: [messages]
+      summary: List conversations (slim — no embedded messages)
+      operationId: listConversations
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: channel
+          schema: { $ref: '#/components/schemas/MessageChannel' }
+        - in: query
+          name: segment
+          schema: { $ref: '#/components/schemas/CustomerSegment' }
+        - in: query
+          name: unreadOnly
+          schema: { type: boolean }
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ConversationSummary' }
+                  meta: { $ref: '#/components/schemas/ListMeta' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /messages/conversations/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      tags: [messages]
+      summary: Get conversation thread (with embedded messages)
+      operationId: getConversation
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Conversation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Reports (tenant) ─────────────────────────
+  /reports/team:
+    get:
+      tags: [reports]
+      summary: Team performance leaderboard
+      operationId: getReportsTeam
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/TeamRow' }
+                  meta:
+                    allOf:
+                      - $ref: '#/components/schemas/ListMeta'
+                      - type: object
+                        properties:
+                          totals:
+                            type: object
+                            required: [closed, active, revenue]
+                            properties:
+                              closed: { type: integer, minimum: 0 }
+                              active: { type: integer, minimum: 0 }
+                              revenue: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /reports/monthly-close:
+    get:
+      tags: [reports]
+      summary: Monthly close (count + revenue per month)
+      operationId: getReportsMonthlyClose
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/MonthlyClose' }
+                  meta:
+                    allOf:
+                      - $ref: '#/components/schemas/ListMeta'
+                      - type: object
+                        properties:
+                          revenue: { type: integer, minimum: 0 }
+                          count: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /reports/customer-sources:
+    get:
+      tags: [reports]
+      summary: Customer acquisition sources breakdown
+      operationId: getReportsCustomerSources
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/SourceRow' }
+                  meta:
+                    allOf:
+                      - $ref: '#/components/schemas/ListMeta'
+                      - type: object
+                        properties:
+                          totalLeads: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Auth refresh (Wave-16 / A77) ─────────────────────────
+  /auth/refresh:
+    post:
+      tags: [auth]
+      summary: Exchange a near-expiry token for a fresh one
+      operationId: refreshAuth
+      description: |
+        Refresh policy (apps/api/src/routes/auth.ts — Wave-16 / A77):
+        - eligible only when `exp - now <= 5min`
+        - absolute cap: `now - iat <= 24h` (no infinite refresh chains)
+        - rejected if token's `jti` is in the revocation set
+          (`details.reason = "revoked"`, Wave-19 / A91)
+        The fresh token carries a new `jti` so a logout of the old one does
+        not invalidate the refresh.
+      responses:
+        '200':
+          description: OK — issues a new JWT (new jti, refreshed iat/exp).
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/AuthRefreshResponse' }
+        '401':
+          description: |
+            Refresh denied. `error.details.reason` is one of:
+            - `expired` — token's exp is in the past
+            - `bad-signature` — signature did not verify
+            - `revoked` — token's jti is in the revocation set
+            - `too-early` — token still has >5min of life
+            - `iat-window-elapsed` — token issued >24h ago
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+  # ───────────────────────── Finance (tenant) ─────────────────────────
+  # Appended at the bottom (Wave-16 / A76) to avoid YAML merge conflicts with
+  # A78's parallel openapi drift fix. Keep this section contiguous.
+  /finance/transactions:
+    get:
+      tags: [finance]
+      summary: List finance transactions
+      operationId: listFinanceTransactions
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - in: query
+          name: kind
+          schema: { $ref: '#/components/schemas/FinanceTransactionKind' }
+        - in: query
+          name: status
+          schema: { $ref: '#/components/schemas/FinanceTransactionStatus' }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FinanceTransaction' }
+                  meta: { $ref: '#/components/schemas/ListMeta' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /finance/cashflow:
+    get:
+      tags: [finance]
+      summary: Cashflow inflow/outflow per period
+      operationId: getFinanceCashflow
+      parameters:
+        - in: query
+          name: months
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 36
+            default: 12
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FinanceCashflowPoint' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /finance/kpis:
+    get:
+      tags: [finance]
+      summary: Finance KPIs (totals + forecast)
+      operationId: getFinanceKpis
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/FinanceKPI' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /finance/pending-by-age:
+    get:
+      tags: [finance]
+      summary: Aging buckets for pending receivables
+      operationId: getFinancePendingByAge
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FinanceAgingBucket' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Health (Wave-18 / A88) ─────────────────────────
+  # Liveness probe — NOT under /api/v1. Mounted directly on the app root in
+  # apps/api/src/app.ts (`app.route('/', healthRoute)`). Override `servers:`
+  # so consumers know the path is host-relative, not appended to /api/v1.
+  /healthz:
+    get:
+      tags: [platform]
+      summary: Liveness probe
+      operationId: getHealth
+      security: []
+      servers:
+        - url: https://arsam.net
+          description: Production (host root, NOT under /api/v1)
+        - url: http://localhost:5173
+          description: Local dev (host root)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HealthResponse' }
+
+  # ───────────────────────── Listings mutations + counts (Wave-18 / A88) ────
+  # POST/PATCH/DELETE under /listings already lived in this file (Wave-16 /
+  # A78). Adding the missing /listings/status-counts here so the spec covers
+  # apps/api/src/routes/listings.ts in full.
+  /listings/status-counts:
+    get:
+      tags: [listings]
+      summary: Counts per status (Aktif / Pasif / Taslak)
+      operationId: getListingStatusCounts
+      description: |
+        Returns post-mutation counts derived from the in-memory listings
+        state. Mirrored on the frontend by
+        `packages/data/src/query/listings.ts → useListingStatusCounts`.
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/ListingStatusCounts' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  # ───────────────────────── Customers mutations + counts (Wave-18 / A88) ───
+  # Wave-16 / A70 shipped POST/PATCH/DELETE on /customers/* and Wave-17 / A79
+  # added /customers/segment-counts. None of these had OpenAPI coverage until
+  # this entry.
+  /customers/segment-counts:
+    get:
+      tags: [customers]
+      summary: Counts per segment (Sıcak / Ilık / Soğuk)
+      operationId: getCustomerSegmentCounts
+      description: |
+        Returns post-mutation counts derived from the in-memory customers
+        state. Mirrored on the frontend by
+        `packages/data/src/query/customers.ts → useCustomerSegmentCounts`.
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/CustomerSegmentCounts' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429':
+          description: Rate limit exceeded — RFC 6585 §4 token bucket.
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/XRateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/XRateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/XRateLimitReset' }
+            Retry-After: { $ref: '#/components/headers/RetryAfter' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  parameters:
+    PageSize:
+      in: query
+      name: pageSize
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+    Cursor:
+      in: query
+      name: cursor
+      schema: { type: string }
+      description: Opaque cursor for pagination
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Permission denied
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  # ── Reusable rate-limit response headers (Wave-18 / A88 — Faz 12.13.b) ──
+  # All `/api/v1/*` operations are wrapped by apps/api/src/lib/rate-limit.ts.
+  # The middleware emits the RFC 6585 §4 triplet on every response (success
+  # AND 429). `Retry-After` is added only on the 429 path. We expose them as
+  # reusable `components.headers` so individual operations can $ref them from
+  # their `responses.*.headers.*` blocks without copy-paste. The current
+  # operations don't enumerate every header for terseness; new operations
+  # SHOULD adopt these references going forward.
+  headers:
+    XRateLimitLimit:
+      description: |
+        RFC 6585 §4 — maximum number of requests allowed in the current
+        window. Window is 60s for `/api/v1/*` (max 60) and 60s for
+        `/api/v1/auth/login` (max 10, brute-force defense).
+      schema:
+        type: integer
+        minimum: 1
+        examples: [60, 10]
+    XRateLimitRemaining:
+      description: |
+        RFC 6585 §4 — tokens remaining in the current window for this client
+        bucket. Resets to `X-RateLimit-Limit` once `X-RateLimit-Reset`
+        elapses.
+      schema:
+        type: integer
+        minimum: 0
+        examples: [59]
+    XRateLimitReset:
+      description: |
+        RFC 6585 §4 — unix-seconds timestamp at which the current bucket
+        fully refills. Computed as ceil((lastRefill + windowMs) / 1000) by
+        apps/api/src/lib/rate-limit.ts.
+      schema:
+        type: integer
+        minimum: 0
+        examples: [1715520060]
+    RetryAfter:
+      description: |
+        RFC 7231 §7.1.3 — seconds the client should wait before retrying.
+        Only emitted on the 429 response.
+      schema:
+        type: integer
+        minimum: 1
+        examples: [42]
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ListMeta:
+      type: object
+      required: [total]
+      properties:
+        total: { type: integer, minimum: 0 }
+        nextCursor:
+          type: string
+          nullable: true
+        pageSize:
+          type: integer
+          minimum: 1
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              examples: ['INVALID_INPUT', 'NOT_FOUND', 'UNAUTHORIZED', 'PERMISSION_DENIED', 'RATE_LIMITED']
+            message: { type: string }
+            details:
+              type: object
+              additionalProperties: true
+
+    # ── Calendar (Wave-16 / A78) ──
+    # Matches packages/data/src/mock/calendar.ts and apps/api/src/routes/calendar.ts.
+    # `date` is the canonical ISO instant the event starts (mock uses startISO);
+    # `time`/`durationMin` are display helpers preserved from the mock for UI parity.
+    CalendarEventType:
+      type: string
+      enum: [visit, deed, task, meeting, reminder]
+
+    CalendarEvent:
+      type: object
+      required: [id, type, title, date, owner]
+      properties:
+        id: { type: string, examples: ['E-9201'] }
+        type: { $ref: '#/components/schemas/CalendarEventType' }
+        title: { type: string }
+        date: { type: string, format: date-time, description: 'ISO start instant' }
+        time:
+          type: string
+          description: 'Display-only HH:MM (Europe/Istanbul); derive from `date` when absent'
+        durationMin:
+          type: integer
+          minimum: 0
+        owner: { type: string }
+        location:
+          type: string
+        dealId:
+          type: string
+        customerName:
+          type: string
+        notes:
+          type: string
+
+    # ── Messages (Wave-16 / A78) ──
+    # Matches packages/data/src/mock/messages.ts and apps/api/src/routes/messages.ts.
+    # `MessageChannel` enum is lowercase TR-locale-stable; segment reuses CustomerSegment.
+    MessageChannel:
+      type: string
+      enum: [whatsapp, sahibinden, phone, email, internal]
+
+    MessageSender:
+      type: string
+      enum: [me, them, system]
+
+    Message:
+      type: object
+      required: [id, sender, content, time]
+      properties:
+        id: { type: string, examples: ['msg-001'] }
+        sender: { $ref: '#/components/schemas/MessageSender' }
+        content: { type: string }
+        time: { type: string, format: date-time }
+        channel: { $ref: '#/components/schemas/MessageChannel' }
+        attachments:
+          type: integer
+          minimum: 0
+
+    # Conversation list endpoint strips the `messages` array to keep payloads
+    # lean — see apps/api/src/routes/messages.ts `slim` projection.
+    ConversationSummary:
+      type: object
+      required:
+        [id, customerId, customerName, customerAvatarInitials, channel,
+         lastPreview, lastAt, unreadCount, segment]
+      properties:
+        id: { type: string, examples: ['C-7401'] }
+        customerId: { type: string }
+        customerName: { type: string }
+        customerAvatarInitials: { type: string }
+        channel: { $ref: '#/components/schemas/MessageChannel' }
+        lastPreview: { type: string }
+        lastAt: { type: string, format: date-time }
+        unreadCount: { type: integer, minimum: 0 }
+        pinned: { type: boolean }
+        segment: { $ref: '#/components/schemas/CustomerSegment' }
+
+    Conversation:
+      allOf:
+        - $ref: '#/components/schemas/ConversationSummary'
+        - type: object
+          required: [messages]
+          properties:
+            messages:
+              type: array
+              items: { $ref: '#/components/schemas/Message' }
+
+    # ── Reports (Wave-16 / A78) ──
+    # Matches packages/data/src/mock/reports.ts. The api route adds `meta.totals`
+    # (TeamRow) / `meta.revenue,count` (MonthlyClose) / `meta.totalLeads`
+    # (SourceRow) — captured inline at the path level.
+    TeamRow:
+      type: object
+      required: [owner, closed, active, revenue, conversion, avgResponseMin]
+      properties:
+        owner: { type: string }
+        closed: { type: integer, minimum: 0 }
+        active: { type: integer, minimum: 0 }
+        revenue: { type: integer, minimum: 0, description: 'TL' }
+        conversion:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: '0..1 fraction'
+        avgResponseMin: { type: integer, minimum: 0 }
+
+    MonthlyClose:
+      type: object
+      required: [month, count, revenue]
+      properties:
+        month:
+          type: string
+          description: 'TR short month label, e.g. Kas, Ara, Oca'
+          examples: ['Nis']
+        count: { type: integer, minimum: 0 }
+        revenue: { type: integer, minimum: 0, description: 'TL' }
+
+    SourceRow:
+      type: object
+      required: [source, count, conversion]
+      properties:
+        source:
+          type: string
+          description: 'Lead acquisition channel name'
+          examples: ['Sahibinden', 'Referans', 'Hürriyet Emlak', 'Sosyal Medya', 'Walk-in']
+        count: { type: integer, minimum: 0 }
+        conversion:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    # ── Auth schemas (Wave-16 / A78, expanded Wave-19 / A91) ──
+    # Promotes the previously inline /auth/login body + response to named
+    # schemas, and captures the /auth/refresh response shape introduced by A77.
+    # Wave-19 / A91 adds AuthMeResponse and documents the jti claim now emitted
+    # by signJWT (apps/api/src/lib/jwt.ts) for revocation support.
+    AuthLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password, minLength: 8 }
+        rememberMe: { type: boolean, default: false }
+
+    AuthSessionEnvelope:
+      type: object
+      description: |
+        Shared envelope returned by /auth/login and /auth/refresh.
+        `token` is an HS256 JWT carrying claims:
+          - sub: User.id
+          - email: User.email
+          - scopes: string[]
+          - iat: unix-seconds issuance time
+          - exp: unix-seconds expiry (iat + 3600 by default)
+          - jti: UUID v4 — opaque token id, used by the revocation list
+            (Wave-19 / A91). Old tokens without `jti` remain accepted for
+            backward compatibility, but cannot be revoked individually.
+      required: [user, token, expiresAt]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        token:
+          type: string
+          description: HS256 JWT (`header.payload.signature`).
+        expiresAt:
+          type: string
+          format: date-time
+          description: ISO-8601 of the token's `exp` (informational).
+
+    AuthLoginResponse:
+      $ref: '#/components/schemas/AuthSessionEnvelope'
+
+    AuthRefreshResponse:
+      $ref: '#/components/schemas/AuthSessionEnvelope'
+
+    # /auth/me wraps the User in the canonical `{ data }` envelope. Promoting
+    # the inline shape to a named schema lets generated TS clients reference a
+    # stable type rather than an anonymous object.
+    AuthMeResponse:
+      type: object
+      required: [data]
+      properties:
+        data: { $ref: '#/components/schemas/User' }
+
+    # ── Listing ──
+    ListingStatus:
+      type: string
+      enum: [Aktif, Pasif, Taslak]
+
+    ListingType:
+      type: string
+      enum: [İmarlı, Tarla, Zeytinlik, Villa Arsası]
+
+    Listing:
+      type: object
+      required: [id, title, city, district, type, size, price, status, views, weeklyTrend, lastUpdate, tags]
+      properties:
+        id: { type: string, examples: ['28.AY.0142'] }
+        title: { type: string }
+        city: { type: string }
+        district: { type: string }
+        type: { $ref: '#/components/schemas/ListingType' }
+        size: { type: integer, minimum: 1, description: m² }
+        price: { type: integer, minimum: 0, description: TL }
+        status: { $ref: '#/components/schemas/ListingStatus' }
+        views: { type: integer, minimum: 0 }
+        weeklyTrend:
+          type: array
+          items: { type: integer, minimum: 0 }
+          minItems: 7
+          maxItems: 7
+        lastUpdate: { type: string, format: date-time }
+        tags:
+          type: array
+          items: { type: string }
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+          nullable: true
+        lng:
+          type: number
+          minimum: -180
+          maximum: 180
+          nullable: true
+
+    ListingCreateInput:
+      type: object
+      required: [title, city, district, type, size, price]
+      properties:
+        title: { type: string, minLength: 5, maxLength: 240 }
+        city: { type: string }
+        district: { type: string }
+        type: { $ref: '#/components/schemas/ListingType' }
+        size: { type: integer, minimum: 1 }
+        price: { type: integer, minimum: 0 }
+        status: { $ref: '#/components/schemas/ListingStatus' }
+        tags:
+          type: array
+          items: { type: string }
+        lat: { type: number, nullable: true }
+        lng: { type: number, nullable: true }
+
+    ListingPatchInput:
+      type: object
+      properties:
+        title: { type: string }
+        price: { type: integer, minimum: 0 }
+        status: { $ref: '#/components/schemas/ListingStatus' }
+        tags:
+          type: array
+          items: { type: string }
+
+    # ── Customer ──
+    CustomerSegment:
+      type: string
+      enum: [Sıcak, Ilık, Soğuk]
+
+    CustomerStage:
+      type: string
+      enum: [İlk temas, Görüşme, Teklif, Kaparo, Tapu]
+
+    Customer:
+      type: object
+      required: [id, name, segment, stage, lastContact, value, source, owner, interestArea]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        segment: { $ref: '#/components/schemas/CustomerSegment' }
+        stage: { $ref: '#/components/schemas/CustomerStage' }
+        lastContact: { type: string, format: date-time }
+        value: { type: integer, minimum: 0 }
+        source:
+          type: string
+          enum: [Sahibinden, Hürriyet Emlak, Referans, Sosyal Medya, Walk-in]
+        owner: { type: string }
+        interestArea: { type: string }
+        notes:
+          type: string
+          nullable: true
+
+    # ── Deal ──
+    DealStatus:
+      type: string
+      enum: [Aktif, Bekliyor, Risk]
+
+    Deal:
+      type: object
+      required: [id, customerId, listingId, stage, status, value, daysInStage]
+      properties:
+        id: { type: string }
+        customerId: { type: string }
+        listingId: { type: string }
+        stage: { $ref: '#/components/schemas/CustomerStage' }
+        status: { $ref: '#/components/schemas/DealStatus' }
+        value: { type: integer, minimum: 0 }
+        daysInStage: { type: integer, minimum: 0 }
+        commissionPct:
+          type: number
+          minimum: 0
+          maximum: 1
+        notes:
+          type: string
+          nullable: true
+
+    # ── Auth + User ──
+    User:
+      type: object
+      required: [id, email, name, role, tenantId, createdAt]
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        name: { type: string }
+        role:
+          type: string
+          enum: [tenant-admin, tenant-member, buyer, super-admin, support, compliance, readonly-auditor]
+        tenantId:
+          type: string
+          nullable: true
+        createdAt: { type: string, format: date-time }
+
+    # ── Office (public) ──
+    Office:
+      type: object
+      required: [id, slug, name, city, district, description, founded, agentCount, listingCount, rating, reviewCount]
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        name: { type: string }
+        city: { type: string }
+        district: { type: string }
+        description: { type: string }
+        founded: { type: integer, minimum: 1900 }
+        agentCount: { type: integer, minimum: 0 }
+        listingCount: { type: integer, minimum: 0 }
+        rating: { type: number, minimum: 0, maximum: 5 }
+        reviewCount: { type: integer, minimum: 0 }
+        phone: { type: string }
+        email: { type: string, format: email }
+        whatsapp: { type: string }
+        address: { type: string }
+        hours: { type: string }
+        specialties:
+          type: array
+          items: { type: string }
+
+    # ── Region (public) ──
+    Region:
+      type: object
+      required: [slug, name, city, description, marketStats, highlights]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        city: { type: string }
+        description: { type: string }
+        marketStats:
+          type: object
+          required: [avgPricePerSqm, activeBuyers, avgDealDays, yoy]
+          properties:
+            avgPricePerSqm: { type: integer }
+            activeBuyers: { type: integer }
+            avgDealDays: { type: integer }
+            yoy: { type: string }
+        highlights:
+          type: array
+          items: { type: string }
+
+    # ── Super-admin: Tenant ──
+    Tenant:
+      type: object
+      required: [id, name, city, plan, mrr, listingCount, userCount, lastActiveAt, status, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        city: { type: string }
+        plan:
+          type: string
+          enum: [Free, Pro, Enterprise]
+        mrr: { type: integer, minimum: 0 }
+        listingCount: { type: integer, minimum: 0 }
+        userCount: { type: integer, minimum: 0 }
+        lastActiveAt: { type: string, format: date-time }
+        status:
+          type: string
+          enum: [Aktif, Trial, Askıda, Churned]
+        createdAt: { type: string, format: date-time }
+
+    # ── Audit ──
+    AuditEntry:
+      type: object
+      required: [id, actor, action, resourceType, resourceId, ip, userAgent, outcome, at]
+      properties:
+        id: { type: string }
+        actor: { type: string }
+        action: { type: string }
+        resourceType: { type: string }
+        resourceId: { type: string }
+        tenantId:
+          type: string
+          nullable: true
+        ip: { type: string }
+        userAgent: { type: string }
+        outcome:
+          type: string
+          enum: [success, failure]
+        metadata:
+          type: object
+          additionalProperties: true
+        at: { type: string, format: date-time }
+
+    # ── Finance (Wave-16 / A76) ──
+    # Appended at the bottom to avoid YAML merge conflicts with A78's
+    # parallel schema drift fix. Keep contiguous.
+    FinanceTransactionKind:
+      type: string
+      enum: [income, expense]
+
+    FinanceTransactionStatus:
+      type: string
+      enum: [Tamamlandı, Bekliyor, Gecikmiş]
+
+    FinanceTransactionCategory:
+      type: string
+      enum: [Tahsilat, Komisyon, Gider, Vergi]
+
+    FinanceTransaction:
+      type: object
+      required: [id, date, amount, currency, kind, category, status]
+      properties:
+        id: { type: string }
+        date: { type: string, format: date-time }
+        amount: { type: number }
+        currency:
+          type: string
+          enum: [TRY, USD, EUR]
+          default: TRY
+        kind: { $ref: '#/components/schemas/FinanceTransactionKind' }
+        category: { $ref: '#/components/schemas/FinanceTransactionCategory' }
+        status: { $ref: '#/components/schemas/FinanceTransactionStatus' }
+        customerId:
+          type: string
+          nullable: true
+        dealId:
+          type: string
+          nullable: true
+        party:
+          type: string
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        daysOverdue:
+          type: integer
+          minimum: 0
+          nullable: true
+
+    FinanceCashflowPoint:
+      type: object
+      required: [period, inflow, outflow]
+      properties:
+        period: { type: string, description: 'YYYY-MM or short month label' }
+        inflow: { type: number, minimum: 0 }
+        outflow: { type: number, minimum: 0 }
+        net: { type: number }
+
+    FinanceKPI:
+      type: object
+      required: [total, avg, lastMonthDelta, forecast]
+      properties:
+        total: { type: number }
+        avg: { type: number }
+        lastMonthDelta: { type: number, description: 'signed % delta vs previous month' }
+        forecast: { type: number, description: 'projected next-month net' }
+        tahsilatBuMonth: { type: number }
+        komisyonBuMonth: { type: number }
+        giderBuMonth: { type: number }
+        bekleyen: { type: number }
+
+    FinanceAgingBucket:
+      type: object
+      required: [label, count, amount]
+      properties:
+        label: { type: string, examples: ['< 7 gün', '7-30 gün', '30+ gün'] }
+        count: { type: integer, minimum: 0 }
+        amount: { type: number, minimum: 0 }
+
+    # ── Wave-18 / A88 — Faz 12.8.b ── Schema completion (drift fix #2) ──
+    # Append-only to avoid YAML merge conflicts with A85/A87/A89 running in
+    # parallel. Keep this section contiguous.
+
+    # Liveness probe response — matches apps/api/src/routes/health.ts.
+    # `uptime` is seconds-since-process-start (3 d.p.), `version` is the
+    # package version string (currently '0.1.0-mvp').
+    HealthResponse:
+      type: object
+      required: [ok, version, uptime]
+      properties:
+        ok: { type: boolean, examples: [true] }
+        version: { type: string, examples: ['0.1.0-mvp'] }
+        uptime:
+          type: number
+          minimum: 0
+          description: 'Seconds since process start (3 d.p.)'
+          examples: [123.456]
+
+    # Customer mutation inputs (Wave-16 / A70) — finally documented in
+    # Wave-18 / A88. Mirrors validateCreateCustomerInput /
+    # validatePatchCustomerInput in apps/api/src/routes/customers.ts.
+    CustomerCreateInput:
+      type: object
+      required: [name, segment, stage, value, source, owner, interestArea]
+      properties:
+        name: { type: string, minLength: 1, examples: ['Mehmet Demir'] }
+        segment: { $ref: '#/components/schemas/CustomerSegment' }
+        stage: { $ref: '#/components/schemas/CustomerStage' }
+        value:
+          type: integer
+          minimum: 0
+          description: 'Estimated lifetime value (TL)'
+          examples: [4500000]
+        source:
+          type: string
+          enum: [Sahibinden, Hürriyet Emlak, Referans, Sosyal Medya, Walk-in]
+        owner: { type: string, minLength: 1, examples: ['Ayşe Yılmaz'] }
+        interestArea: { type: string, minLength: 1, examples: ['Çeşme tarla'] }
+        lastContact:
+          type: string
+          format: date-time
+          description: |
+            Optional ISO-8601 timestamp of the most recent touchpoint. When
+            absent the API stamps `new Date().toISOString()` at create-time.
+        notes:
+          type: string
+          nullable: true
+
+    CustomerPatchInput:
+      type: object
+      description: |
+        All properties optional — only fields present in the body are
+        applied. The API auto-refreshes `lastContact` to `now` on every
+        successful PATCH (see apps/api/src/routes/customers.ts).
+      properties:
+        name: { type: string, minLength: 1 }
+        segment: { $ref: '#/components/schemas/CustomerSegment' }
+        stage: { $ref: '#/components/schemas/CustomerStage' }
+        value: { type: integer, minimum: 0 }
+        owner: { type: string, minLength: 1 }
+        interestArea: { type: string, minLength: 1 }
+        notes:
+          type: string
+          nullable: true
+
+    # Aggregate count responses — flat objects keyed by the enum literals.
+    # NOTE: keys are TR-locale UTF-8 (`Sıcak`, `Ilık`, `Soğuk` /
+    # `Aktif`, `Pasif`, `Taslak`). Matches the enum schemas
+    # (ListingStatus / CustomerSegment) declared above.
+    ListingStatusCounts:
+      type: object
+      required: [Aktif, Pasif, Taslak]
+      description: 'Counts per ListingStatus (post-mutation in-memory view).'
+      properties:
+        Aktif: { type: integer, minimum: 0, examples: [42] }
+        Pasif: { type: integer, minimum: 0, examples: [7] }
+        Taslak: { type: integer, minimum: 0, examples: [3] }
+      additionalProperties: false
+
+    CustomerSegmentCounts:
+      type: object
+      required: [Sıcak, Ilık, Soğuk]
+      description: 'Counts per CustomerSegment (post-mutation in-memory view).'
+      properties:
+        Sıcak: { type: integer, minimum: 0, examples: [12] }
+        Ilık: { type: integer, minimum: 0, examples: [25] }
+        Soğuk: { type: integer, minimum: 0, examples: [38] }
+      additionalProperties: false
+
+    # Documentation-only schema describing the rate-limit triplet emitted by
+    # apps/api/src/lib/rate-limit.ts on every `/api/v1/*` response. The
+    # actual response-header surface is enumerated under `components.headers`
+    # (XRateLimitLimit / XRateLimitRemaining / XRateLimitReset / RetryAfter).
+    # Kept here so SDK generators can produce a typed `RateLimitHeaders`
+    # struct if useful — e.g. for a request-logger middleware (A83 / A87).
+    RateLimitHeaders:
+      type: object
+      description: |
+        RFC 6585 §4 + RFC 7231 §7.1.3 — the four headers emitted by the
+        rate-limit middleware. `Retry-After` is only present on 429
+        responses; the other three appear on every limited response.
+      properties:
+        X-RateLimit-Limit:
+          type: integer
+          minimum: 1
+          description: 'Max requests per window (60 for /api/v1/*, 10 for /auth/login).'
+          examples: [60]
+        X-RateLimit-Remaining:
+          type: integer
+          minimum: 0
+          description: 'Tokens left in the current window for this client bucket.'
+          examples: [59]
+        X-RateLimit-Reset:
+          type: integer
+          minimum: 0
+          description: 'Unix-seconds at which the bucket fully refills.'
+          examples: [1715520060]
+        Retry-After:
+          type: integer
+          minimum: 1
+          description: 'Seconds to wait before retrying (429 responses only).'
+          examples: [42]

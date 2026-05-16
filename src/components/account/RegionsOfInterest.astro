@@ -1,0 +1,25 @@
+---
+import { REGIONS_OF_INTEREST } from '@landx/data'
+---
+<section class="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5">
+  <header class="flex items-baseline justify-between gap-2">
+    <h2 class="font-serif text-xl tracking-tight">İlgilendiğin bölgeler</h2>
+    <a href="/bolge" class="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+      Tüm bölgeler →
+    </a>
+  </header>
+  <div class="grid gap-3 sm:grid-cols-3">
+    {REGIONS_OF_INTEREST.map((r) => (
+      <a
+        href={`/bolge/${r.slug}`}
+        class="group flex flex-col gap-1 rounded-xl border border-border bg-background p-4 transition hover:border-foreground/20 hover:bg-foreground/[0.02]"
+      >
+        <span class="font-serif text-lg leading-tight tracking-tight">{r.name}</span>
+        <span class="text-xs text-muted-foreground">{r.subtitle}</span>
+        <span class="mt-2 text-xs text-muted-foreground group-hover:text-foreground">
+          Bölge sayfasını aç →
+        </span>
+      </a>
+    ))}
+  </div>
+</section>

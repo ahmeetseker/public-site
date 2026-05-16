@@ -1,0 +1,30 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import SupportTickets from '@/components/account/SupportTickets.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const isEn = locale === 'en'
+---
+
+<RootLayout
+  title={isEn ? 'Support — arsam.net' : 'Destek — arsam.net'}
+  description={isEn
+    ? 'Open and track your arsam.net support tickets.'
+    : 'arsam.net destek taleplerini oluştur ve takip et.'}
+>
+  <AuthGuard />
+  <AccountLayout active="destek">
+    <PageHeader
+      eyebrow={isEn ? 'ACCOUNT · SUPPORT' : 'HESAP · DESTEK'}
+      title={isEn ? 'Support tickets' : 'Destek talepleri'}
+      description={isEn
+        ? 'Reach our support team — we typically respond within 24 hours.'
+        : 'Destek ekibimize ulaş — genellikle 24 saat içinde dönüş yapıyoruz.'}
+    />
+    <SupportTickets client:visible />
+  </AccountLayout>
+</RootLayout>

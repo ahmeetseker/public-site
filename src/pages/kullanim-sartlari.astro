@@ -1,0 +1,176 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import LegalLayout from '@/components/legal/LegalLayout.astro'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: terms-of-use body is TR-canonical regulatory text.
+
+const sections = [
+  { id: 'genel-hukumler', title: '1. Genel Hükümler' },
+  { id: 'uyelik', title: '2. Üyelik ve Hesap' },
+  { id: 'yukumlulukler', title: '3. Kullanıcı Yükümlülükleri' },
+  { id: 'ilan-icerigi', title: '4. İlan İçeriği' },
+  { id: 'hizmet-bedelleri', title: '5. Hizmet Bedelleri' },
+  { id: 'sorumluluk-reddi', title: '6. Sorumluluk Reddi' },
+  { id: 'mucbir-sebepler', title: '7. Mücbir Sebepler' },
+  { id: 'yetkili-mahkeme', title: '8. Yetkili Mahkeme' },
+  { id: 'yururluk', title: '9. Yürürlük' },
+]
+---
+<RootLayout
+  title={t('legal.termsTitle', locale)}
+  description={t('legal.termsDescription', locale)}
+>
+  <div
+    class:list={[
+      'legal-page-shell mx-auto max-w-prose px-0',
+      'sm:px-1 sm:text-[0.95rem]',
+      'md:px-2 md:text-base',
+      'lg:px-0 lg:text-[1.0625rem]',
+    ]}
+  >
+  <LegalLayout
+    title="Kullanım Şartları"
+    lastUpdated="2026-05-11"
+    sections={sections}
+  >
+    <h2 id="genel-hukumler">1. Genel Hükümler</h2>
+    <p>
+      İşbu Kullanım Şartları, <strong>arsam.net</strong> ("Platform") üzerinde sunulan tüm hizmetleri kapsar. Platform'a
+      erişen, kaydolan veya hizmetleri kullanan her gerçek ya da tüzel kişi ("Kullanıcı"), bu şartları okuduğunu, anladığını
+      ve kabul ettiğini beyan eder. Şartları kabul etmiyorsanız Platform'u kullanmamalısınız.
+    </p>
+    <p>
+      arsam.net; emlak ofislerinin arsa, tarla, zeytinlik ve benzeri taşınmazları listelemesini, alıcı/satıcıların bu ilanları
+      görüntülemesini ve doğrudan ofislerle iletişim kurmasını sağlayan bir aracı dijital pazaryeridir. arsam.net,
+      ilanlardaki taşınmazların maliki, satıcısı veya alıcısı değildir.
+    </p>
+
+    <h2 id="uyelik">2. Üyelik ve Hesap</h2>
+    <ul>
+      <li>
+        Üye olmak için <strong>18 yaşını doldurmuş</strong> ve fiil ehliyetine sahip olmak gerekir. Tüzel kişiler adına
+        kayıt yapan kişiler, ilgili tüzel kişiyi temsil yetkisine sahip olduğunu beyan eder.
+      </li>
+      <li>
+        Kayıt sırasında verilen bilgilerin <strong>doğru, güncel ve eksiksiz</strong> olması zorunludur. Yanlış / yanıltıcı
+        bilgi verilmesi durumunda arsam.net hesabı askıya alma veya kapatma hakkını saklı tutar.
+      </li>
+      <li>
+        Hesap kimlik bilgileri (e-posta, parola) Kullanıcı'nın sorumluluğundadır. Üçüncü kişilerce yetkisiz erişim
+        sezildiğinde derhal <a href="mailto:hello@arsam.net">hello@arsam.net</a> üzerinden bildirilmelidir.
+      </li>
+      <li>
+        arsam.net; sözleşmeye veya yasaya aykırı kullanım tespit ettiği hesapları, önceden bildirimde bulunmaksızın
+        askıya alma, içerikleri kaldırma veya hesabı sonlandırma hakkına sahiptir.
+      </li>
+    </ul>
+
+    <h2 id="yukumlulukler">3. Kullanıcı Yükümlülükleri</h2>
+    <p>Kullanıcı, Platform'u kullanırken aşağıdaki kurallara uymayı kabul eder:</p>
+    <ul>
+      <li>Yürürlükteki Türkiye Cumhuriyeti mevzuatına, kamu düzenine ve ahlaka uygun davranmak.</li>
+      <li>Üçüncü kişilerin <strong>fikri ve sınai mülkiyet</strong> haklarını (telif, marka, patent) ihlal etmemek.</li>
+      <li>Yanıltıcı, hakaret içeren, ırkçı, ayrımcı veya nefret söylemine konu içerik paylaşmamak.</li>
+      <li>Spam, toplu mesaj, otomatik yazılım (bot/scraper) veya servis kötüye kullanımı yapmamak.</li>
+      <li>Diğer kullanıcıların kişisel verilerini izinsiz toplamamak, depolamamak veya iletmemek.</li>
+      <li>Platform güvenliğini tehlikeye atan herhangi bir teknik müdahalede bulunmamak (zafiyet sömürüsü, DDoS, vb.).</li>
+      <li>arsam.net markası ve ticari adının yetkisiz kullanımından kaçınmak.</li>
+    </ul>
+
+    <h2 id="ilan-icerigi">4. İlan İçeriği</h2>
+    <p>
+      Platform'da ilan yayınlayan ofis ve kullanıcılar, aşağıdaki kurallara uymakla yükümlüdür:
+    </p>
+    <ul>
+      <li>
+        İlanın <strong>konum, alan, imar durumu, tapu bilgisi, fiyat</strong> gibi temel bilgilerinin doğru ve güncel olması;
+        gerçeğe aykırı veya yanıltıcı tanıtım yapılmaması.
+      </li>
+      <li>
+        İlana eklenen <strong>fotoğraf ve görsellerin</strong>, yalnızca ilanı veren ofisin sahibi olduğu, telif veya kullanım
+        izninin bulunduğu görseller olması; başka ilanlardan, drone çekimi sağlayıcılardan veya internetten izinsiz alınan
+        görsellerin kullanılmaması.
+      </li>
+      <li>
+        Aynı taşınmazın farklı / yanıltıcı bilgilerle birden çok ilan olarak yayımlanmaması.
+      </li>
+      <li>
+        <strong>Dolandırıcılık</strong>, tapuda yetkisi olunmayan taşınmazın satışı, kapora tuzakları, sahte yatırım fırsatı
+        sunumu kesinlikle yasaktır. Tespit edilmesi hâlinde ilgili ilan kaldırılır, hesap kapatılır ve gerekli durumlarda
+        yetkili mercilere bildirimde bulunulur.
+      </li>
+      <li>
+        Hizmet bedeline ilişkin açıklama belirsiz veya yanıltıcı olmamalı; komisyon ve ek ücretler ilan açıklamasında
+        şeffaf şekilde belirtilmelidir.
+      </li>
+    </ul>
+
+    <h2 id="hizmet-bedelleri">5. Hizmet Bedelleri</h2>
+    <p>
+      arsam.net, ofisler için aşağıdaki kademeli hizmet modelini sunar <em>(TODO: fiyatlandırma seti finalize edildiğinde
+      güncellenecek)</em>:
+    </p>
+    <ul>
+      <li><strong>Atölye Temel:</strong> sınırlı sayıda ilan ve temel araçlarla ücretsiz başlangıç paketi.</li>
+      <li><strong>Atölye Pro:</strong> sınırsız ilan, gelişmiş analitik, müşteri yönetimi ve premium konumlandırma içeren ücretli plan.</li>
+      <li><strong>Atölye Kurumsal:</strong> çok kullanıcılı ofisler, takım yönetimi, özel destek ve yıllık sözleşme bazlı plan.</li>
+    </ul>
+    <p>
+      Ücretli planlar, üyelik panelinde belirtilen koşullar ve süreler dahilinde tahsil edilir. Plan değişiklikleri
+      ileriye etkili olarak uygulanır; ödenmiş dönem için iade, mevzuatın gerektirdiği hâller hariç yapılmaz.
+    </p>
+
+    <h2 id="sorumluluk-reddi">6. Sorumluluk Reddi</h2>
+    <p>
+      arsam.net; ilanlardaki taşınmazların satıcısı, alıcısı, mülk sahibi veya garantörü değildir. Platform yalnızca
+      taraflar arasındaki iletişimi kolaylaştıran <strong>aracı bir hizmet sağlayıcı</strong> konumundadır.
+    </p>
+    <ul>
+      <li>
+        Taşınmazın hukuki / fiili durumu, tapu kaydı, ipotek/şerh, imar durumu, fiziki muayenesi ve sözleşme sürecinin
+        bütünü alıcı ve satıcı arasındaki ilişkide yürütülür. arsam.net bu süreçte taraf değildir ve doğacak zararlardan
+        sorumlu tutulamaz.
+      </li>
+      <li>
+        İlan içeriklerinin doğruluğundan, görsellerin sahipliğinden ve ilanda taahhüt edilenlerin yerine getirilmesinden
+        ilanı veren ofis sorumludur.
+      </li>
+      <li>
+        Platform hizmetleri "olduğu gibi" sunulur; arsam.net, ticari kullanıma uygunluk veya kesintisiz erişim
+        konusunda zımni garanti vermez. Olağan bakım, güvenlik güncellemeleri veya altyapı sorunları nedeniyle hizmetlerde
+        geçici kesintiler yaşanabilir.
+      </li>
+    </ul>
+
+    <h2 id="mucbir-sebepler">7. Mücbir Sebepler</h2>
+    <p>
+      Doğal afet, salgın hastalık, savaş, terör, siber saldırı, internet altyapısı kesintisi, yetkili merciin getirdiği
+      yasak veya kısıtlamalar, enerji kesintisi gibi tarafların makul kontrolü dışında gelişen olaylar mücbir sebep
+      sayılır. Mücbir sebep süresince yükümlülüklerin yerine getirilememesi, taraflar için ihlâl oluşturmaz.
+    </p>
+
+    <h2 id="yetkili-mahkeme">8. Yetkili Mahkeme</h2>
+    <p>
+      İşbu şartlardan kaynaklanan uyuşmazlıklarda <strong>Türk hukuku</strong> uygulanır. Uyuşmazlıkların çözümünde
+      <strong>İstanbul Anadolu Mahkemeleri ve İcra Daireleri</strong> yetkilidir. Tüketici sıfatı taşıyan kullanıcıların
+      6502 sayılı Tüketicinin Korunması Hakkında Kanun'dan doğan hakları saklıdır.
+    </p>
+
+    <h2 id="yururluk">9. Yürürlük</h2>
+    <p>
+      Bu kullanım şartları, Platform'da yayımlandığı tarihte yürürlüğe girer ve aksi belirtilmedikçe yürürlükte kalır.
+      arsam.net; tek taraflı olarak şartlarda değişiklik yapma hakkını saklı tutar. Önemli değişiklikler kullanıcılara
+      e-posta ve/veya site içi bildirim yoluyla duyurulur. Değişiklik sonrası Platform'un kullanılmaya devam edilmesi,
+      güncel şartların kabul edildiği anlamına gelir.
+    </p>
+
+    <blockquote>
+      <strong>Not:</strong> Bu metin Faz 9 MVP için hazırlanan <strong>örnek boilerplate</strong>'tir. Yayına almadan önce
+      uzman hukuk danışmanı tarafından incelenmeli; fiyatlandırma, yetkili mahkeme tercihi ve sorumluluk maddeleri
+      kurumsal politika ve mevzuat ile uyumlulaştırılmalıdır.
+    </blockquote>
+  </LegalLayout>
+  </div>
+</RootLayout>

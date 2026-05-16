@@ -1,0 +1,72 @@
+---
+// Wave F32 W1A — /odeme: ödeme akışı (PaymentForm island).
+//
+// Astro shell SEO meta + breadcrumb. Tüm form, validation ve mutation logic
+// island içinde (`PaymentForm.tsx`). URL'den `?plan=` Astro tarafında okunur,
+// island'a prop olarak iletilir — böylece initial render hidrasyon-safe.
+import RootLayout from '@/layouts/RootLayout.astro'
+import { detectLocaleFromPath } from '@/i18n'
+import PaymentForm from '@/components/billing/PaymentForm.tsx'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const planParam = Astro.url.searchParams.get('plan') ?? undefined
+
+const title = locale === 'en' ? 'Checkout — LandX' : 'Ödeme — LandX'
+const description =
+  locale === 'en'
+    ? 'Complete your LandX membership purchase. Card, bank transfer, or wallet supported.'
+    : 'LandX üyelik ödemenizi tamamlayın. Kart, havale veya cüzdan ile ödeme.'
+
+const labels = {
+  eyebrow: locale === 'en' ? 'CHECKOUT · SECURE' : 'ÖDEME · GÜVENLİ',
+  heading: locale === 'en' ? 'Complete your' : 'Ödemeyi',
+  emphasis: locale === 'en' ? 'order.' : 'tamamlayın.',
+  crumbHome: locale === 'en' ? 'Home' : 'Anasayfa',
+  crumbPremium: locale === 'en' ? 'Premium' : 'Premium',
+  crumbHere: locale === 'en' ? 'Checkout' : 'Ödeme',
+}
+---
+
+<RootLayout title={title} description={description}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, follow" />
+  </Fragment>
+
+  <section class="mx-auto max-w-[1200px] px-4 py-10 md:py-14">
+    <nav aria-label={locale === 'en' ? 'Breadcrumb' : 'Sayfa hiyerarşisi'} class="mb-3">
+      <ol
+        class="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
+      >
+        <li>
+          <a href={`${prefix}/`} class="transition hover:text-foreground">{labels.crumbHome}</a>
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li>
+          <a href={`${prefix}/premium`} class="transition hover:text-foreground"
+            >{labels.crumbPremium}</a
+          >
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li class="text-foreground" aria-current="page">{labels.crumbHere}</li>
+      </ol>
+    </nav>
+
+    <header class="mb-8 max-w-2xl">
+      <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {labels.eyebrow}
+      </p>
+      <h1
+        class="mt-3 font-serif text-4xl font-normal leading-tight tracking-tight text-foreground md:text-5xl"
+      >
+        {labels.heading}{' '}
+        <em class="font-serif italic font-normal text-foreground/80">{labels.emphasis}</em>
+      </h1>
+      <p class="mt-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+        {description}
+      </p>
+    </header>
+
+    <PaymentForm client:only="react" locale={locale} initialPlan={planParam} />
+  </section>
+</RootLayout>

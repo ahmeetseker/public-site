@@ -1,0 +1,63 @@
+---
+import type { Office } from '@landx/data'
+
+export interface Props {
+  office: Office
+}
+
+const { office } = Astro.props
+
+// Turkish name initials — first letter of first two words.
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toLocaleUpperCase('tr-TR') ?? '')
+    .join('')
+}
+---
+
+<section aria-labelledby="ofis-ekip" class="rounded-2xl border border-border bg-card p-5 md:p-6">
+  <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+    EKİP
+  </div>
+  <h2 id="ofis-ekip" class="mt-1 font-serif text-2xl font-normal tracking-tight md:text-3xl">
+    Satış <em class="italic">uzmanları</em>
+  </h2>
+
+  <ul class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+    {office.team.map((m) => (
+      <li class="flex items-center gap-3 rounded-xl border border-border bg-background p-3">
+        <div
+          class="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-accent font-mono text-xs font-medium text-accent-foreground"
+          aria-hidden="true"
+        >
+          {initials(m.name)}
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="truncate font-serif text-[15px] font-medium tracking-tight">{m.name}</div>
+          <div class="truncate text-xs text-muted-foreground">{m.role}</div>
+        </div>
+        <a
+          href={`tel:${m.phone.replace(/\s+/g, '')}`}
+          class="inline-flex shrink-0 items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 font-mono text-xs text-foreground transition hover:bg-foreground/5"
+          aria-label={`${m.name} telefon`}
+        >
+          <svg
+            class="h-3 w-3"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92Z" />
+          </svg>
+          <span class="tabular-nums">{m.phone}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

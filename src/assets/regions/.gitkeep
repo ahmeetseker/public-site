@@ -1,0 +1,7 @@
+# Place region cover photos here as {region.slug}.webp.
+#
+# Convention (matches RegionImage.astro):
+# - Default ratio 4/3, source >= 1280×960 (hero pages may use 16/9).
+# - Filename: `<region.slug>.webp` (e.g., `ayvalik.webp`).
+# - Until a real file exists, RegionImage falls back to a deterministic
+#   gradient placeholder labelled with the first 4 chars of the region name.

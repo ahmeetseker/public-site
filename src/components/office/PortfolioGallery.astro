@@ -1,0 +1,112 @@
+---
+// Wave F9.C — Office portfolio gallery
+// Top 6 active listings per office + "see all" CTA.
+//
+// Sits beside the older `PortfolioGrid` (which still receives the older
+// `district.includes(...)` filter and shows up to 9 cards). This newer
+// gallery uses the deterministic `getOfficeListings()` helper so every
+// office gets a stable set of exactly-6 cards regardless of which districts
+// the global LISTINGS mock happens to mention.
+import type { Listing, Office } from '@landx/data'
+import { getOfficeListings } from '@/lib/office-portfolio'
+import { t, type Locale } from '@/i18n'
+
+export interface Props {
+  office: Office
+  locale: Locale
+  prefix: string
+}
+
+const { office, locale, prefix } = Astro.props
+const listings: Listing[] = getOfficeListings(office.id, 6)
+
+const fmtPrice = (price: number) =>
+  price.toLocaleString(locale === 'en' ? 'en-US' : 'tr-TR')
+const fmtSize = (size: number) =>
+  size.toLocaleString(locale === 'en' ? 'en-US' : 'tr-TR')
+
+const slugify = (l: Listing) => l.id.replace(/\./g, '-').toLowerCase()
+
+const seeAllHref = `${prefix}/ara?ofis=${office.slug}`
+---
+
+<section
+  aria-labelledby="ofis-portfolio-gallery"
+  data-office-portfolio-gallery=""
+  class="rounded-2xl border border-border bg-card p-5 md:p-6"
+>
+  <div class="flex flex-wrap items-end justify-between gap-2">
+    <div>
+      <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {t('officeDetail.portfolioEyebrow', locale)}
+      </div>
+      <h2
+        id="ofis-portfolio-gallery"
+        class="mt-1 font-serif text-2xl font-normal tracking-tight md:text-3xl"
+      >
+        {t('officeDetail.portfolioTitle', locale)}
+      </h2>
+    </div>
+    <a
+      href={seeAllHref}
+      data-portfolio-see-all=""
+      class="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 font-mono text-xs uppercase tracking-wide text-foreground transition hover:border-foreground/40"
+    >
+      {t('officeDetail.portfolioSeeAll', locale)}
+      <span aria-hidden>→</span>
+    </a>
+  </div>
+
+  {listings.length === 0 ? (
+    <div
+      data-portfolio-empty=""
+      class="mt-5 rounded-xl border border-dashed border-border bg-background p-6 text-center text-sm text-muted-foreground"
+    >
+      {t('officeDetail.portfolioEmpty', locale)}
+    </div>
+  ) : (
+    <ul
+      data-portfolio-list=""
+      class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      {listings.map((l) => (
+        <li>
+          <a
+            href={`${prefix}/ilan/${slugify(l)}`}
+            data-portfolio-card=""
+            class="group block h-full rounded-xl border border-border bg-background p-4 transition hover:border-foreground/30 hover:bg-foreground/[0.02]"
+          >
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                {l.id}
+              </span>
+              <span class="inline-flex items-center rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">
+                {l.type}
+              </span>
+            </div>
+            <h3 class="mt-2 line-clamp-2 font-serif text-[15px] font-medium leading-snug tracking-tight">
+              {l.title}
+            </h3>
+            <div class="mt-2 text-xs text-muted-foreground">{l.district}</div>
+            <div class="mt-3 flex items-end justify-between gap-2 border-t border-border pt-3">
+              <div>
+                <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  m²
+                </div>
+                <div class="font-mono text-sm tabular-nums">{fmtSize(l.size)}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  {locale === 'en' ? 'TRY' : 'TL'}
+                </div>
+                <div class="font-serif text-base font-medium tabular-nums">
+                  {fmtPrice(l.price)}
+                </div>
+              </div>
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>

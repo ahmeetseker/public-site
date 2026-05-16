@@ -1,0 +1,30 @@
+---
+// Wave-5 / Agent-25 / Faz 9.11 — Ofisler index page hero / header.
+export interface Props {
+  officeCount: number
+  cityCount: number
+  avgRating: number
+}
+
+const { officeCount, cityCount, avgRating } = Astro.props
+---
+
+<section class="border-b border-border bg-card/40">
+  <div class="mx-auto max-w-[1280px] px-4 py-16 md:py-20">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      KEŞFET · OFİSLER
+    </div>
+    <h1 class="mt-3 font-serif text-4xl font-normal tracking-tight md:text-5xl">
+      <em class="font-serif italic font-normal">Doğrulanmış</em> emlak ofisleri
+    </h1>
+    <p class="mt-5 max-w-[68ch] text-base leading-relaxed text-muted-foreground md:text-lg">
+      Türkiye'nin sahildeki ve iç bölgelerindeki doğrulanmış emlak ofisleri. Aracısız
+      iletişim, şeffaf fiyat, tapuya kadar süreç yönetimi.
+    </p>
+    <div class="mt-6 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+      <span class="tabular-nums">{officeCount}</span> ofis · <span class="tabular-nums"
+        >{cityCount}</span
+      > il · ortalama <span class="tabular-nums">{avgRating.toFixed(1)}/5</span> müşteri puanı
+    </div>
+  </div>
+</section>

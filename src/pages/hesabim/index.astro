@@ -1,0 +1,79 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import StatsCards from '@/components/account/StatsCards.astro'
+import ActivityFeed from '@/components/account/ActivityFeed.astro'
+import RegionsOfInterest from '@/components/account/RegionsOfInterest.astro'
+import AccountStats from '@/components/account/AccountStats.tsx'
+import RecentActivity from '@/components/account/RecentActivity.tsx'
+import { BUYER } from '@landx/data'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: account dashboard body labels stay TR-canonical (post-MVP).
+---
+
+<RootLayout
+  title={t('account.pageTitle', locale)}
+  description={locale === 'en' ? 'arsam.net account overview, favorites, saved searches and recent activity.' : 'arsam.net hesap özeti, favoriler, kayıtlı aramalar ve son hareketler.'}
+>
+  <AuthGuard />
+  <AccountLayout active="dashboard">
+    <PageHeader
+      eyebrow="HESAP · GENEL BAKIŞ"
+      title={`Tekrar hoş geldin, ${BUYER.name.split(' ')[0]}.`}
+      emphasis="Bugün nereye bakalım?"
+      description="Favorilerin, kayıtlı aramaların ve ofislerle konuşmaların tek bir yerde."
+    />
+
+    <div class="flex flex-col gap-6">
+      <StatsCards />
+
+      <!-- Wave F3 / Agent-F3E — live React island stats backed by localStorage. -->
+      <section data-account-stats-island="">
+        <header class="flex items-baseline justify-between gap-2 pb-2">
+          <h2 class="font-serif text-lg tracking-tight">Hesabın</h2>
+          <span class="font-mono text-xs uppercase tracking-wide text-muted-foreground">
+            CANLI · TARAYICIDA
+          </span>
+        </header>
+        <AccountStats client:idle />
+      </section>
+
+      <div class="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
+        <ActivityFeed />
+        <RegionsOfInterest />
+      </div>
+
+      <RecentActivity client:idle />
+
+      <!-- Quick actions -->
+      <section class="flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-5">
+        <div class="min-w-0 flex-1">
+          <h2 class="font-serif text-lg tracking-tight">Hızlı eylemler</h2>
+          <p class="text-xs text-muted-foreground">Sık kullanılan yollar</p>
+        </div>
+        <a
+          href="/ara"
+          class="rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium transition hover:bg-foreground/5"
+        >
+          Yeni arama →
+        </a>
+        <a
+          href="/hesabim/favori"
+          class="rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium transition hover:bg-foreground/5"
+        >
+          Favorilerimi gör
+        </a>
+        <a
+          href="/hesabim/mesajlar"
+          class="rounded-xl bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+        >
+          Mesajları aç
+        </a>
+      </section>
+    </div>
+  </AccountLayout>
+</RootLayout>

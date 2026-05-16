@@ -1,0 +1,25 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import AiHistoryList from '@/components/account/AiHistoryList.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+---
+
+<RootLayout
+  title={locale === 'en' ? 'AI history — arsam.net' : 'AI geçmişi — arsam.net'}
+  description={locale === 'en' ? 'AI queries and natural-language searches you ran on arsam.net.' : 'AI ile yaptığın doğal dilden aramalar ve önerilen filtre eşleşmeleri.'}
+>
+  <AuthGuard />
+  <AccountLayout active="ai-gecmis">
+    <PageHeader
+      eyebrow="HESAP · AI GEÇMİŞİ"
+      title="AI sorgu geçmişi"
+      description="Doğal dilden filtreye çevrilen sorgular — parse et, tekrar çalıştır, sil."
+    />
+    <AiHistoryList client:idle />
+  </AccountLayout>
+</RootLayout>

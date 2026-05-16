@@ -1,0 +1,59 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import { t } from '@/i18n'
+import CompareIsland from '@/components/compare/CompareIsland'
+import '@/styles/print.css'
+
+// Wave F4.A.3 — EN mirror of /karsilastir. See pages/karsilastir.astro for
+// the rationale behind switching to a client island. Locale is pinned to
+// 'en' here so the breadcrumb/island read the right dictionary regardless
+// of which route Astro hits.
+//
+// Wave F9.A — comparison capacity bumped 3→4, PDF export, and an
+// "only differences" toggle ship inside the island. See TR mirror for
+// the full rationale.
+//
+// Wave F24.B — capacity bumped 4 → 6 with the new responsive CompareGrid
+// surfacing emerald/rose DifferenceHighlight tints. EN locale rides the same
+// island; only the dictionary changes.
+
+const locale = 'en' as const
+const prefix = '/en'
+
+const title = t('compare.title', locale)
+const description = t('compare.description', locale)
+---
+
+<RootLayout title={title} description={description}>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, follow" />
+  </Fragment>
+
+  <section class="mx-auto max-w-[1400px] px-4 py-8 md:py-12">
+    <nav aria-label="Breadcrumb" class="mb-3">
+      <ol
+        class="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
+      >
+        <li>
+          <a href={`${prefix}/`} class="transition hover:text-foreground"
+            >{t('search.breadcrumbHome', locale)}</a
+          >
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li>
+          <a href={`${prefix}/ara`} class="transition hover:text-foreground"
+            >{t('search.breadcrumbSearch', locale)}</a
+          >
+        </li>
+        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
+        <li class="text-foreground" aria-current="page">Compare</li>
+      </ol>
+    </nav>
+
+    <h1 class="mb-4 text-2xl font-medium text-foreground md:text-3xl">
+      {title}
+    </h1>
+
+    <CompareIsland client:only="react" locale={locale} />
+  </section>
+</RootLayout>

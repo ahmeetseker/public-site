@@ -1,0 +1,22 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import NotificationInbox from '@/components/account/NotificationInbox.tsx'
+---
+
+<RootLayout
+  title="Bildirimler — arsam.net"
+  description="arsam.net sistem, mesaj ve ilan bildirimlerini yönet."
+>
+  <AuthGuard />
+  <AccountLayout active="bildirimler">
+    <PageHeader
+      eyebrow="HESAP · BİLDİRİMLER"
+      title="Bildirimler"
+      description="Sistem, mesaj ve ilan bildirimlerini buradan oku, sil veya tümünü okundu say."
+    />
+    <NotificationInbox client:visible />
+  </AccountLayout>
+</RootLayout>

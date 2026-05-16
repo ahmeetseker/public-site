@@ -1,0 +1,63 @@
+---
+import NewsletterForm from '@/components/newsletter/NewsletterForm'
+import { t, interpolate, detectLocaleFromPath, type Locale } from '@/i18n'
+
+export interface Props {
+  locale?: Locale
+}
+
+const locale: Locale = Astro.props.locale ?? detectLocaleFromPath(Astro.url.pathname)
+const prefix = locale === 'en' ? '/en' : ''
+const year = new Date().getFullYear()
+---
+<footer data-site-footer class="mt-20 border-t border-border bg-card/40">
+  <div class="mx-auto grid max-w-[1280px] grid-cols-1 gap-8 px-4 py-10 md:grid-cols-5">
+    <div>
+      <div class="font-serif text-lg tracking-tight">arsam<em class="italic font-normal text-muted-foreground">.net</em></div>
+      <p class="mt-2 max-w-[28ch] text-sm text-muted-foreground">{t('footer.description', locale)}</p>
+      <div class="mt-4">
+        <NewsletterForm client:visible />
+      </div>
+    </div>
+    <div>
+      <div class="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{t('footer.explore', locale)}</div>
+      <ul class="space-y-1.5 text-sm">
+        <li><a href={`${prefix}/ara`} class="transition hover:text-foreground">{t('footer.landSearch', locale)}</a></li>
+        <li><a href={`${prefix}/bolge`} class="transition hover:text-foreground">{t('footer.popularRegions', locale)}</a></li>
+        <li><a href={`${prefix}/ofisler`} class="transition hover:text-foreground">{t('footer.offices', locale)}</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{t('footer.company', locale)}</div>
+      <ul class="space-y-1.5 text-sm">
+        <li><a href={`${prefix}/hakkimizda`} class="transition hover:text-foreground">{t('footer.about', locale)}</a></li>
+        <li><a href={`${prefix}/sss`} class="transition hover:text-foreground">{t('footer.faq', locale)}</a></li>
+        <li><a href={`${prefix}/yardim`} class="transition hover:text-foreground">{t('footer.help', locale)}</a></li>
+        <li><a href={`${prefix}/blog`} class="transition hover:text-foreground">{t('footer.blog', locale)}</a></li>
+        <li><a href={`${prefix}/iletisim`} class="transition hover:text-foreground">{t('footer.contact', locale)}</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{t('footer.account', locale)}</div>
+      <ul class="space-y-1.5 text-sm">
+        <li><a href={`${prefix}/giris`} class="transition hover:text-foreground">{t('footer.login', locale)}</a></li>
+        <li><a href={`${prefix}/kayit`} class="transition hover:text-foreground">{t('footer.signup', locale)}</a></li>
+        <li><a href="/panel" class="transition hover:text-foreground">{t('footer.panel', locale)}</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{t('footer.legal', locale)}</div>
+      <ul class="space-y-1.5 text-sm">
+        <li><a href={`${prefix}/kvkk`} class="transition hover:text-foreground">{t('footer.kvkk', locale)}</a></li>
+        <li><a href={`${prefix}/cerez-politikasi`} class="transition hover:text-foreground">{t('footer.cookies', locale)}</a></li>
+        <li><a href={`${prefix}/kullanim-sartlari`} class="transition hover:text-foreground">{t('footer.terms', locale)}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="border-t border-border/60 px-4 py-4">
+    <div class="mx-auto flex max-w-[1280px] items-center justify-between text-xs text-muted-foreground">
+      <span>{interpolate(t('footer.rights', locale), { year })}</span>
+      <span class="font-mono">{t('footer.version', locale)}</span>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,42 @@
+---
+// Wave F32 / W4 — Bireysel kullanıcı ilan analitiği.
+// Faz 1 hook (`useUserAnalytics`) için QueryClientProvider public-site'da yok;
+// island doğrudan USER_ANALYTICS mock seed'inden okuyor. Faz 3+'ta provider
+// eklenince hook'a geçiş tek satır.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import PageHeader from '@/components/account/PageHeader.astro'
+import UserAnalyticsIsland from '@/components/content/UserAnalyticsIsland.tsx'
+import { detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+
+const title = locale === 'en' ? 'Listing analytics — arsam.net' : 'İlan analitiği — arsam.net'
+const description = locale === 'en'
+  ? 'Views, clicks and messages for your listings over the last 30 days.'
+  : 'Yayındaki ilanlarının son 30 gündeki görüntülenme, tıklama ve mesaj özeti.'
+
+const eyebrow = locale === 'en' ? 'ACCOUNT · ANALYTICS' : 'HESAP · ANALİTİK'
+const heading = locale === 'en' ? 'Your listing' : 'İlan'
+const emphasis = locale === 'en' ? 'analytics.' : 'analitiğin.'
+const headerDescription = locale === 'en'
+  ? 'Last 30 days: views, clicks, messages and your top performers.'
+  : 'Son 30 gün: görüntülenme, tıklama, mesaj ve en çok ilgi gören ilanların.'
+---
+
+<RootLayout title={title} description={description}>
+  <AuthGuard />
+  <AccountLayout active="dashboard">
+    <PageHeader
+      eyebrow={eyebrow}
+      title={heading}
+      emphasis={emphasis}
+      description={headerDescription}
+    />
+
+    <section data-analytics-island-wrap="" class="pb-6">
+      <UserAnalyticsIsland client:only="react" locale={locale} />
+    </section>
+  </AccountLayout>
+</RootLayout>

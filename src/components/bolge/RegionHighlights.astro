@@ -1,0 +1,47 @@
+---
+export interface Props {
+  highlights: string[]
+  region: string
+}
+
+const { highlights, region } = Astro.props
+---
+
+<section class="border-y border-border bg-card/40">
+  <div class="mx-auto max-w-[1280px] px-4 py-16 md:py-20">
+    <div class="grid gap-10 md:grid-cols-[280px_1fr] md:gap-16">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+          BÖLGE PROFİLİ
+        </div>
+        <h2 class="mt-2 font-serif text-3xl font-normal tracking-tight md:text-4xl">
+          {region}'ın <em class="font-serif italic font-normal">öne çıkanları</em>
+        </h2>
+      </div>
+
+      <ul class="space-y-4">
+        {
+          highlights.map((h) => (
+            <li class="flex items-start gap-3 rounded-xl border border-border bg-card p-4 md:p-5">
+              <span class="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                <svg
+                  class="h-3.5 w-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              <span class="text-sm leading-relaxed text-foreground/86 md:text-base">{h}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

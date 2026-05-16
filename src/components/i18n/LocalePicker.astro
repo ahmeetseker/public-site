@@ -1,0 +1,51 @@
+---
+import {
+  LOCALES,
+  LOCALE_LABELS,
+  LOCALE_FLAGS,
+  getAlternateUrl,
+  detectLocaleFromPath,
+  type Locale,
+} from '@/i18n'
+
+const currentPath = Astro.url.pathname
+const currentLocale = detectLocaleFromPath(currentPath)
+---
+
+<details class="relative">
+  <summary
+    class="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-xl border border-border bg-card px-2.5 py-1.5 text-sm font-medium transition hover:bg-foreground/5"
+    aria-label={currentLocale === 'tr' ? 'Dil seç' : 'Choose language'}
+  >
+    <span aria-hidden="true">{LOCALE_FLAGS[currentLocale]}</span>
+    <span>{LOCALE_LABELS[currentLocale]}</span>
+    <span aria-hidden="true" class="text-muted-foreground">▾</span>
+  </summary>
+
+  <div
+    role="menu"
+    class="absolute right-0 z-30 mt-1.5 min-w-[160px] rounded-xl border border-border bg-card p-1 shadow-lg"
+  >
+    {LOCALES.map((loc) => {
+      const isActive = loc === currentLocale
+      const href = getAlternateUrl(currentPath, loc as Locale)
+      return (
+        <a
+          role="menuitem"
+          href={href}
+          aria-current={isActive ? 'true' : undefined}
+          class:list={[
+            'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition',
+            isActive
+              ? 'bg-foreground/[0.06] font-medium'
+              : 'text-muted-foreground hover:bg-foreground/5 hover:text-foreground',
+          ]}
+        >
+          <span aria-hidden="true">{LOCALE_FLAGS[loc]}</span>
+          <span>{LOCALE_LABELS[loc]}</span>
+          {isActive && <span aria-hidden="true" class="ml-auto text-foreground">✓</span>}
+        </a>
+      )
+    })}
+  </div>
+</details>

@@ -1,0 +1,190 @@
+---
+import type { Office } from '@landx/data'
+
+export interface Props {
+  office: Office
+}
+
+const { office } = Astro.props
+
+// WhatsApp wa.me link expects digits-only with country code.
+const waDigits = office.whatsapp.replace(/[^\d]/g, '')
+const phoneTel = office.phone.replace(/\s+/g, '')
+---
+
+<aside
+  aria-labelledby="ofis-iletisim"
+  class="rounded-2xl border border-border bg-card p-5 md:p-6"
+>
+  <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+    İLETİŞİM
+  </div>
+  <h2 id="ofis-iletisim" class="mt-1 font-serif text-xl font-normal tracking-tight md:text-2xl">
+    Ofisle <em class="italic">iletişim</em>
+  </h2>
+
+  <!-- Map placeholder — no real map (no JS island). Replaced by real map in Wave 3. -->
+  <div
+    class="mt-4 grid aspect-[5/3] w-full place-items-center overflow-hidden rounded-xl border border-border bg-background"
+    role="img"
+    aria-label={`${office.district} harita görseli`}
+  >
+    <div
+      class="pointer-events-none absolute inset-0 -z-10 opacity-50"
+      style="background: radial-gradient(ellipse at center, hsl(var(--accent) / 0.18), transparent 60%);"
+    >
+    </div>
+    <div class="text-center">
+      <svg
+        class="mx-auto h-7 w-7 text-muted-foreground"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0Z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+      <div class="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        {office.district.toUpperCase()}
+      </div>
+    </div>
+  </div>
+
+  <!-- CTAs -->
+  <div class="mt-4 flex flex-col gap-2">
+    <a
+      href={`https://wa.me/${waDigits}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+    >
+      <svg
+        class="h-4 w-4"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.7.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.8-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.1-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1.1 1-1.1 2.5 1.1 2.9 1.3 3.1c.2.2 2.2 3.4 5.4 4.7.8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.7-.7 2-1.4.3-.6.3-1.2.2-1.4-.1-.2-.3-.3-.6-.4ZM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 5L2 22l5.1-1.3c1.4.8 3.1 1.3 4.9 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2Z" />
+      </svg>
+      WhatsApp ile yaz
+    </a>
+    <a
+      href={`tel:${phoneTel}`}
+      class="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:bg-foreground/5"
+    >
+      <svg
+        class="h-4 w-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92Z" />
+      </svg>
+      <span class="font-mono tabular-nums">{office.phone}</span>
+    </a>
+  </div>
+
+  <!-- Office info list -->
+  <dl class="mt-5 space-y-3 text-sm">
+    <div>
+      <dt class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Adres</dt>
+      <dd class="mt-1 leading-snug text-foreground">{office.address}</dd>
+    </div>
+    <div>
+      <dt class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Çalışma saatleri</dt>
+      <dd class="mt-1 leading-snug text-foreground">{office.hours}</dd>
+    </div>
+    <div>
+      <dt class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">E-posta</dt>
+      <dd class="mt-1 leading-snug">
+        <a href={`mailto:${office.email}`} class="text-foreground underline-offset-4 transition hover:underline">
+          {office.email}
+        </a>
+      </dd>
+    </div>
+  </dl>
+
+  <!-- KVKK contact form — static, posts to /api/contact (placeholder). -->
+  <form
+    method="POST"
+    action="/api/office-contact"
+    class="mt-6 space-y-3 border-t border-border pt-5"
+    aria-label="Ofise mesaj gönder"
+  >
+    <input type="hidden" name="officeId" value={office.id} />
+
+    <div>
+      <label for={`name-${office.id}`} class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        Adınız
+      </label>
+      <input
+        id={`name-${office.id}`}
+        type="text"
+        name="name"
+        required
+        autocomplete="name"
+        class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-foreground/30"
+        placeholder="Ad Soyad"
+      />
+    </div>
+
+    <div>
+      <label for={`phone-${office.id}`} class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        Telefon
+      </label>
+      <input
+        id={`phone-${office.id}`}
+        type="tel"
+        name="phone"
+        required
+        autocomplete="tel"
+        inputmode="tel"
+        class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 font-mono text-sm tabular-nums text-foreground outline-none placeholder:text-muted-foreground focus:border-foreground/30"
+        placeholder="+90 5__ ___ __ __"
+      />
+    </div>
+
+    <div>
+      <label for={`message-${office.id}`} class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        Mesaj
+      </label>
+      <textarea
+        id={`message-${office.id}`}
+        name="message"
+        rows="3"
+        required
+        class="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-foreground/30"
+        placeholder="İlgilendiğiniz parselle ilgili kısa not…"
+      ></textarea>
+    </div>
+
+    <label for={`kvkk-${office.id}`} class="flex items-start gap-2 text-xs text-muted-foreground">
+      <input
+        id={`kvkk-${office.id}`}
+        type="checkbox"
+        name="kvkk"
+        required
+        class="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-border bg-background accent-foreground"
+      />
+      <span>
+        <a href="/kvkk" class="underline-offset-2 hover:underline">KVKK aydınlatma metnini</a> okudum,
+        iletişim için verilerimin işlenmesine onay veriyorum.
+      </span>
+    </label>
+
+    <button
+      type="submit"
+      class="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90"
+    >
+      Gönder
+    </button>
+  </form>
+</aside>

@@ -1,0 +1,46 @@
+---
+// /hesabim/destek/[id] — Bilet thread detayı (Wave F32 W2A).
+//
+// Astro shell + TicketThread island (useGetTicket + useReplyTicket).
+// Static output mode — getStaticPaths SUPPORT_TICKETS mock'tan üretir.
+import RootLayout from '@/layouts/RootLayout.astro'
+import AccountLayout from '@/layouts/AccountLayout.astro'
+import AuthGuard from '@/components/account/AuthGuard.astro'
+import TicketThread from '@/components/trust/TicketThread.tsx'
+import { SUPPORT_TICKETS } from '@landx/data'
+import { detectLocaleFromPath } from '@/i18n'
+
+export function getStaticPaths() {
+  return SUPPORT_TICKETS.map((t) => ({
+    params: { id: t.id },
+    props: { ticketId: t.id, subject: t.subject },
+  }))
+}
+
+interface Props {
+  ticketId: string
+  subject: string
+}
+
+const { ticketId, subject } = Astro.props
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const isEn = locale === 'en'
+
+const title = isEn
+  ? `${subject} — Ticket ${ticketId} — arsam.net`
+  : `${subject} — Bilet ${ticketId} — arsam.net`
+const description = isEn
+  ? `Support ticket thread ${ticketId}.`
+  : `Destek bileti ${ticketId} mesaj geçmişi.`
+---
+
+<RootLayout title={title} description={description}>
+  <AuthGuard />
+  <AccountLayout active="destek">
+    <TicketThread
+      ticketId={ticketId}
+      backHref={isEn ? '/en/hesabim/destek' : '/hesabim/destek'}
+      client:load
+    />
+  </AccountLayout>
+</RootLayout>

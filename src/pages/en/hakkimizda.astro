@@ -1,0 +1,132 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import ValueCard from '@/components/secondary/ValueCard.astro'
+import TeamMember from '@/components/secondary/TeamMember.astro'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: about-page prose is TR-canonical (stylized SEO content,
+// out-of-scope for Faz 9.13.b acceptance).
+
+const values = [
+  {
+    eyebrow: '01 · GÜVEN',
+    title: 'Doğrulanmış emlak ofisleri',
+    body: 'Her ofis vergi numarası, MERSİS kaydı ve yetkili kişi telefon doğrulamasından geçer. "Doğrulanmış" rozetli profilde kim, nerede, ne kadar süredir aktif — açıkça görürsünüz.',
+  },
+  {
+    eyebrow: '02 · ŞEFFAFLIK',
+    title: 'Bölge bazlı pazar verisi',
+    body: 'Her bölge sayfasında ortalama m² fiyat, son 12 ay trend ve aktif ilan sayısı şeffaftır. "Bu arsa pahalı mı, ucuz mu?" sorusuna 10 saniyede cevap.',
+  },
+  {
+    eyebrow: '03 · ODAK',
+    title: 'Aracısız ulaşım',
+    body: 'arsam.net konut, daire, işyeri listemez. Sadece <em class="font-serif italic">arsa, tarla, zeytinlik</em>. Tek kategoride uzmanlaşmış filtre, harita ve iletişim deneyimi.',
+  },
+]
+
+const team = [
+  {
+    initials: 'AŞ',
+    name: 'Ahmet Şeker',
+    role: 'Kurucu · Ürün',
+    bio: '15 yıldır Türkiye gayrimenkul sektöründe yatırım ve teknoloji çalışıyor. arsam.net\'i, çevresindeki "doğru arsayı bulamıyorum" şikâyetinden çıkardı.',
+  },
+  {
+    initials: 'MK',
+    name: 'Mert Kaya',
+    role: 'Mühendislik · Lider',
+    bio: 'Önceki hayatında pazaryeri arama altyapısı kurdu. arsam.net\'te harita, filtre ve doğrulama sistemlerinin mimarı.',
+  },
+  {
+    initials: 'SY',
+    name: 'Selin Yıldız',
+    role: 'Tasarım',
+    bio: 'Sade, ciddi ve okunaklı — arsam.net\'in görsel dilini şekillendirdi. Tipografi ve token-bazlı sistem onun emaneti.',
+  },
+  {
+    initials: 'EU',
+    name: 'Emre Uçar',
+    role: 'Operasyon · Ofis İlişkileri',
+    bio: 'Sahada — Çeşme, Bodrum, Datça gibi bölgelerde ofislerle birebir tanışıp doğrulama süreçlerini yürütüyor.',
+  },
+]
+---
+<RootLayout
+  title={t('about.title', locale)}
+  description={t('about.description', locale)}
+>
+  <article class="mx-auto max-w-[1200px] px-4 py-12 lg:py-16">
+    <header class="mb-12 max-w-[60ch]">
+      <div class="mb-3 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">HAKKIMIZDA</div>
+      <h1 class="font-serif text-4xl font-normal tracking-tight md:text-5xl">arsam.net <em class="font-serif italic font-normal">hikayesi</em></h1>
+      <p class="mt-5 text-base leading-relaxed text-foreground/85">
+        Türkiye'de arsa almak, çoğu zaman gerçek bir uzmanlık ister: imar durumu, hisseli/müstakil tapu, yola cephe, parsel/ada bilgisi, ada koordinatları… Genel pazaryerleri bu detayları gizler, "ev/işyeri" filtreleri arsayı kaybeder. Biz, sadece arsa, tarla ve zeytinlik için, <strong>doğrulanmış ofislerin</strong> ilanlarını <strong>şeffaf bölge verisiyle</strong> birlikte sunan bir yer kuruyoruz.
+      </p>
+      <p class="mt-4 text-base leading-relaxed text-foreground/85">
+        arsam.net, &ldquo;tek bir kategoride iyi olmak, on kategoride orta olmaktan iyidir&rdquo; ilkesinin sonucu.
+      </p>
+    </header>
+
+    <section class="mb-16">
+      <div class="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">NEDEN ARSAM.NET</div>
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {values.map((v) => (
+          <ValueCard eyebrow={v.eyebrow} title={v.title} body={v.body} />
+        ))}
+      </div>
+    </section>
+
+    <section class="mb-16">
+      <div class="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">EKİP</div>
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {team.map((m) => (
+          <TeamMember initials={m.initials} name={m.name} role={m.role} bio={m.bio} />
+        ))}
+      </div>
+      <p class="mt-4 text-xs text-muted-foreground">
+        Ekibimiz büyüyor — kariyer fırsatları için <a class="underline underline-offset-2" href="/iletisim">iletişim sayfası</a> üzerinden bize yazabilirsiniz.
+      </p>
+    </section>
+
+    <section class="mb-16">
+      <div class="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">YATIRIMCILAR · PARTNERLER</div>
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div class="flex h-20 items-center justify-center rounded-xl border border-dashed border-border bg-card/20 text-muted-foreground">
+            <span class="font-mono text-xs uppercase tracking-[0.18em]">Logo {i + 1}</span>
+          </div>
+        ))}
+      </div>
+      <p class="mt-3 text-xs text-muted-foreground">Partner ve yatırımcı duyuruları Faz 2 ile birlikte yayınlanacak.</p>
+    </section>
+
+    <section class="mb-16">
+      <div class="mb-6 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">BASIN VE MEDYA</div>
+      <ul class="flex flex-col gap-3 text-sm">
+        <li class="flex items-baseline gap-3 rounded-xl border border-border bg-card/40 p-4">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">2026 · Q2</span>
+          <a href="#" class="underline underline-offset-2">"Arsa pazarına yeni bir oyuncu" — <em>Webrazzi</em> (yer tutucu)</a>
+        </li>
+        <li class="flex items-baseline gap-3 rounded-xl border border-border bg-card/40 p-4">
+          <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">2026 · Q1</span>
+          <a href="#" class="underline underline-offset-2">"Dikey emlak pazaryerleri yükseliyor" — <em>Marketing Türkiye</em> (yer tutucu)</a>
+        </li>
+      </ul>
+      <p class="mt-3 text-xs text-muted-foreground">
+        Basın iletişim için: <a class="underline underline-offset-2" href="mailto:press@arsam.net">press@arsam.net</a>
+      </p>
+    </section>
+
+    <div class="mt-16 rounded-2xl border border-border bg-card p-6">
+      <div class="font-serif text-xl font-medium tracking-tight">Sorunuz mu var?</div>
+      <p class="mt-1.5 max-w-[50ch] text-sm leading-relaxed text-muted-foreground">
+        İş birliği, ofis ortaklığı veya genel bir merak — her birine 2 iş günü içinde dönüyoruz.
+      </p>
+      <a href="/iletisim" class="mt-4 inline-flex items-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition hover:bg-accent">
+        İletişim →
+      </a>
+    </div>
+  </article>
+</RootLayout>

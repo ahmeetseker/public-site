@@ -1,0 +1,1 @@
+function e(e,t){let n=t===void 0?`var(--corner-smoothing)`:String(t);return{borderRadius:`var(--radius-${e})`,cornerShape:`squircle ${n}`,WebkitCornerShape:`squircle ${n}`}}export{e as t};

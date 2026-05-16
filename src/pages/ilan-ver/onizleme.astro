@@ -1,0 +1,23 @@
+---
+import WizardLayout from '@/layouts/WizardLayout.astro'
+import IlanOnizleme from '@/components/ilan-ver/IlanOnizleme.tsx'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// Wave F4 / Agent-F4A — /ilan-ver/onizleme rewired as React island. The summary
+// is built from the live arsam.ilan-draft.v1 localStorage state (browser-only)
+// so the SSR markup is just the shell + mounted fallback.
+---
+<WizardLayout
+  title={locale === 'en' ? `${t('ilanVer.preview', locale)} — arsam.net` : 'İlan önizlemesi — arsam.net'}
+  description={locale === 'en' ? 'Review your listing before publishing.' : 'Yayına göndermeden önce ilanını gözden geçir.'}
+  step={0}
+  locale={locale}
+>
+  <IlanOnizleme client:load />
+  <noscript>
+    <p class="mt-6 rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+      Bu sayfa interaktif. Önizlemeyi görmek için JavaScript'i aç.
+    </p>
+  </noscript>
+</WizardLayout>

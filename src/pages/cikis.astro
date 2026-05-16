@@ -1,0 +1,41 @@
+---
+// Demo logout — clears the arsam_buyer_demo cookie and redirects home.
+// Faz 10.2'de real session revocation gelecek (server-side cookie clear + token blacklist).
+import RootLayout from '@/layouts/RootLayout.astro'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+const homeHref = locale === 'en' ? '/en/' : '/'
+---
+<RootLayout
+  title={`${t('auth.logoutHeading', locale)} — arsam.net`}
+  description={t('auth.logoutHeading', locale)}
+>
+  <script is:inline>
+    (function () {
+      const r = document.querySelector('meta[name="robots"]')
+      if (r) r.setAttribute('content', 'noindex, nofollow')
+    })()
+  </script>
+  <script is:inline define:vars={{ homeHref }}>
+    document.cookie = 'arsam_buyer_demo=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax'
+    location.replace(homeHref)
+  </script>
+
+  <section class="mx-auto flex max-w-prose flex-col items-center gap-4 px-4 py-16 text-center md:px-6 md:py-24 lg:px-8 lg:py-32">
+    <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+      HESAP · ÇIKIŞ
+    </div>
+    <h1 class="font-serif text-3xl font-normal tracking-tight md:text-4xl lg:text-5xl">
+      {t('auth.logoutHeading', locale)}
+    </h1>
+    <p class="text-base leading-relaxed text-muted-foreground md:text-lg">
+      <a
+        href={homeHref}
+        class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-border bg-card px-5 py-3 text-sm font-medium text-foreground underline-offset-4 transition-colors hover:bg-card/70 md:text-base"
+      >
+        {t('auth.backToHome', locale)}
+      </a>
+    </p>
+  </section>
+</RootLayout>

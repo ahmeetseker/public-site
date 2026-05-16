@@ -1,0 +1,184 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// Wave F7.A — EN mirror of /sifre-sifirla.
+// KVKK-safe response identical to TR (existence not revealed).
+---
+
+<RootLayout
+  title={t('auth.forgotPassword.title', locale)}
+  description={t('auth.forgotPassword.description', locale)}
+>
+  <script is:inline>
+    (function () {
+      const r = document.querySelector('meta[name="robots"]')
+      if (r) r.setAttribute('content', 'noindex, nofollow')
+    })()
+  </script>
+
+  <div class="mx-auto max-w-[640px] px-4 py-10 md:py-16">
+    <div class="flex flex-col gap-2">
+      <span class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+        ACCOUNT · RESET PASSWORD
+      </span>
+      <h1 class="font-serif text-3xl leading-tight tracking-tight md:text-4xl">
+        Reset your <em class="font-normal italic">password</em>.
+      </h1>
+      <p class="text-sm leading-relaxed text-muted-foreground">
+        {t('auth.forgotPassword.intro', locale)}
+      </p>
+    </div>
+
+    <form
+      id="reset-form"
+      class="mt-6 flex flex-col gap-4 rounded-2xl border border-border bg-card p-6"
+      novalidate
+    >
+      <div class="flex flex-col gap-1.5">
+        <label
+          for="reset-email"
+          class="text-xs font-medium uppercase tracking-wide text-muted-foreground"
+        >
+          {t('auth.forgotPassword.emailLabel', locale)}
+        </label>
+        <input
+          id="reset-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+          placeholder="you@arsam.net"
+          class="min-h-[44px] rounded-xl border border-border bg-background px-3 py-2.5 text-base sm:text-sm placeholder:text-[hsl(var(--placeholder))] focus:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-foreground/10"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+      >
+        {t('auth.forgotPassword.submit', locale)}
+      </button>
+
+      <div
+        id="reset-toast"
+        data-reset-toast=""
+        class="hidden rounded-xl border border-border bg-foreground/5 px-3 py-2 text-center text-sm text-foreground"
+        role="status"
+        aria-live="polite"
+      >
+      </div>
+
+      <div
+        id="reset-throttle"
+        data-reset-throttle=""
+        class="hidden rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-center text-xs text-rose-700 dark:text-rose-300"
+        role="alert"
+      >
+      </div>
+
+      <div class="text-center text-sm text-muted-foreground">
+        <a href="/en/giris" class="font-medium text-foreground underline underline-offset-2">
+          {t('auth.forgotPassword.backToLogin', locale)}
+        </a>
+      </div>
+    </form>
+
+    <p class="mt-4 text-xs leading-relaxed text-muted-foreground">
+      {t('auth.forgotPassword.kvkkNote', locale)}
+    </p>
+  </div>
+
+  <script is:inline define:vars={{ locale }}>
+    (function () {
+      const form = document.getElementById('reset-form')
+      const toast = document.getElementById('reset-toast')
+      const throttle = document.getElementById('reset-throttle')
+      const STORAGE_KEY = 'arsam.password-reset-attempts.v1'
+      const HOUR_MS = 60 * 60 * 1000
+      const THROTTLE_LIMIT = 3
+      const REDIRECT_DELAY_MS = 5000
+
+      const COPY = {
+        tr: {
+          toast: 'Eğer bu e-posta kayıtlıysa, şifre sıfırlama bağlantısı yolladık. Lütfen e-postanı kontrol et.',
+          throttle: 'Çok fazla deneme yaptın. Lütfen 1 saat sonra tekrar dene.',
+          redirect: 'Giriş sayfasına yönlendiriliyorsun…',
+        },
+        en: {
+          toast: 'If this email is registered, we have sent a password reset link. Please check your inbox.',
+          throttle: 'Too many attempts. Please try again in 1 hour.',
+          redirect: 'Redirecting to sign-in…',
+        },
+      }
+      const copy = COPY[locale] || COPY.en
+
+      function readAttempts() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY)
+          if (!raw) return []
+          const parsed = JSON.parse(raw)
+          if (!Array.isArray(parsed)) return []
+          return parsed
+        } catch {
+          return []
+        }
+      }
+
+      function writeAttempts(list) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+        } catch {
+          /* quota / storage off — ignore */
+        }
+      }
+
+      function isThrottled(email) {
+        const now = Date.now()
+        const recent = readAttempts().filter(function (a) {
+          return a && typeof a.ts === 'number' && now - a.ts < HOUR_MS && a.email === email
+        })
+        return recent.length >= THROTTLE_LIMIT
+      }
+
+      function appendAttempt(email) {
+        const list = readAttempts()
+        list.push({ email: email, ts: Date.now() })
+        const trimmed = list.slice(-50)
+        writeAttempts(trimmed)
+      }
+
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault()
+          const emailEl = document.getElementById('reset-email')
+          const email = (emailEl && emailEl.value || '').trim().toLowerCase()
+          if (!email) return
+
+          if (isThrottled(email)) {
+            if (throttle) {
+              throttle.textContent = copy.throttle
+              throttle.classList.remove('hidden')
+            }
+            if (toast) toast.classList.add('hidden')
+            return
+          }
+
+          appendAttempt(email)
+
+          if (throttle) throttle.classList.add('hidden')
+          if (toast) {
+            toast.textContent = copy.toast + ' ' + copy.redirect
+            toast.classList.remove('hidden')
+            toast.setAttribute('data-state', 'visible')
+          }
+
+          setTimeout(function () {
+            window.location.href = locale === 'en' ? '/en/giris' : '/giris'
+          }, REDIRECT_DELAY_MS)
+        })
+      }
+    })()
+  </script>
+</RootLayout>

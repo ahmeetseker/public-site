@@ -1,0 +1,82 @@
+---
+// Wave F9.D — 4-card grid of neighbor regions (same / adjacent city + distance
+// fallback). Uses findNeighbors() to score; reuses placeholderDataUri for
+// thumbnails so we don't need real assets.
+import type { Region } from '@landx/data'
+import { LISTINGS } from '@landx/data'
+import { findNeighbors } from '@/lib/bolge-neighbors'
+import { placeholderDataUri } from '@/lib/placeholder-image'
+
+export interface Props {
+  currentSlug: string
+  allRegions: Region[]
+  /** URL prefix for locale-aware links ('' or '/en'). */
+  prefix?: string
+  /** i18n strings — caller supplies localized copy. */
+  copy: {
+    title: string
+    listingCount: string  // expects '{count}' placeholder
+  }
+}
+
+const { currentSlug, allRegions, prefix = '', copy } = Astro.props
+
+const neighbors = findNeighbors(currentSlug, allRegions, 4)
+const cards = neighbors.map((r) => ({
+  region: r,
+  count: LISTINGS.filter((l) => r.match(l.district)).length,
+  thumb: placeholderDataUri({ seed: r.slug, label: r.name, ratio: '4/3', size: 'sm' }),
+}))
+---
+
+{
+  cards.length > 0 && (
+    <section
+      data-neighbor-regions=""
+      data-current={currentSlug}
+      class="border-t border-border bg-card/40"
+    >
+      <div class="mx-auto max-w-[1280px] px-4 py-12 md:py-16">
+        <div class="mb-6">
+          <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            KOMŞU BÖLGELER
+          </div>
+          <h2 class="mt-2 font-serif text-2xl font-normal tracking-tight md:text-3xl">
+            {copy.title}
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+          {cards.map((c) => (
+            <a
+              href={`${prefix}/bolge/${c.region.slug}`}
+              data-neighbor-card={c.region.slug}
+              class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:bg-accent hover:text-accent-foreground"
+            >
+              <div class="aspect-[4/3] w-full overflow-hidden">
+                <img
+                  src={c.thumb}
+                  alt={c.region.name}
+                  width="320"
+                  height="240"
+                  loading="lazy"
+                  decoding="async"
+                  class="h-full w-full object-cover"
+                />
+              </div>
+              <div class="flex flex-1 flex-col gap-1 p-3">
+                <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground group-hover:text-accent-foreground/70">
+                  {c.region.city}
+                </div>
+                <div class="font-serif text-lg font-normal tracking-tight">{c.region.name}</div>
+                <div class="mt-auto text-xs text-muted-foreground group-hover:text-accent-foreground/70">
+                  {copy.listingCount.replace('{count}', String(c.count))}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

@@ -1,0 +1,134 @@
+---
+import RootLayout from '@/layouts/RootLayout.astro'
+import LegalLayout from '@/components/legal/LegalLayout.astro'
+import { t, detectLocaleFromPath } from '@/i18n'
+
+const locale = detectLocaleFromPath(Astro.url.pathname)
+// TODO i18n: cookie-policy body is TR-canonical regulatory text.
+
+const sections = [
+  { id: 'cerez-nedir', title: '1. Çerez Nedir?' },
+  { id: 'cerez-turleri', title: '2. Kullandığımız Çerez Türleri' },
+  { id: 'ucuncu-taraf', title: '3. Üçüncü Taraf Çerezleri' },
+  { id: 'yonetim', title: '4. Çerez Yönetimi' },
+  { id: 'kvkk-uyumu', title: '5. KVKK Uyumu' },
+  { id: 'degisiklikler', title: '6. Değişiklikler' },
+]
+---
+<RootLayout
+  title={t('legal.cookiesTitle', locale)}
+  description={t('legal.cookiesDescription', locale)}
+>
+  <div
+    class:list={[
+      'legal-page-shell mx-auto max-w-prose px-0',
+      'sm:px-1 sm:text-[0.95rem]',
+      'md:px-2 md:text-base',
+      'lg:px-0 lg:text-[1.0625rem]',
+    ]}
+  >
+  <LegalLayout
+    title="Çerez Politikası"
+    lastUpdated="2026-05-11"
+    sections={sections}
+  >
+    <h2 id="cerez-nedir">1. Çerez Nedir?</h2>
+    <p>
+      Çerez ("cookie"), bir web sitesini ziyaret ettiğinizde tarayıcınız aracılığıyla cihazınıza (bilgisayar, tablet, telefon)
+      kaydedilen küçük metin dosyalarıdır. Çerezler; oturumunuzu hatırlamak, tercihlerinizi saklamak, site performansını
+      ölçmek ve içerikleri ilgi alanlarınıza göre kişiselleştirmek amacıyla kullanılır.
+    </p>
+    <p>
+      arsam.net olarak; hizmetlerimizi kesintisiz sunabilmek, güvenliğinizi sağlamak ve kullanım deneyiminizi iyileştirmek
+      için çerezlerden yararlanıyoruz. Bu politika, hangi çerezleri ne amaçla kullandığımızı ve bunları nasıl
+      yönetebileceğinizi açıklar.
+    </p>
+
+    <h2 id="cerez-turleri">2. Kullandığımız Çerez Türleri</h2>
+
+    <h3>Zorunlu çerezler</h3>
+    <p>
+      Platformun temel işlevlerinin (oturum açma, sepet/favori yönetimi, güvenlik kontrolleri, KVKK izin tercihinin
+      hatırlanması) çalışabilmesi için zorunludur. Bu çerezler kapatılamaz; devre dışı bırakılması hâlinde Platform'un
+      bazı bölümleri çalışmayabilir.
+    </p>
+
+    <h3>Performans / analitik çerezler</h3>
+    <p>
+      Ziyaretçilerin Platform'u nasıl kullandığına dair anonim istatistikler toplamamızı sağlar (sayfa görüntüleme,
+      hata oranları, akış analizi). Bu sayede yavaş çalışan sayfaları ve hataları tespit edip iyileştirme yapabiliyoruz.
+    </p>
+
+    <h3>İşlevsellik çerezleri</h3>
+    <p>
+      Dil tercihi, tema (açık/koyu), son bakılan ilanlar, arama filtreleri gibi tercihlerinizi hatırlayarak Platform'u
+      tekrar ziyaret ettiğinizde sizi yeniden ayar yapmaktan kurtarır.
+    </p>
+
+    <h3>Pazarlama / hedefleme çerezleri</h3>
+    <p>
+      İlgi alanlarınıza uygun ilan ve kampanya önerileri sunmak, reklam performansını ölçmek amacıyla kullanılır. Bu
+      çerezler yalnızca <strong>açık rızanız</strong> ile etkinleştirilir; ilk ziyarette varsayılan olarak kapalıdır.
+    </p>
+
+    <h2 id="ucuncu-taraf">3. Üçüncü Taraf Çerezleri</h2>
+    <p>
+      Bazı çerezler, Platform'un sorunsuz çalışması veya analiz amacıyla entegre olduğumuz hizmet sağlayıcılar
+      tarafından yerleştirilir:
+    </p>
+    <ul>
+      <li><strong>PostHog</strong> — ürün analitiği, kullanım ölçümü (anonim/pseudo-anonim).</li>
+      <li><strong>Google</strong> — harita gömme ve isteğe bağlı reklam ekosistemi. <em>(TODO: Google Maps / Analytics kullanım kararı sonrası güncellenecek.)</em></li>
+      <li><strong>Sentry</strong> veya muadili — hata izleme; kullanıcı kimliği IP düzeyinde anonimleştirilir.</li>
+      <li><strong>Cloudflare / Vercel</strong> — bot koruması, performans, güvenlik çerezleri.</li>
+    </ul>
+    <p>
+      Üçüncü taraf çerezleri, ilgili sağlayıcıların kendi gizlilik politikalarına tabidir. Bu sağlayıcıların verilerinizi
+      nasıl işlediğine dair detaylar, kendi politika sayfalarında yer alır.
+    </p>
+
+    <h2 id="yonetim">4. Çerez Yönetimi</h2>
+    <p>
+      Çerez tercihlerinizi iki yöntemle yönetebilirsiniz:
+    </p>
+    <ul>
+      <li>
+        <strong>Platform içinden:</strong> Sitenin altındaki <em>"Çerez tercihlerinizi yönetin"</em> bağlantısı ile rıza
+        durumunuzu istediğiniz an güncelleyebilirsiniz. Pazarlama / analitik çerezleri için verdiğiniz onayı geri çekebilirsiniz.
+      </li>
+      <li>
+        <strong>Tarayıcı ayarlarınızdan:</strong> Chrome, Firefox, Safari, Edge gibi tarayıcılar üzerinden tüm çerezleri
+        engelleyebilir, mevcut çerezleri silebilir veya yalnızca belirli sitelere izin verecek şekilde ayarlayabilirsiniz.
+        Detaylı yönergeler için tarayıcınızın yardım sayfasına bakabilirsiniz.
+      </li>
+    </ul>
+    <p>
+      Zorunlu çerezlerin devre dışı bırakılması durumunda oturum açma, ilan kaydetme gibi temel özellikler çalışmayabilir.
+    </p>
+
+    <h2 id="kvkk-uyumu">5. KVKK Uyumu</h2>
+    <p>
+      arsam.net; çerez kullanımında <strong>6698 sayılı KVKK</strong> ve <strong>Kişisel Verileri Koruma Kurulu</strong>'nun
+      ilgili rehberleri ile <strong>5809 sayılı Elektronik Haberleşme Kanunu</strong>'na uygun hareket eder. Zorunlu olmayan
+      çerezler (performans, işlevsellik, pazarlama) yalnızca açık rızanızla yüklenir. Rıza yönetim aracı; tercihinizi,
+      seçim tarihinizi ve rızanızı geri çekme hakkınızı kayıt altına alır.
+    </p>
+    <p>
+      KVKK kapsamındaki diğer haklarınız ve veri işleme süreçlerinin tamamı için
+      <a href="/kvkk">KVKK Aydınlatma Metni</a>'ni inceleyebilirsiniz.
+    </p>
+
+    <h2 id="degisiklikler">6. Değişiklikler</h2>
+    <p>
+      Bu Çerez Politikası, yasal düzenlemeler, kullandığımız teknolojiler veya hizmet kapsamımız değiştiğinde güncellenebilir.
+      Güncel sürüm her zaman bu sayfada yayımlanır; üst kısımda yer alan <em>"Son güncelleme"</em> tarihi son revizyon zamanını
+      yansıtır. Önemli değişikliklerde sizi ayrıca bilgilendireceğiz.
+    </p>
+
+    <blockquote>
+      <strong>Not:</strong> Bu metin Faz 9 MVP için hazırlanan <strong>örnek boilerplate</strong>'tir. Yayına almadan önce
+      uzman hukuk danışmanı tarafından incelenmeli; gerçek çerez envanteri ve süre/sağlayıcı bilgileriyle güncellenmelidir.
+    </blockquote>
+  </LegalLayout>
+  </div>
+</RootLayout>

@@ -1,0 +1,47 @@
+---
+import type { Listing } from '@landx/data'
+
+export interface Props {
+  listing: Listing
+}
+
+const { listing } = Astro.props
+const tagsText = listing.tags.length ? listing.tags.join(', ') : 'doğal arazi'
+---
+<section aria-label="Açıklama" class="rounded-2xl border border-border bg-card p-5">
+  <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">Açıklama</div>
+  <h2 class="mt-1 font-serif text-lg font-medium tracking-tight">
+    İlan <em class="not-italic font-normal">detayı</em>
+  </h2>
+
+  <div class="prose prose-stone mt-4 max-w-none space-y-4 text-sm leading-relaxed text-foreground">
+    <p>
+      {listing.city} ili {listing.district} bölgesinde, toplam <strong class="tabular-nums">{listing.size.toLocaleString('tr-TR')} m²</strong>
+      yüzölçümlü <strong>{listing.type.toLocaleLowerCase('tr-TR')}</strong> niteliğinde arsa. Parsel {tagsText} özellikleriyle
+      öne çıkıyor. Atölye Emlak ekibi olarak parselin tapu, imar ve harita verilerini saha ziyaretiyle teyit ettik.
+    </p>
+    <p>
+      Bölge son 12 ayda sınırlı arz nedeniyle istikrarlı bir fiyat eğrisi sergiledi. Çevredeki benzer parsellerle karşılaştırıldığında
+      ilanın bölge bandının iç dilimi içinde yer aldığını görüyoruz. Erişim, altyapı durumu ve komşu parsel kullanımları yatırımcılar için
+      kritik karar kriterleri arasında.
+    </p>
+    <p>
+      Arsa, mevcut imar planı doğrultusunda yapılaşmaya uygundur. Uygulama imar planı, çekme mesafeleri ve yoğunluk değerleri için
+      belediye İmar Müdürlüğü'nden güncel paftalar alınmasını öneriyoruz. Tapu kaydında takyidat (ipotek, haciz, şerh) tespit edilmemiştir.
+    </p>
+    <p>
+      Yerinde inceleme için randevu talep edebilir, ya da iletişim formundan ekibimizle hızlı şekilde temasa geçebilirsiniz. Atölye Emlak
+      portföyündeki tüm ilanlar 360° saha kontrolünden geçer.
+    </p>
+
+    {listing.tags.length > 0 && (
+      <ul class="flex flex-wrap gap-2 pt-2">
+        {listing.tags.map((t) => (
+          <li class="rounded-full border border-border bg-background px-3 py-1 font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            {t}
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</section>
