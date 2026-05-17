@@ -149,6 +149,87 @@ export function ListingGallery({
   const tilesRef = useRef<Array<HTMLButtonElement | null>>([])
   const [openAt, setOpenAt] = useState<number | null>(null)
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (window.matchMedia('(pointer: coarse)').matches) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const container = containerRef.current
+    if (!container) return
+
+    const spotlight = document.createElement('div')
+    spotlight.className = 'mb-spotlight'
+    document.body.appendChild(spotlight)
+
+    let raf = 0
+
+    const reset = () => {
+      spotlight.style.opacity = '0'
+      tilesRef.current.forEach((tile) => {
+        if (!tile) return
+        tile.style.setProperty('--mb-glow-intensity', '0')
+        tile.style.setProperty('--mb-tx', '0px')
+        tile.style.setProperty('--mb-ty', '0px')
+      })
+    }
+
+    const onMove = (e: PointerEvent) => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        const rect = container.getBoundingClientRect()
+        const inside =
+          e.clientX >= rect.left - 100 &&
+          e.clientX <= rect.right + 100 &&
+          e.clientY >= rect.top - 100 &&
+          e.clientY <= rect.bottom + 100
+
+        spotlight.style.opacity = inside ? '0.6' : '0'
+        spotlight.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-50%, -50%)`
+
+        tilesRef.current.forEach((tile) => {
+          if (!tile) return
+          const r = tile.getBoundingClientRect()
+          const cx = r.left + r.width / 2
+          const cy = r.top + r.height / 2
+          const dx = e.clientX - cx
+          const dy = e.clientY - cy
+          const dist = Math.hypot(dx, dy)
+          const proximity = 150
+          const intensity = inside
+            ? Math.max(0, 1 - dist / (Math.max(r.width, r.height) + proximity))
+            : 0
+          tile.style.setProperty(
+            '--mb-glow-x',
+            `${((e.clientX - r.left) / r.width) * 100}%`,
+          )
+          tile.style.setProperty(
+            '--mb-glow-y',
+            `${((e.clientY - r.top) / r.height) * 100}%`,
+          )
+          tile.style.setProperty('--mb-glow-intensity', String(intensity))
+
+          const hover =
+            Math.abs(dx) < r.width / 2 && Math.abs(dy) < r.height / 2
+          tile.style.setProperty('--mb-tx', hover ? `${dx * 0.03}px` : '0px')
+          tile.style.setProperty('--mb-ty', hover ? `${dy * 0.03}px` : '0px')
+        })
+      })
+    }
+
+    document.addEventListener('pointermove', onMove)
+    document.addEventListener('pointerleave', reset)
+    window.addEventListener('blur', reset)
+
+    return () => {
+      cancelAnimationFrame(raf)
+      document.removeEventListener('pointermove', onMove)
+      document.removeEventListener('pointerleave', reset)
+      window.removeEventListener('blur', reset)
+      spotlight.parentNode?.removeChild(spotlight)
+    }
+  }, [])
+
   if (!images || images.length === 0) return null
 
   const photoCount = images.length
