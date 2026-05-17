@@ -165,6 +165,15 @@ export { VERIFICATION_BADGES, getBadgesForListing } from './mock/verification-ba
 // Query hooks (12 toplam — query + mutation + AI chat + compare)
 export * from './query/listing-detail-hooks'
 
+// Parsel geometry — SmartMap için deterministic Leaflet-ready overlays.
+export {
+  getParcelGeometry,
+  type ParcelGeometry,
+  type LatLng,
+  type Polygon,
+  type Polyline,
+} from './lib/parcel-geometry'
+
 // ─── Wave F36 / Faz 1 — landxpanel paritesi derinleştirme ────────────────────
 //
 // ECA Rule Engine + TKGM mock + Module Catalog + Compliance + PII Governance.
