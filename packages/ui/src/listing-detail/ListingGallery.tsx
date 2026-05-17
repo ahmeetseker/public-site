@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState, type ReactElement } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactElement } from 'react'
 import { cn } from '../lib/cn'
+import './ListingGallery.css'
 
 export interface ListingGalleryProps {
   images: readonly string[]
@@ -32,7 +33,6 @@ function Lightbox({ images, alt, startIndex, onClose }: LightboxProps): ReactEle
       else if (e.key === 'ArrowRight') next()
     }
     window.addEventListener('keydown', onKey)
-    // Lock scroll while open.
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
@@ -41,7 +41,6 @@ function Lightbox({ images, alt, startIndex, onClose }: LightboxProps): ReactEle
     }
   }, [onClose, prev, next])
 
-  // Touch swipe.
   const [touchStart, setTouchStart] = useState<number | null>(null)
   function onTouchStart(e: React.TouchEvent) {
     setTouchStart(e.touches[0]?.clientX ?? null)
@@ -63,7 +62,6 @@ function Lightbox({ images, alt, startIndex, onClose }: LightboxProps): ReactEle
       className="fixed inset-0 z-[100] flex flex-col bg-black/95"
       onClick={onClose}
     >
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 text-white">
         <span className="font-mono text-xs tabular-nums">
           {index + 1} / {images.length}
@@ -81,7 +79,6 @@ function Lightbox({ images, alt, startIndex, onClose }: LightboxProps): ReactEle
         </button>
       </div>
 
-      {/* Stage */}
       <div
         className="relative flex flex-1 items-center justify-center px-4 pb-4"
         onClick={(e) => e.stopPropagation()}
@@ -112,7 +109,6 @@ function Lightbox({ images, alt, startIndex, onClose }: LightboxProps): ReactEle
         </button>
       </div>
 
-      {/* Thumbnail strip */}
       <div
         className="overflow-x-auto border-t border-white/10 px-4 py-3"
         onClick={(e) => e.stopPropagation()}
@@ -143,18 +139,20 @@ function Lightbox({ images, alt, startIndex, onClose }: LightboxProps): ReactEle
   )
 }
 
+const TILE_COUNT = 6
+
 export function ListingGallery({
   images,
   alt = 'İlan fotoğrafı',
 }: ListingGalleryProps): ReactElement | null {
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  const tilesRef = useRef<Array<HTMLButtonElement | null>>([])
   const [openAt, setOpenAt] = useState<number | null>(null)
 
   if (!images || images.length === 0) return null
 
-  const main = images[0]!
-  const thumbs = images.slice(1, 5) // up to 4 thumbnails
-  const total = images.length
-  const extra = total > 5 ? total - 5 : 0
+  const photoCount = images.length
+  const overflow = Math.max(0, photoCount - TILE_COUNT)
 
   function open(at: number) {
     setOpenAt(at)
@@ -162,58 +160,76 @@ export function ListingGallery({
 
   return (
     <>
-      <div className="grid gap-2 md:grid-cols-[1.6fr_1fr] md:gap-3">
-        {/* Main image */}
-        <button
-          type="button"
-          onClick={() => open(0)}
-          className="group relative block overflow-hidden rounded-2xl ring-1 ring-border focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
-          aria-label="Fotoğrafları büyüt"
-        >
-          <div className="aspect-[16/10] w-full bg-foreground/5">
-            <img
-              src={main}
-              alt={`${alt} — kapak`}
-              loading="eager"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-            />
-          </div>
-        </button>
+      <div
+        ref={containerRef}
+        className={cn(
+          'mb-bento grid grid-cols-2 gap-1.5 sm:gap-2',
+          'lg:aspect-[16/10] lg:grid-cols-4 lg:grid-rows-3 lg:gap-2',
+        )}
+        style={
+          {
+            '--mb-glow-color': '217, 165, 100',
+            '--mb-spotlight-size': '600px',
+            '--mb-glow-radius': '200px',
+          } as React.CSSProperties
+        }
+      >
+        {Array.from({ length: TILE_COUNT }).map((_, i) => {
+          const hasPhoto = i < photoCount
+          const isLargeA = i === 2
+          const isLargeB = i === 3
+          const showOverflow = i === TILE_COUNT - 1 && overflow > 0
 
-        {/* Thumbnail grid */}
-        {thumbs.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 md:gap-3">
-            {thumbs.map((src, i) => {
-              const isLast = i === thumbs.length - 1 && extra > 0
-              return (
-                <button
-                  key={`${src}-${i}`}
-                  type="button"
-                  onClick={() => open(i + 1)}
-                  className="group relative block overflow-hidden rounded-2xl ring-1 ring-border focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground"
-                  aria-label={`Fotoğraf ${i + 2}`}
-                >
-                  <div className="aspect-[16/10] w-full bg-foreground/5">
-                    <img
-                      src={src}
-                      alt={`${alt} — ${i + 2}`}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                    />
-                  </div>
-                  {isLast && (
+          return (
+            <button
+              key={i}
+              ref={(el) => {
+                tilesRef.current[i] = el
+              }}
+              type="button"
+              onClick={hasPhoto ? () => open(i) : undefined}
+              disabled={!hasPhoto}
+              aria-hidden={!hasPhoto || undefined}
+              aria-label={
+                showOverflow
+                  ? `${overflow} adet daha fotoğraf, galeriyi aç`
+                  : hasPhoto
+                    ? `Fotoğraf ${i + 1}`
+                    : undefined
+              }
+              className={cn(
+                'mb-tile group relative block aspect-[4/3] overflow-hidden rounded-2xl ring-1 ring-border',
+                'focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground',
+                'active:scale-[0.98]',
+                'lg:aspect-auto',
+                isLargeA && 'lg:col-start-3 lg:col-end-5 lg:row-start-1 lg:row-end-3',
+                isLargeB && 'lg:col-start-1 lg:col-end-3 lg:row-start-2 lg:row-end-4',
+                !hasPhoto && 'cursor-default opacity-100',
+              )}
+            >
+              {hasPhoto ? (
+                <>
+                  <img
+                    src={images[i]}
+                    alt={`${alt} — ${i + 1}`}
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                    draggable={false}
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                  />
+                  {showOverflow && (
                     <span className="absolute inset-0 flex items-center justify-center bg-black/55 text-sm font-medium text-white">
-                      +{extra} fotoğraf
+                      +{overflow} fotoğraf
                     </span>
                   )}
-                </button>
-              )
-            })}
-          </div>
-        )}
+                </>
+              ) : (
+                <div className="absolute inset-0 bg-foreground/5" />
+              )}
+            </button>
+          )
+        })}
       </div>
 
-      {/* "Tüm fotoğraflar" CTA */}
       <div className="mt-2 flex justify-end">
         <button
           type="button"
@@ -224,7 +240,7 @@ export function ListingGallery({
           )}
         >
           <span aria-hidden>▦</span>
-          Tüm fotoğraflar ({total})
+          Tüm fotoğraflar ({photoCount})
         </button>
       </div>
 
