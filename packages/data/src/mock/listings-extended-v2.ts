@@ -208,10 +208,23 @@ const COMMERCIAL: Listing[] = Array.from({ length: 10 }, (_, i) => {
   }
 })
 
+// Wave 1 — Vitrin allowlist. Hardcoded; UI redesign'i mockup paritesi için
+// 2 arsa ilanını altın çerçeveli yatay kartta gösteriyor.
+const FEATURED_HINTS: Readonly<Record<string, string>> = {
+  '28.AY.0142': '%9 emsal altı',
+  '09.AL.0061': 'Doğrulanmış sahip',
+}
+
+function applyFeatured(l: Listing): Listing {
+  const hint = FEATURED_HINTS[l.id]
+  if (!hint) return l
+  return { ...l, isFeatured: true, comparisonHint: hint }
+}
+
 /** F37 Faz 4 — extended listings (arsa enrichment + 30 yeni). */
 export const LISTINGS_V2: Listing[] = [
   ...BASE_LISTINGS.map(injectArsaFields),
   ...RESIDENTIAL,
   ...VILLAS,
   ...COMMERCIAL,
-].map(withImages)
+].map(withImages).map(applyFeatured)
