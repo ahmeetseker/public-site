@@ -4,6 +4,7 @@ export * from './mock/types'
 // Mock data — Faz 3+'ta gerçek API ile değiştirilecek
 export * from './mock/listings'
 export { LISTINGS_V2 } from './mock/listings-extended-v2'
+export { getHazardBand, type HazardBand } from './lib/getHazardBand'
 export * from './mock/customers'
 export * from './mock/finance'
 export * from './mock/calendar'

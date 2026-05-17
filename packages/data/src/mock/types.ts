@@ -54,6 +54,12 @@ export interface Listing {
   hasRoad?: boolean
   hasWater?: boolean
   hasElectricity?: boolean
+  /** Wave-listing-redesign 1 — Doğalgaz altyapısı; mockup "Özellikler" filtre kümesinde. */
+  hasGas?: boolean
+  /** Wave-listing-redesign 1 — Vitrin işareti; `/ara` redesign üst kart slot'u. */
+  isFeatured?: boolean
+  /** Wave-listing-redesign 1 — Vitrin kartında "%9 emsal altı" gibi serbest metin etiket. */
+  comparisonHint?: string
 
   // === F37 Faz 4 — Çok-kategori opsiyonel alanlar (geriye uyumlu, hepsi opsiyonel) ===
 

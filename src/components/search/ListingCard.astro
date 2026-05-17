@@ -28,7 +28,7 @@ const compareHref = `${prefix}/karsilastir?ids=${listing.id}`
 const compareLabel = locale === 'en' ? 'Compare' : 'Karşılaştır'
 const compareAria = locale === 'en' ? `Compare ${listing.title}` : `${listing.title} karşılaştır`
 ---
-<div class="relative">
+<div class="relative" data-listing-card={listing.id}>
 <a
   href={href}
   class="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition hover:border-foreground/20 hover:shadow-sm"
