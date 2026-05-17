@@ -22,9 +22,15 @@ const prefix = '/en'
 
 const title = t('compare.title', locale)
 const description = t('compare.description', locale)
+
+const headerBreadcrumb = [
+  { label: 'Home', href: `${prefix}/` },
+  { label: 'Land search', href: `${prefix}/ara` },
+  { label: 'Compare' },
+]
 ---
 
-<RootLayout title={title} description={description}>
+<RootLayout title={title} description={description} breadcrumb={headerBreadcrumb}>
   <Fragment slot="head">
     <meta name="robots" content="noindex, follow" />
   </Fragment>
