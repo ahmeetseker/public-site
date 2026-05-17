@@ -40,10 +40,14 @@ const itemListJsonLd = {
     name: `${r.name}, ${r.city}`,
   })),
 }
+
+const headerBreadcrumb = [
+  { label: t('search.breadcrumbHome', locale), href: `${prefix}/` },
+  { label: t('regionHub.heading', locale) },
+]
 ---
 
-<RootLayout title={title} description={description}>
-  <Breadcrumb />
+<RootLayout title={title} description={description} breadcrumb={headerBreadcrumb}>
 
   <section class="border-b border-border bg-card/40">
     <div class="mx-auto max-w-[1280px] px-4 py-16 md:py-20">

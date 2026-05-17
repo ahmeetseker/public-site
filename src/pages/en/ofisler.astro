@@ -84,9 +84,14 @@ const breadcrumbJsonLd = {
     { '@type': 'ListItem', position: 2, name: t('officesHub.heading', locale), item: `${siteUrl}${prefix}/ofisler` },
   ],
 }
+
+const headerBreadcrumb = [
+  { label: t('search.breadcrumbHome', locale), href: `${prefix}/` },
+  { label: t('officesHub.heading', locale) },
+]
 ---
 
-<RootLayout title={title} description={description} ogImage={ogImage}>
+<RootLayout title={title} description={description} ogImage={ogImage} breadcrumb={headerBreadcrumb}>
   <PageHeader officeCount={OFFICES.length} cityCount={cityCount} avgRating={avgRating} />
 
   <SearchBar

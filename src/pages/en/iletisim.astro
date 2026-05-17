@@ -18,10 +18,16 @@ const social = [
   { name: 'LinkedIn', href: '#' },
   { name: 'Instagram', href: '#' },
 ]
+
+const headerBreadcrumb = [
+  { label: 'Home', href: '/en/' },
+  { label: 'Contact' },
+]
 ---
 <RootLayout
   title={t('contact.title', locale)}
   description={t('contact.description', locale)}
+  breadcrumb={headerBreadcrumb}
 >
   <article class="mx-auto max-w-[1200px] px-4 py-12 lg:py-16">
     <header class="mb-10 max-w-[60ch]">

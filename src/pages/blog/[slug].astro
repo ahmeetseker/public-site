@@ -58,17 +58,18 @@ const breadcrumbJsonLd = {
 }
 
 const bodyText = post.body ?? ''
+
+const headerBreadcrumb = [
+  { label: t('blog.hub.breadcrumbHome', locale), href: '/' },
+  { label: t('blog.hub.breadcrumbBlog', locale), href: '/blog' },
+  { label: title },
+]
 ---
-<RootLayout title={title} description={description}>
+<RootLayout title={title} description={description} breadcrumb={headerBreadcrumb}>
   <script is:inline type="application/ld+json" set:html={JSON.stringify(articleJsonLd)} slot="head" />
   <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} slot="head" />
 
   <article class="mx-auto max-w-[860px] px-4 py-12 lg:py-16">
-    <Breadcrumb items={[
-      { label: t('blog.hub.breadcrumbHome', locale), href: '/' },
-      { label: t('blog.hub.breadcrumbBlog', locale), href: '/blog' },
-      { label: title },
-    ]} />
 
     <PostHeader post={post} locale={locale} body={bodyText} />
 

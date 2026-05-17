@@ -87,8 +87,14 @@ const title = q
 const description = q
   ? interpolate(t('search.descriptionWithQuery', locale), { count: filtered.length, q })
   : interpolate(t('search.description', locale), { count: filtered.length })
+
+const headerBreadcrumb = [
+  { label: t('search.breadcrumbHome', locale), href: `/en/` },
+  { label: t('search.breadcrumbSearch', locale), href: il !== 'Tümü' || tip !== 'Tümü' ? `/en/ara` : undefined },
+  ...(il !== 'Tümü' ? [{ label: il }] : []),
+]
 ---
-<RootLayout title={title} description={description}>
+<RootLayout title={title} description={description} breadcrumb={headerBreadcrumb}>
   <SearchHeader q={q} tip={tip} il={il} priceMax={priceMaxRaw} resultCount={filtered.length} locale={locale} />
 
   <div class="mx-auto max-w-[1280px] px-4 py-6 md:py-8">

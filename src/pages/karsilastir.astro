@@ -35,38 +35,20 @@ const prefix = locale === 'en' ? '/en' : ''
 
 const title = t('compare.title', locale)
 const description = t('compare.description', locale)
+
+const headerBreadcrumb = [
+  { label: t('search.breadcrumbHome', locale), href: `${prefix}/` },
+  { label: t('search.breadcrumbSearch', locale), href: `${prefix}/ara` },
+  { label: locale === 'en' ? 'Compare' : 'Karşılaştır' },
+]
 ---
 
-<RootLayout title={title} description={description}>
+<RootLayout title={title} description={description} breadcrumb={headerBreadcrumb}>
   <Fragment slot="head">
     <meta name="robots" content="noindex, follow" />
   </Fragment>
 
   <section class="mx-auto max-w-[1400px] px-4 py-8 md:py-12">
-    <nav
-      aria-label={locale === 'en' ? 'Breadcrumb' : 'Sayfa hiyerarşisi'}
-      class="mb-3"
-    >
-      <ol
-        class="flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground"
-      >
-        <li>
-          <a href={`${prefix}/`} class="transition hover:text-foreground"
-            >{t('search.breadcrumbHome', locale)}</a
-          >
-        </li>
-        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
-        <li>
-          <a href={`${prefix}/ara`} class="transition hover:text-foreground"
-            >{t('search.breadcrumbSearch', locale)}</a
-          >
-        </li>
-        <li aria-hidden="true" class="text-muted-foreground/50">/</li>
-        <li class="text-foreground" aria-current="page">
-          {locale === 'en' ? 'Compare' : 'Karşılaştır'}
-        </li>
-      </ol>
-    </nav>
 
     <h1 class="mb-4 text-2xl font-medium text-foreground md:text-3xl">
       {title}

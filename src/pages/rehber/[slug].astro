@@ -243,21 +243,18 @@ const breadcrumbJsonLd: Record<string, unknown> = {
   ]) as Record<string, unknown>),
   inLanguage: LOCALE_BCP47[locale],
 }
+
+const headerBreadcrumb = [
+  { label: labels.breadcrumbHome, href: `${prefix}/` },
+  { label: labels.breadcrumbHub, href: `${prefix}/rehber` },
+  { label: guide.title },
+]
 ---
-<RootLayout title={`${guide.title} — ${labels.breadcrumbHub}`} description={guide.subtitle}>
+<RootLayout title={`${guide.title} — ${labels.breadcrumbHub}`} description={guide.subtitle} breadcrumb={headerBreadcrumb}>
   <script is:inline type="application/ld+json" set:html={toJsonLd(articleJsonLd)} />
   <script is:inline type="application/ld+json" set:html={toJsonLd(breadcrumbJsonLd)} />
 
   <article class="mx-auto max-w-[1100px] px-4 py-10 md:py-14">
-    {/* Breadcrumb */}
-    <nav aria-label="breadcrumb" class="mb-6 font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
-      <a href={`${prefix}/`} class="hover:text-foreground">{labels.breadcrumbHome}</a>
-      <span class="mx-2">/</span>
-      <a href={`${prefix}/rehber`} class="hover:text-foreground">{labels.breadcrumbHub}</a>
-      <span class="mx-2">/</span>
-      <span class="text-foreground">{guide.title}</span>
-    </nav>
-
     {/* Hero */}
     <header class="mb-8 flex flex-col gap-4 md:mb-10">
       <p class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">

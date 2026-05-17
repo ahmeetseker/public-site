@@ -52,10 +52,16 @@ const team = [
     bio: 'Sahada — Çeşme, Bodrum, Datça gibi bölgelerde ofislerle birebir tanışıp doğrulama süreçlerini yürütüyor.',
   },
 ]
+
+const headerBreadcrumb = [
+  { label: 'Home', href: '/en/' },
+  { label: 'About' },
+]
 ---
 <RootLayout
   title={t('about.title', locale)}
   description={t('about.description', locale)}
+  breadcrumb={headerBreadcrumb}
 >
   <article class="mx-auto max-w-[1200px] px-4 py-12 lg:py-16">
     <header class="mb-12 max-w-[60ch]">

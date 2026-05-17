@@ -11,7 +11,7 @@
  * The legacy `SiteHeader.astro` stays mounted until Task 7 swaps
  * `RootLayout.astro` over to this component.
  */
-import { useMemo } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { Search, MapPin, BookOpen, Building2, Sparkles, Layers } from '@landx/icons'
 // Subpath import — `@landx/ui` barrel transitively re-exports
 // `./maps/listings-map` (leaflet), which crashes Astro's SSR prerender
@@ -59,32 +59,115 @@ export default function PublicDynamicIslandHeader({ locale, pathname, breadcrumb
   const prefix = locale === 'en' ? '/en' : ''
   const activeKey = deriveActiveKey(pathname)
 
+  // Breadcrumb dropdown state — 3+ segment varsa ortayı "…" ile kısalt
+  const [crumbOpen, setCrumbOpen] = useState(false)
+  const crumbWrapRef = useRef<HTMLSpanElement>(null)
+  useEffect(() => {
+    if (!crumbOpen) return
+    function onDocClick(e: MouseEvent) {
+      if (crumbWrapRef.current && !crumbWrapRef.current.contains(e.target as Node)) {
+        setCrumbOpen(false)
+      }
+    }
+    function onEsc(e: KeyboardEvent) { if (e.key === 'Escape') setCrumbOpen(false) }
+    document.addEventListener('mousedown', onDocClick)
+    document.addEventListener('keydown', onEsc)
+    return () => {
+      document.removeEventListener('mousedown', onDocClick)
+      document.removeEventListener('keydown', onEsc)
+    }
+  }, [crumbOpen])
+
+  // Render tek bir breadcrumb segment'i (link veya plain span)
+  function renderSegment(seg: BreadcrumbSegment, isCurrent: boolean) {
+    if (seg.href && !isCurrent) {
+      return (
+        <a
+          href={seg.href}
+          className="text-muted-foreground hover:text-foreground hover:underline"
+        >
+          {seg.label}
+        </a>
+      )
+    }
+    return (
+      <span className={isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'}>
+        {seg.label}
+      </span>
+    )
+  }
+
   // Breadcrumb verilirse pill'in "Şu an: …" içeriğini link zinciri yap
-  const statusChipContent = breadcrumb && breadcrumb.length > 0 ? (
-    <span className="inline-flex items-center gap-1">
-      {breadcrumb.map((seg, i) => (
-        <span key={seg.label + i} className="inline-flex items-center gap-1">
-          {i > 0 && <span className="text-muted-foreground/70">›</span>}
-          {seg.href ? (
-            <a
-              href={seg.href}
-              className={
-                i === breadcrumb.length - 1
-                  ? 'font-medium text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:underline'
-              }
-            >
-              {seg.label}
-            </a>
-          ) : (
-            <span className={i === breadcrumb.length - 1 ? 'font-medium text-foreground' : 'text-muted-foreground'}>
-              {seg.label}
+  const statusChipContent = breadcrumb && breadcrumb.length > 0 ? (() => {
+    const last = breadcrumb.length - 1
+    // ≤2 segment: kompakt, hep tam göster
+    // 3+ segment: ilk + … + son göster, … tıklanınca dropdown ile orta segment'ler açılır
+    const useTruncate = breadcrumb.length >= 3
+    const hidden = useTruncate ? breadcrumb.slice(1, last) : []
+    return (
+      <span ref={crumbWrapRef} className="relative inline-flex items-center gap-1">
+        {/* İlk segment */}
+        {renderSegment(breadcrumb[0], false)}
+        {useTruncate ? (
+          <>
+            <span className="text-muted-foreground/70">›</span>
+            <button
+              type="button"
+              aria-label={`${hidden.length} ara basamağı göster`}
+              aria-expanded={crumbOpen}
+              onClick={(e) => { e.stopPropagation(); setCrumbOpen((v) => !v) }}
+              className="rounded px-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >…</button>
+            <span className="text-muted-foreground/70">›</span>
+            {renderSegment(breadcrumb[last], true)}
+            {/* Dropdown */}
+            {crumbOpen && (
+              <span
+                role="menu"
+                className="absolute left-0 top-full z-50 mt-2 flex min-w-[200px] flex-col rounded-lg border border-border bg-background py-1 shadow-lg"
+              >
+                {breadcrumb.map((seg, i) => {
+                  const isCurrent = i === last
+                  const content = (
+                    <span className="flex items-center gap-2 px-3 py-1.5 text-xs">
+                      <span className={isCurrent ? 'text-emerald-600' : 'text-muted-foreground/50'}>
+                        {isCurrent ? '✓' : '·'}
+                      </span>
+                      <span className={isCurrent ? 'font-medium text-foreground' : 'text-muted-foreground'}>
+                        {seg.label}
+                      </span>
+                    </span>
+                  )
+                  return seg.href && !isCurrent ? (
+                    <a
+                      key={seg.label + i}
+                      href={seg.href}
+                      role="menuitem"
+                      className="block hover:bg-muted"
+                      onClick={() => setCrumbOpen(false)}
+                    >
+                      {content}
+                    </a>
+                  ) : (
+                    <span key={seg.label + i} role="menuitem" className="block">
+                      {content}
+                    </span>
+                  )
+                })}
+              </span>
+            )}
+          </>
+        ) : (
+          breadcrumb.slice(1).map((seg, i) => (
+            <span key={seg.label + i} className="inline-flex items-center gap-1">
+              <span className="text-muted-foreground/70">›</span>
+              {renderSegment(seg, i === last - 1)}
             </span>
-          )}
-        </span>
-      ))}
-    </span>
-  ) : undefined
+          ))
+        )}
+      </span>
+    )
+  })() : undefined
 
   const statusChipLabel = breadcrumb && breadcrumb.length > 0
     ? breadcrumb.map((s) => s.label).join(' › ')

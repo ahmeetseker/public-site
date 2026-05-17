@@ -80,9 +80,15 @@ const officeBreadcrumbJsonLd = breadcrumbListSchema([
   { name: t('officesHub.heading', locale), url: `https://arsam.net${prefix}/ofisler` },
   { name: office.name, url: canonicalOfficeUrl },
 ])
+
+const headerBreadcrumb = [
+  { label: t('search.breadcrumbHome', locale), href: `${prefix}/` },
+  { label: t('officesHub.heading', locale), href: `${prefix}/ofisler` },
+  { label: office.name },
+]
 ---
 
-<RootLayout title={seoTitle} description={seoDescription}>
+<RootLayout title={seoTitle} description={seoDescription} breadcrumb={headerBreadcrumb}>
   <script is:inline type="application/ld+json" set:html={toJsonLd(officeJsonLd)} />
   <script is:inline type="application/ld+json" set:html={toJsonLd(officeBreadcrumbJsonLd)} />
 

@@ -155,10 +155,16 @@ const faqJsonLd = {
     })),
   ),
 }
+
+const headerBreadcrumb = [
+  { label: 'Home', href: '/en/' },
+  { label: 'FAQ' },
+]
 ---
 <RootLayout
   title={t('faqPage.title', locale)}
   description={t('faqPage.description', locale)}
+  breadcrumb={headerBreadcrumb}
 >
   <script is:inline type="application/ld+json" set:html={JSON.stringify(faqJsonLd)} slot="head" />
 

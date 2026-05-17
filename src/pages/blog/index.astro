@@ -43,10 +43,16 @@ const breadcrumbJsonLd = {
     { '@type': 'ListItem', position: 2, name: t('blog.hub.breadcrumbBlog', locale), item: canonical },
   ],
 }
+
+const headerBreadcrumb = [
+  { label: t('blog.hub.breadcrumbHome', locale), href: '/' },
+  { label: t('blog.hub.breadcrumbBlog', locale) },
+]
 ---
 <RootLayout
   title={t('blog.hub.title', locale)}
   description={t('blog.hub.description', locale)}
+  breadcrumb={headerBreadcrumb}
 >
   <script is:inline type="application/ld+json" set:html={JSON.stringify(blogJsonLd)} slot="head" />
   <script is:inline type="application/ld+json" set:html={JSON.stringify(breadcrumbJsonLd)} slot="head" />

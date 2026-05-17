@@ -73,10 +73,15 @@ const breadcrumbJsonLd: Record<string, unknown> = {
   ]) as Record<string, unknown>),
   inLanguage: LOCALE_BCP47[locale],
 }
+
+const headerBreadcrumb = [
+  { label: t('search.breadcrumbHome', locale), href: `${prefix}/` },
+  { label: t('regionHub.heading', locale), href: `${prefix}/bolge` },
+  { label: region.name },
+]
 ---
 
-<RootLayout title={title} description={description}>
-  <Breadcrumb region={region.name} />
+<RootLayout title={title} description={description} breadcrumb={headerBreadcrumb}>
   <RegionHero region={region} listingCount={listings.length} />
   <MarketStatsBand stats={region.marketStats} />
   <BolgeStats client:visible bolge={region.slug} listings={listings} locale={locale} />
