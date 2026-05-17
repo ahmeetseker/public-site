@@ -1,0 +1,64 @@
+/* MagicBento gallery — border glow, spotlight, reduced-motion overrides.
+   Imported by ListingGallery.tsx. */
+
+.mb-tile {
+  transform: translate3d(var(--mb-tx, 0px), var(--mb-ty, 0px), 0);
+  transition: transform 0.3s ease-out;
+  will-change: transform;
+}
+
+.mb-tile::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 2px;
+  border-radius: inherit;
+  background: radial-gradient(
+    var(--mb-glow-radius, 200px) circle
+    at var(--mb-glow-x, 50%) var(--mb-glow-y, 50%),
+    rgba(var(--mb-glow-color, 217, 165, 100), calc(var(--mb-glow-intensity, 0) * 0.8)) 0%,
+    rgba(var(--mb-glow-color, 217, 165, 100), calc(var(--mb-glow-intensity, 0) * 0.3)) 35%,
+    transparent 65%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+  pointer-events: none;
+  transition: opacity 0.2s ease-out;
+}
+
+.mb-spotlight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--mb-spotlight-size, 600px);
+  height: var(--mb-spotlight-size, 600px);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 50;
+  mix-blend-mode: multiply;
+  background: radial-gradient(
+    circle,
+    rgba(var(--mb-glow-color, 217, 165, 100), 0.18) 0%,
+    rgba(var(--mb-glow-color, 217, 165, 100), 0.08) 25%,
+    transparent 60%
+  );
+  will-change: transform, opacity;
+  transition: opacity 0.25s ease-out;
+}
+
+.dark .mb-bento {
+  --mb-glow-color: 230, 180, 110;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mb-tile {
+    transition: none !important;
+    transform: none !important;
+  }
+  .mb-spotlight {
+    display: none !important;
+  }
+}
