@@ -22,6 +22,7 @@ import {
   removeSearch,
   type SavedSearchEntry,
 } from '../../lib/account-store'
+import { withBase } from '../../lib/with-base'
 
 export interface MinimalListing {
   id: string
@@ -157,7 +158,7 @@ export default function SavedSearchesList({ listings }: Props) {
           eşleşmeler arttıkça e-postayla haberdar ol.
         </p>
         <a
-          href="/ara"
+          href={withBase('/ara')}
           className="mt-2 inline-flex items-center rounded-xl bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
         >
           Yeni arama kaydet →

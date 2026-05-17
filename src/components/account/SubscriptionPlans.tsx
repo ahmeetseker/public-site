@@ -23,6 +23,7 @@ import {
   type Subscription,
 } from '../../lib/subscription'
 import PlanCard from './PlanCard'
+import { stripBase } from '../../lib/with-base'
 
 export const SUBSCRIPTION_CHANGED_EVENT = 'arsam:subscription:changed'
 
@@ -137,7 +138,8 @@ const TIERS: PlanTier[] = ['free', 'pro', 'premium']
 
 function isEnglish(): boolean {
   if (typeof window === 'undefined') return false
-  return window.location.pathname.startsWith('/en/') || window.location.pathname === '/en'
+  const p = stripBase(window.location.pathname)
+  return p.startsWith('/en/') || p === '/en'
 }
 
 function formatPrice(amount: number, locale: 'tr' | 'en'): string {

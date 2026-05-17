@@ -13,6 +13,7 @@ import {
 import { MorphDock } from '@landx/ui/primitives'
 import type { DockIcon } from '@landx/ui/primitives'
 import { t, type Locale } from '@/i18n'
+import { withBase } from '@/lib/with-base'
 
 interface Props {
   locale: Locale
@@ -22,7 +23,7 @@ interface Props {
 export default function PublicAppDock({ locale }: Props) {
   const prefix = locale === 'en' ? '/en' : ''
   const go = (href: string) => () => {
-    window.location.href = `${prefix}${href}`
+    window.location.href = withBase(`${prefix}${href}`)
   }
 
   const icons: DockIcon[] = [

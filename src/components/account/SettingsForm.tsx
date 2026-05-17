@@ -36,6 +36,7 @@ import {
   type Settings,
   type SettingsPatch,
 } from '../../lib/settings'
+import { withBase, stripBase } from '../../lib/with-base'
 
 type Locale = 'tr' | 'en'
 
@@ -270,9 +271,9 @@ export default function SettingsForm() {
     updateSettings({ language: lang })
     setSettings((s) => ({ ...s, language: lang }))
     if (typeof window === 'undefined') return
-    const stripped = stripLocalePrefix(window.location.pathname)
+    const stripped = stripLocalePrefix(stripBase(window.location.pathname))
     const target = lang === 'en' ? `/en${stripped === '/' ? '' : stripped}` : stripped
-    window.location.href = target
+    window.location.href = withBase(target)
   }
 
   function changeDateFormat(fmt: DateFormat) {
@@ -335,7 +336,7 @@ export default function SettingsForm() {
     deleteAccountData()
     setDelOpen(false)
     if (typeof window !== 'undefined') {
-      window.location.href = '/'
+      window.location.href = withBase('/')
     }
   }
 

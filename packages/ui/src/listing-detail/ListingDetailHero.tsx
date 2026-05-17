@@ -153,7 +153,11 @@ export function ListingDetailHero({ listing }: ListingDetailHeroProps): ReactEle
 
   const onCompare = (): void => {
     if (typeof window === 'undefined') return
-    window.location.href = `/karsilastir?ekle=${listing.id}`
+    // Vite inlines import.meta.env.BASE_URL at build (e.g. '/public-site/' on
+    // GitHub Pages, '/' for arsam.net root). Without this prefix the runtime
+    // nav 404s when the site is mounted under a sub-path.
+    const base = (import.meta.env.BASE_URL || '/').replace(/\/$/, '')
+    window.location.href = `${base}/karsilastir?ekle=${listing.id}`
   }
 
   return (

@@ -8,6 +8,7 @@
 // the same heading on every card.
 import { useEffect, useState } from 'react'
 import { getRecent, clearRecent, type RecentItem } from '@/lib/recent-views'
+import { withBase } from '@/lib/with-base'
 
 // Currency is always TRY regardless of UI locale — keep tr-TR grouping.
 function fmtPrice(price: number): string {
@@ -69,7 +70,7 @@ export default function RecentViewedSection() {
             {labels.heading}
           </h2>
           <a
-            href="/ara"
+            href={withBase('/ara')}
             className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground transition hover:text-foreground"
           >
             {labels.backLabel}
@@ -110,7 +111,7 @@ export default function RecentViewedSection() {
             {labels.clear}
           </button>
           <a
-            href="/ara"
+            href={withBase('/ara')}
             className="font-mono text-xs uppercase tracking-[0.12em] text-muted-foreground transition hover:text-foreground"
           >
             {labels.backLabel}

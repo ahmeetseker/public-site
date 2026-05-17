@@ -1,0 +1,475 @@
+<h2 class="sr-only">Arsa arama sayfasının komple yeniden tasarımı: geniş ekran sürümü ve mobil responsive sürümü.</h2>
+
+<style>
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.4px;color:var(--color-text-tertiary);font-weight:500}
+.tab{font-size:13px;padding:8px 0;color:var(--color-text-secondary);white-space:nowrap;cursor:pointer}
+.tab-on{font-weight:500;color:var(--color-text-primary);border-bottom:2px solid var(--color-text-primary);margin-bottom:-1px}
+.f-pill{font-size:11px;padding:5px 10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:999px;font-weight:500;display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:var(--color-text-primary)}
+.f-pill-on{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.f-chip{font-size:11px;padding:3px 4px 3px 9px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:999px;display:inline-flex;align-items:center;gap:5px;font-weight:500}
+.f-chip button{width:16px;height:16px;border-radius:50%;background:var(--color-background-secondary);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.fs-h{font-size:11px;font-weight:500;color:var(--color-text-primary);margin:0 0 6px;display:flex;align-items:center;justify-content:space-between}
+.fs-h span{font-size:10px;color:var(--color-text-tertiary);font-weight:400}
+.fs-sec{padding:12px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.fs-sec:last-of-type{border-bottom:none}
+.cb-row{display:flex;align-items:center;gap:8px;font-size:11px;padding:3px 0;cursor:pointer}
+.cb-box{width:14px;height:14px;border:0.5px solid var(--color-border-secondary);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.cb-on{background:var(--color-text-primary);border-color:var(--color-text-primary);color:var(--color-background-primary)}
+.input{font-size:11px;padding:6px 8px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);width:100%;box-sizing:border-box;color:var(--color-text-primary)}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+</style>
+
+<div style="padding:1rem 0;">
+
+<!-- ================================================== -->
+<!-- ============== DESKTOP ============================ -->
+<!-- ================================================== -->
+<div class="lbl" style="margin-bottom:10px;">Geniş ekran · masaüstü</div>
+
+<div style="background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:14px;">
+
+<!-- HEADER -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:12px;">
+<div style="display:flex;align-items:center;gap:22px;">
+<div style="font-size:16px;font-weight:500;">arsam<span style="color:var(--color-text-tertiary);">.net</span></div>
+<div style="display:flex;gap:16px;">
+<div class="tab tab-on">Arsa</div>
+<div class="tab">Tarla</div>
+<div class="tab">Zeytinlik</div>
+<div class="tab">Bağ evi</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:6px;">
+<button aria-label="Favoriler" style="width:30px;height:30px;border-radius:50%;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:16px;" aria-hidden="true"></i></button>
+<button aria-label="Bildirimler" style="width:30px;height:30px;border-radius:50%;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;position:relative;"><i class="ti ti-bell" style="font-size:16px;" aria-hidden="true"></i><span style="position:absolute;top:5px;right:5px;width:7px;height:7px;background:#A32D2D;border-radius:50%;"></span></button>
+<button style="font-size:12px;padding:7px 13px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;">İlan ver</button>
+<div style="width:28px;height:28px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#633806;">MK</div>
+</div>
+</div>
+
+<!-- SEARCH ROW -->
+<div style="display:flex;gap:6px;margin-bottom:8px;">
+<div style="flex:1;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0 12px;display:flex;align-items:center;gap:8px;">
+<i class="ti ti-search" style="font-size:15px;color:var(--color-text-secondary);" aria-hidden="true"></i>
+<div style="font-size:12px;color:var(--color-text-primary);font-weight:500;flex:1;padding:9px 0;">Türkiye geneli</div>
+<span style="font-size:10px;color:var(--color-text-tertiary);">il, ilçe veya ilan no</span>
+</div>
+<button style="font-size:12px;padding:0 16px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:5px;"><i class="ti ti-search" style="font-size:13px;" aria-hidden="true"></i>Ara</button>
+</div>
+
+<!-- BREADCRUMB -->
+<div style="font-size:10px;color:var(--color-text-tertiary);margin-bottom:14px;">Anasayfa › Arsa arama</div>
+
+<!-- ============ 2-COL LAYOUT ============ -->
+<div style="display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:start;">
+
+<!-- ============ LEFT SIDEBAR ============ -->
+<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;position:sticky;top:14px;">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+<div style="font-size:13px;font-weight:500;">Filtreler</div>
+<button style="font-size:10px;background:none;border:none;color:var(--color-text-info);cursor:pointer;font-weight:500;">Temizle</button>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">Arsa tipi</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px;">
+<span class="f-pill f-pill-on">İmarlı</span>
+<span class="f-pill">Tarla</span>
+<span class="f-pill">Zeytinlik</span>
+<span class="f-pill">Villa</span>
+</div>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">Konum</div>
+<input type="text" class="input" placeholder="İl, ilçe veya semt" value="" />
+<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;">
+<span class="f-pill" style="font-size:10px;padding:3px 8px;">İzmir 84</span>
+<span class="f-pill" style="font-size:10px;padding:3px 8px;">Muğla 32</span>
+<span class="f-pill" style="font-size:10px;padding:3px 8px;">Balıkesir 41</span>
+</div>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">Fiyat <span>₺</span></div>
+<div style="display:flex;gap:5px;">
+<input class="input" placeholder="Min" />
+<input class="input" placeholder="Max" />
+</div>
+<div style="height:3px;background:var(--color-background-secondary);border-radius:999px;margin-top:8px;position:relative;">
+<div style="position:absolute;left:8%;right:32%;height:100%;background:var(--color-text-primary);border-radius:999px;"></div>
+<div style="position:absolute;left:8%;top:-3px;width:9px;height:9px;background:var(--color-background-primary);border:1.5px solid var(--color-text-primary);border-radius:50%;"></div>
+<div style="position:absolute;left:calc(68% - 4px);top:-3px;width:9px;height:9px;background:var(--color-background-primary);border:1.5px solid var(--color-text-primary);border-radius:50%;"></div>
+</div>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">Yüzölçümü <span>m²</span></div>
+<div style="display:flex;gap:5px;">
+<input class="input" placeholder="Min" value="1.000" />
+<input class="input" placeholder="Max" value="5.000" />
+</div>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">İmar durumu</div>
+<div class="cb-row"><div class="cb-box cb-on"><i class="ti ti-check" style="font-size:10px;" aria-hidden="true"></i></div>Konut</div>
+<div class="cb-row"><div class="cb-box cb-on"><i class="ti ti-check" style="font-size:10px;" aria-hidden="true"></i></div>Ticari</div>
+<div class="cb-row"><div class="cb-box"></div>Tarım</div>
+<div class="cb-row"><div class="cb-box"></div>Sanayi</div>
+<div class="cb-row"><div class="cb-box"></div>Turizm</div>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">Tapu durumu</div>
+<div style="display:flex;flex-wrap:wrap;gap:4px;">
+<span class="f-pill f-pill-on">Tapulu</span>
+<span class="f-pill">Hisseli</span>
+</div>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">Özellikler</div>
+<div class="cb-row"><div class="cb-box cb-on"><i class="ti ti-check" style="font-size:10px;" aria-hidden="true"></i></div>Yola cephe</div>
+<div class="cb-row"><div class="cb-box"></div>Su</div>
+<div class="cb-row"><div class="cb-box"></div>Elektrik</div>
+<div class="cb-row"><div class="cb-box"></div>Doğalgaz</div>
+</div>
+
+<div class="fs-sec">
+<div class="fs-h">Deprem risk bandı</div>
+<div style="display:flex;gap:4px;">
+<button style="flex:1;font-size:10px;padding:5px 0;background:#E1F5EE;color:#085041;border:0.5px solid #9FE1CB;border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;">Düşük</button>
+<button style="flex:1;font-size:10px;padding:5px 0;background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;">Orta</button>
+<button style="flex:1;font-size:10px;padding:5px 0;background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;">Yüksek</button>
+</div>
+</div>
+
+<button style="width:100%;font-size:12px;padding:9px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;margin-top:14px;">15 ilanı göster</button>
+
+</div>
+
+<!-- ============ RIGHT MAIN ============ -->
+<div style="min-width:0;">
+
+<!-- TOOLBAR -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+<div style="display:flex;align-items:center;gap:8px;">
+<div style="font-size:14px;font-weight:500;">15 arsa bulundu</div>
+<span style="font-size:10px;padding:2px 7px;background:#E1F5EE;color:#085041;border-radius:999px;font-weight:500;display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-circle-filled" style="font-size:7px;" aria-hidden="true"></i>3 yeni</span>
+</div>
+<div style="display:flex;align-items:center;gap:8px;">
+<div style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;"><span style="color:var(--color-text-tertiary);">Sırala:</span><span style="font-weight:500;display:inline-flex;align-items:center;gap:3px;">Son güncelleme<i class="ti ti-chevron-down" style="font-size:12px;" aria-hidden="true"></i></span></div>
+<div style="display:flex;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:2px;">
+<button aria-label="Grid" style="width:26px;height:22px;border:none;background:var(--color-text-primary);color:var(--color-background-primary);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-layout-grid" style="font-size:12px;" aria-hidden="true"></i></button>
+<button aria-label="Liste" style="width:26px;height:22px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-list" style="font-size:13px;" aria-hidden="true"></i></button>
+<button aria-label="Harita" style="width:26px;height:22px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-map-2" style="font-size:12px;" aria-hidden="true"></i></button>
+</div>
+</div>
+</div>
+
+<!-- ACTIVE FILTER CHIPS -->
+<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-bottom:14px;">
+<span class="f-chip">İmarlı<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+<span class="f-chip">Konut + ticari<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+<span class="f-chip">1.000 - 5.000 m²<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+<span class="f-chip">Yola cephe<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+<span class="f-chip">Düşük risk<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+<button style="margin-left:auto;font-size:11px;padding:4px 9px;background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:999px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-bookmark" style="font-size:11px;" aria-hidden="true"></i>Aramayı kaydet</button>
+</div>
+
+<!-- FEATURED HORIZONTAL CARD -->
+<div class="card" style="border:2px solid #BA7517;display:flex;margin-bottom:12px;">
+<div style="width:160px;flex-shrink:0;background:#FAEEDA;display:flex;align-items:center;justify-content:center;position:relative;">
+<i class="ti ti-mountain" style="font-size:48px;color:#854F0B;" aria-hidden="true"></i>
+<div style="position:absolute;top:6px;left:6px;background:#BA7517;color:#fff;font-size:8px;font-weight:500;padding:3px 7px;border-radius:999px;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-star" style="font-size:9px;" aria-hidden="true"></i>VITRIN</div>
+<div style="position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,0.7);color:#fff;font-size:9px;padding:2px 6px;border-radius:3px;display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-photo" style="font-size:10px;" aria-hidden="true"></i>24</div>
+</div>
+<div style="flex:1;padding:11px 14px;display:flex;flex-direction:column;justify-content:center;min-width:0;">
+<div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--color-text-secondary);margin-bottom:4px;"><i class="ti ti-map-pin" style="font-size:11px;" aria-hidden="true"></i>İzmir · Çeşme · Alaçatı<span>·</span><span style="display:inline-flex;align-items:center;gap:2px;color:#085041;font-weight:500;"><i class="ti ti-rosette-discount-check" style="font-size:11px;" aria-hidden="true"></i>Doğrulanmış</span></div>
+<h3 style="font-size:13px;margin:0 0 5px;line-height:1.3;font-weight:500;">Alaçatı bağ evi imarlı, asfalta sıfır</h3>
+<div style="display:flex;gap:10px;font-size:10px;color:var(--color-text-secondary);margin-bottom:7px;">
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-ruler-measure" style="font-size:11px;" aria-hidden="true"></i>1.820 m²</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-grid-pattern" style="font-size:11px;" aria-hidden="true"></i>Konut+tic.</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-road" style="font-size:11px;" aria-hidden="true"></i>Asfalt 22m</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:15px;font-weight:500;line-height:1.1;">₺11.500.000</div><div style="font-size:9px;color:var(--color-text-tertiary);">₺6.319/m² · <span style="color:#0F6E56;font-weight:500;">%9 emsal altı</span></div></div>
+<div style="display:flex;gap:5px;">
+<button aria-label="Favorile" style="width:26px;height:26px;border-radius:50%;background:var(--color-background-secondary);border:none;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;"><i class="ti ti-heart" style="font-size:13px;" aria-hidden="true"></i></button>
+<button aria-label="Karşılaştır" style="width:26px;height:26px;border-radius:50%;background:var(--color-background-secondary);border:none;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;"><i class="ti ti-arrows-left-right" style="font-size:13px;" aria-hidden="true"></i></button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- GRID OF 4 CARDS -->
+<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+
+<div class="card">
+<div style="position:relative;height:110px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;">
+<i class="ti ti-beach" style="font-size:38px;color:#185FA5;" aria-hidden="true"></i>
+<div style="position:absolute;top:6px;left:6px;background:#185FA5;color:#fff;font-size:8px;font-weight:500;padding:2px 7px;border-radius:999px;">İMARLI</div>
+<button aria-label="Favorile" style="position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:12px;" aria-hidden="true"></i></button>
+<div style="position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,0.65);color:#fff;font-size:8px;padding:1px 5px;border-radius:3px;display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-photo" style="font-size:10px;" aria-hidden="true"></i>18</div>
+</div>
+<div style="padding:9px 11px;">
+<div style="font-size:9px;color:var(--color-text-tertiary);margin-bottom:3px;">Balıkesir · Ayvalık · Cunda</div>
+<h3 style="font-size:12px;margin:0 0 5px;line-height:1.3;font-weight:500;">Cunda · denize 80m, yola cephe</h3>
+<div style="display:flex;gap:8px;font-size:9px;color:var(--color-text-secondary);padding:5px 0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:6px;">
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-ruler-measure" style="font-size:10px;" aria-hidden="true"></i>1.240m²</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-eye" style="font-size:10px;" aria-hidden="true"></i>Deniz</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-road" style="font-size:10px;" aria-hidden="true"></i>Yola cephe</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:13px;font-weight:500;line-height:1.1;">₺8.400.000</div><div style="font-size:8px;color:var(--color-text-tertiary);">₺6.774/m²</div></div>
+<div style="font-size:8px;color:var(--color-text-tertiary);">2 gün önce</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div style="position:relative;height:110px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;">
+<i class="ti ti-home-2" style="font-size:38px;color:#854F0B;" aria-hidden="true"></i>
+<div style="position:absolute;top:6px;left:6px;background:#854F0B;color:#fff;font-size:8px;font-weight:500;padding:2px 7px;border-radius:999px;">VİLLA ARSASI</div>
+<button aria-label="Favorile" style="position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:12px;" aria-hidden="true"></i></button>
+<div style="position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,0.65);color:#fff;font-size:8px;padding:1px 5px;border-radius:3px;display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-photo" style="font-size:10px;" aria-hidden="true"></i>22</div>
+</div>
+<div style="padding:9px 11px;">
+<div style="font-size:9px;color:var(--color-text-tertiary);margin-bottom:3px;">Muğla · Datça</div>
+<h3 style="font-size:12px;margin:0 0 5px;line-height:1.3;font-weight:500;">Datça merkez · villa imarlı parsel</h3>
+<div style="display:flex;gap:8px;font-size:9px;color:var(--color-text-secondary);padding:5px 0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:6px;">
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-ruler-measure" style="font-size:10px;" aria-hidden="true"></i>2.150m²</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-corner-down-right" style="font-size:10px;" aria-hidden="true"></i>Köşe</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-calendar" style="font-size:10px;" aria-hidden="true"></i>Yeni imar</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:13px;font-weight:500;line-height:1.1;">₺14.200.000</div><div style="font-size:8px;color:var(--color-text-tertiary);">₺6.605/m²</div></div>
+<div style="font-size:8px;color:var(--color-text-tertiary);">1 gün önce</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div style="position:relative;height:110px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;">
+<i class="ti ti-plant-2" style="font-size:38px;color:#0F6E56;" aria-hidden="true"></i>
+<div style="position:absolute;top:6px;left:6px;background:#0F6E56;color:#fff;font-size:8px;font-weight:500;padding:2px 7px;border-radius:999px;">ZEYTİNLİK</div>
+<button aria-label="Favorile" style="position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:12px;" aria-hidden="true"></i></button>
+<div style="position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,0.65);color:#fff;font-size:8px;padding:1px 5px;border-radius:3px;display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-photo" style="font-size:10px;" aria-hidden="true"></i>8</div>
+</div>
+<div style="padding:9px 11px;">
+<div style="font-size:9px;color:var(--color-text-tertiary);margin-bottom:3px;">İzmir · Urla · Zeytinalanı</div>
+<h3 style="font-size:12px;margin:0 0 5px;line-height:1.3;font-weight:500;">Urla · 4.500 m² zeytin + tarla</h3>
+<div style="display:flex;gap:8px;font-size:9px;color:var(--color-text-secondary);padding:5px 0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:6px;">
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-ruler-measure" style="font-size:10px;" aria-hidden="true"></i>4.500m²</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-copy" style="font-size:10px;" aria-hidden="true"></i>İkiz parsel</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-leaf" style="font-size:10px;" aria-hidden="true"></i>Verimli</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:13px;font-weight:500;line-height:1.1;">₺3.600.000</div><div style="font-size:8px;color:var(--color-text-tertiary);">₺800/m²</div></div>
+<div style="font-size:8px;color:var(--color-text-tertiary);">3 gün önce</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div style="position:relative;height:110px;background:#F1EFE8;display:flex;align-items:center;justify-content:center;">
+<i class="ti ti-plant" style="font-size:38px;color:#5A4A2C;" aria-hidden="true"></i>
+<div style="position:absolute;top:6px;left:6px;background:#5A4A2C;color:#fff;font-size:8px;font-weight:500;padding:2px 7px;border-radius:999px;">TARLA</div>
+<button aria-label="Favorile" style="position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:12px;" aria-hidden="true"></i></button>
+<div style="position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,0.65);color:#fff;font-size:8px;padding:1px 5px;border-radius:3px;display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-photo" style="font-size:10px;" aria-hidden="true"></i>6</div>
+</div>
+<div style="padding:9px 11px;">
+<div style="font-size:9px;color:var(--color-text-tertiary);margin-bottom:3px;">Aydın · Söke</div>
+<h3 style="font-size:12px;margin:0 0 5px;line-height:1.3;font-weight:500;">Söke · ovaya bakan tarla</h3>
+<div style="display:flex;gap:8px;font-size:9px;color:var(--color-text-secondary);padding:5px 0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:6px;">
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-ruler-measure" style="font-size:10px;" aria-hidden="true"></i>12.500m²</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-mountain" style="font-size:10px;" aria-hidden="true"></i>Ova mz.</span>
+<span style="display:inline-flex;align-items:center;gap:2px;"><i class="ti ti-leaf" style="font-size:10px;" aria-hidden="true"></i>Tarım</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:13px;font-weight:500;line-height:1.1;">₺3.800.000</div><div style="font-size:8px;color:var(--color-text-tertiary);">₺304/m²</div></div>
+<div style="font-size:8px;color:var(--color-text-tertiary);">5 gün önce</div>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- PAGINATION -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:0.5px solid var(--color-border-tertiary);">
+<div style="font-size:10px;color:var(--color-text-tertiary);">1-5 / 15 ilan gösteriliyor</div>
+<div style="display:flex;gap:4px;">
+<button aria-label="Önceki" style="width:28px;height:28px;background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="ti ti-chevron-left" style="font-size:13px;" aria-hidden="true"></i></button>
+<button style="width:28px;height:28px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;font-size:11px;font-weight:500;">1</button>
+<button style="width:28px;height:28px;background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;font-size:11px;font-weight:500;">2</button>
+<button style="width:28px;height:28px;background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;font-size:11px;font-weight:500;">3</button>
+<button aria-label="Sonraki" style="width:28px;height:28px;background:transparent;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);cursor:pointer;display:flex;align-items:center;justify-content:center;"><i class="ti ti-chevron-right" style="font-size:13px;" aria-hidden="true"></i></button>
+</div>
+</div>
+
+<!-- SAVED SEARCH BANNER -->
+<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;display:flex;align-items:center;gap:12px;margin-top:14px;">
+<div style="width:34px;height:34px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-bell-ringing" style="font-size:17px;color:#854F0B;" aria-hidden="true"></i></div>
+<div style="flex:1;">
+<div style="font-size:12px;font-weight:500;line-height:1.3;margin-bottom:2px;">Bu aramayı kaydet</div>
+<div style="font-size:10px;color:var(--color-text-secondary);line-height:1.5;">Filtrelerine uyan yeni ilan geldiğinde sana bildirim gönderelim.</div>
+</div>
+<button style="font-size:11px;padding:7px 11px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;white-space:nowrap;">Kaydet</button>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ================================================== -->
+<!-- ============== MOBILE ============================ -->
+<!-- ================================================== -->
+<div class="lbl" style="margin:28px 0 10px;">Responsive · mobil görünüm (≤640px)</div>
+
+<div style="background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:28px 14px;display:flex;justify-content:center;">
+
+<div style="width:360px;display:flex;flex-direction:column;gap:12px;">
+
+<!-- MOBILE HEADER -->
+<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;">
+<div style="display:flex;align-items:center;gap:10px;">
+<button aria-label="Menü" style="background:transparent;border:none;padding:0;cursor:pointer;"><i class="ti ti-menu-2" style="font-size:20px;" aria-hidden="true"></i></button>
+<div style="font-size:15px;font-weight:500;">arsam<span style="color:var(--color-text-tertiary);">.net</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:6px;">
+<button aria-label="Favoriler" style="width:28px;height:28px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:18px;" aria-hidden="true"></i></button>
+<button aria-label="Bildirimler" style="width:28px;height:28px;background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;position:relative;"><i class="ti ti-bell" style="font-size:18px;" aria-hidden="true"></i><span style="position:absolute;top:4px;right:4px;width:7px;height:7px;background:#A32D2D;border-radius:50%;"></span></button>
+</div>
+</div>
+
+<!-- MOBILE SEARCH -->
+<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0 14px;display:flex;align-items:center;gap:10px;">
+<i class="ti ti-search" style="font-size:16px;color:var(--color-text-secondary);" aria-hidden="true"></i>
+<div style="font-size:13px;color:var(--color-text-secondary);flex:1;padding:11px 0;">Konum, ilçe veya ilan no</div>
+<i class="ti ti-microphone" style="font-size:16px;color:var(--color-text-secondary);" aria-hidden="true"></i>
+</div>
+
+<!-- MOBILE CATEGORY TABS -->
+<div style="display:flex;gap:18px;border-bottom:0.5px solid var(--color-border-tertiary);overflow-x:auto;padding:0 2px;">
+<div class="tab tab-on">Arsa <span style="font-size:10px;color:var(--color-text-tertiary);font-weight:400;">15</span></div>
+<div class="tab">Tarla <span style="font-size:10px;font-weight:400;">8</span></div>
+<div class="tab">Zeytinlik <span style="font-size:10px;font-weight:400;">12</span></div>
+<div class="tab">Bağ evi <span style="font-size:10px;font-weight:400;">6</span></div>
+</div>
+
+<!-- MOBILE FILTER CHIPS ROW -->
+<div style="display:flex;gap:5px;overflow-x:auto;padding:2px 0;">
+<button class="f-pill" style="flex-shrink:0;"><i class="ti ti-adjustments-horizontal" style="font-size:12px;" aria-hidden="true"></i>Filtreler<span style="background:var(--color-text-primary);color:var(--color-background-primary);font-size:9px;padding:1px 5px;border-radius:999px;font-weight:500;margin-left:2px;">5</span></button>
+<button class="f-pill" style="flex-shrink:0;">Fiyat<i class="ti ti-chevron-down" style="font-size:12px;" aria-hidden="true"></i></button>
+<button class="f-pill" style="flex-shrink:0;">m²<i class="ti ti-chevron-down" style="font-size:12px;" aria-hidden="true"></i></button>
+<button class="f-pill" style="flex-shrink:0;">İmar<i class="ti ti-chevron-down" style="font-size:12px;" aria-hidden="true"></i></button>
+<button class="f-pill" style="flex-shrink:0;">Tapu<i class="ti ti-chevron-down" style="font-size:12px;" aria-hidden="true"></i></button>
+</div>
+
+<!-- MOBILE ACTIVE CHIPS -->
+<div style="display:flex;flex-wrap:wrap;gap:5px;">
+<span class="f-chip">İmarlı<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+<span class="f-chip">1.000-5.000 m²<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+<span class="f-chip">Düşük risk<button aria-label="Kaldır"><i class="ti ti-x" style="font-size:10px;" aria-hidden="true"></i></button></span>
+</div>
+
+<!-- MOBILE RESULT TOOLBAR -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;">
+<div style="font-size:13px;font-weight:500;">15 arsa</div>
+<div style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;"><span style="color:var(--color-text-tertiary);">Sırala:</span><span style="font-weight:500;display:inline-flex;align-items:center;gap:3px;">Son güncelleme<i class="ti ti-chevron-down" style="font-size:12px;" aria-hidden="true"></i></span></div>
+</div>
+
+<!-- MOBILE FEATURED CARD -->
+<div class="card" style="border:2px solid #BA7517;">
+<div style="position:relative;height:150px;background:#FAEEDA;display:flex;align-items:center;justify-content:center;">
+<i class="ti ti-mountain" style="font-size:56px;color:#854F0B;" aria-hidden="true"></i>
+<div style="position:absolute;top:8px;left:8px;background:#BA7517;color:#fff;font-size:9px;font-weight:500;padding:3px 8px;border-radius:999px;letter-spacing:0.5px;display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-star" style="font-size:10px;" aria-hidden="true"></i>VITRIN</div>
+<button aria-label="Favorile" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:15px;" aria-hidden="true"></i></button>
+<div style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.7);color:#fff;font-size:10px;padding:2px 7px;border-radius:4px;display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-photo" style="font-size:11px;" aria-hidden="true"></i>24</div>
+</div>
+<div style="padding:12px 14px;">
+<div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:5px;display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-map-pin" style="font-size:12px;" aria-hidden="true"></i>İzmir · Çeşme · Alaçatı</div>
+<h3 style="font-size:14px;margin:0 0 9px;line-height:1.3;font-weight:500;">Alaçatı bağ evi imarlı, asfalta sıfır</h3>
+<div style="display:flex;gap:12px;font-size:11px;color:var(--color-text-secondary);padding:8px 0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:10px;">
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-ruler-measure" style="font-size:12px;" aria-hidden="true"></i>1.820 m²</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-grid-pattern" style="font-size:12px;" aria-hidden="true"></i>Konut+tic.</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-road" style="font-size:12px;" aria-hidden="true"></i>Asfalt</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:16px;font-weight:500;line-height:1.1;">₺11.500.000</div><div style="font-size:10px;color:var(--color-text-tertiary);">₺6.319/m² · <span style="color:#0F6E56;font-weight:500;">%9 emsal altı</span></div></div>
+</div>
+</div>
+</div>
+
+<!-- MOBILE CARD 2 -->
+<div class="card">
+<div style="position:relative;height:140px;background:#E6F1FB;display:flex;align-items:center;justify-content:center;">
+<i class="ti ti-beach" style="font-size:50px;color:#185FA5;" aria-hidden="true"></i>
+<div style="position:absolute;top:8px;left:8px;background:#185FA5;color:#fff;font-size:9px;font-weight:500;padding:3px 8px;border-radius:999px;">İMARLI</div>
+<button aria-label="Favorile" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:15px;" aria-hidden="true"></i></button>
+</div>
+<div style="padding:11px 14px;">
+<div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-map-pin" style="font-size:12px;" aria-hidden="true"></i>Balıkesir · Ayvalık · Cunda</div>
+<h3 style="font-size:13px;margin:0 0 8px;line-height:1.3;font-weight:500;">Cunda · denize 80m, yola cephe imarlı</h3>
+<div style="display:flex;gap:12px;font-size:10px;color:var(--color-text-secondary);padding:7px 0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px;">
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-ruler-measure" style="font-size:11px;" aria-hidden="true"></i>1.240m²</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-eye" style="font-size:11px;" aria-hidden="true"></i>Deniz mz.</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-road" style="font-size:11px;" aria-hidden="true"></i>Yola cephe</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:15px;font-weight:500;">₺8.400.000</div><div style="font-size:10px;color:var(--color-text-tertiary);">₺6.774/m²</div></div>
+<div style="font-size:10px;color:var(--color-text-tertiary);">2 gün önce</div>
+</div>
+</div>
+</div>
+
+<!-- MOBILE CARD 3 -->
+<div class="card">
+<div style="position:relative;height:140px;background:#E1F5EE;display:flex;align-items:center;justify-content:center;">
+<i class="ti ti-plant-2" style="font-size:50px;color:#0F6E56;" aria-hidden="true"></i>
+<div style="position:absolute;top:8px;left:8px;background:#0F6E56;color:#fff;font-size:9px;font-weight:500;padding:3px 8px;border-radius:999px;">ZEYTİNLİK</div>
+<button aria-label="Favorile" style="position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.95);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;"><i class="ti ti-heart" style="font-size:15px;color:#D4537E;" aria-hidden="true"></i></button>
+</div>
+<div style="padding:11px 14px;">
+<div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:4px;display:inline-flex;align-items:center;gap:4px;"><i class="ti ti-map-pin" style="font-size:12px;" aria-hidden="true"></i>İzmir · Urla · Zeytinalanı</div>
+<h3 style="font-size:13px;margin:0 0 8px;line-height:1.3;font-weight:500;">Urla · 4.500 m² zeytin + tarla</h3>
+<div style="display:flex;gap:12px;font-size:10px;color:var(--color-text-secondary);padding:7px 0;border-top:0.5px solid var(--color-border-tertiary);border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:8px;">
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-ruler-measure" style="font-size:11px;" aria-hidden="true"></i>4.500m²</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-copy" style="font-size:11px;" aria-hidden="true"></i>İkiz parsel</span>
+<span style="display:inline-flex;align-items:center;gap:3px;"><i class="ti ti-leaf" style="font-size:11px;" aria-hidden="true"></i>Verimli</span>
+</div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;">
+<div><div style="font-size:15px;font-weight:500;">₺3.600.000</div><div style="font-size:10px;color:var(--color-text-tertiary);">₺800/m²</div></div>
+<div style="font-size:10px;color:var(--color-text-tertiary);">3 gün önce</div>
+</div>
+</div>
+</div>
+
+<!-- MOBILE SAVED SEARCH MINI -->
+<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:12px 14px;display:flex;align-items:center;gap:10px;">
+<i class="ti ti-bell-ringing" style="font-size:18px;color:#854F0B;" aria-hidden="true"></i>
+<div style="flex:1;">
+<div style="font-size:12px;font-weight:500;line-height:1.3;">Bu aramayı kaydet</div>
+<div style="font-size:10px;color:var(--color-text-secondary);">Yeni ilan geldiğinde haber al</div>
+</div>
+<button style="font-size:11px;padding:6px 11px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;white-space:nowrap;">Kaydet</button>
+</div>
+
+<!-- MOBILE STICKY BOTTOM BAR -->
+<div style="margin-top:6px;">
+<div class="lbl" style="margin-bottom:6px;">Yapışkan alt çubuk · scroll'da görünür</div>
+<div style="background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:10px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 -4px 12px rgba(0,0,0,0.04);">
+<button style="flex:1;font-size:12px;padding:9px;background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-adjustments-horizontal" style="font-size:14px;" aria-hidden="true"></i>Filtreler<span style="background:var(--color-text-primary);color:var(--color-background-primary);font-size:9px;padding:0 5px;border-radius:999px;font-weight:500;">5</span></button>
+<button style="flex:1;font-size:12px;padding:9px;background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-arrows-sort" style="font-size:14px;" aria-hidden="true"></i>Sırala</button>
+<button style="flex:1;font-size:12px;padding:9px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-map-2" style="font-size:14px;" aria-hidden="true"></i>Harita</button>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>

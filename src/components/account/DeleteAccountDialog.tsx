@@ -10,6 +10,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { clearAll } from '../../lib/account-store'
+import { withBase } from '../../lib/with-base'
 
 export default function DeleteAccountDialog() {
   const [open, setOpen] = useState(false)
@@ -29,7 +30,7 @@ export default function DeleteAccountDialog() {
     clearAll()
     setOpen(false)
     if (typeof window !== 'undefined') {
-      window.location.href = '/'
+      window.location.href = withBase('/')
     }
   }
 

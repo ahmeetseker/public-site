@@ -20,6 +20,7 @@ import { Search, MapPin, BookOpen, Building2, Sparkles, Layers } from '@landx/ic
 import { DynamicIslandHeader } from '@landx/ui/shell'
 import { ThemeToggle } from '@landx/ui/theme'
 import { t, type Locale } from '@/i18n'
+import { BASE, stripBase } from '@/lib/with-base'
 import { buildAnswer } from '@/lib/assistant/answer'
 import {
   PUBLIC_AI_SUGGESTIONS_TR,
@@ -47,7 +48,7 @@ interface Props {
 }
 
 function deriveActiveKey(pathname: string): string {
-  const p = pathname.replace(/^\/en/, '')
+  const p = stripBase(pathname).replace(/^\/en/, '')
   if (p.startsWith('/ara')) return 'search'
   if (p.startsWith('/ofisler') || p.startsWith('/office')) return 'offices'
   if (p.startsWith('/bolge')) return 'regions'
@@ -56,7 +57,7 @@ function deriveActiveKey(pathname: string): string {
 }
 
 export default function PublicDynamicIslandHeader({ locale, pathname, breadcrumb }: Props) {
-  const prefix = locale === 'en' ? '/en' : ''
+  const prefix = `${BASE}${locale === 'en' ? '/en' : ''}`
   const activeKey = deriveActiveKey(pathname)
 
   // Breadcrumb dropdown state — 3+ segment varsa ortayı "…" ile kısalt

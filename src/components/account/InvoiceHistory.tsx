@@ -15,6 +15,7 @@
  */
 import { useEffect, useState } from 'react'
 import { getSubscription, type Invoice, type PlanTier } from '../../lib/subscription'
+import { stripBase } from '../../lib/with-base'
 import { SUBSCRIPTION_CHANGED_EVENT } from './SubscriptionPlans'
 
 interface InvoiceDictionary {
@@ -67,7 +68,8 @@ const EN: InvoiceDictionary = {
 
 function isEnglish(): boolean {
   if (typeof window === 'undefined') return false
-  return window.location.pathname.startsWith('/en/') || window.location.pathname === '/en'
+  const p = stripBase(window.location.pathname)
+  return p.startsWith('/en/') || p === '/en'
 }
 
 function formatAmount(amount: number, locale: 'tr' | 'en'): string {
