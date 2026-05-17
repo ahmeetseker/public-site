@@ -57,6 +57,8 @@ function injectArsaFields(l: Listing): Listing {
     takasUygun: hashSeed(l.id, 'takas') > 0.7,
     forRent: false,
     ilanDate: l.lastUpdate,
+    // Wave 1 — Doğalgaz altyapısı; deterministik (~%45 true).
+    hasGas: hashSeed(l.id, 'gas') > 0.55,
   }
 }
 
