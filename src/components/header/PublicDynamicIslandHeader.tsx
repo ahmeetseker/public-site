@@ -31,9 +31,19 @@ import { LocalePickerInline } from '../i18n/LocalePickerInline'
 import { NotificationBellPanel } from './NotificationBellPanel'
 import RecentViewedDropdown from '../recent/RecentViewedDropdown'
 
+export interface BreadcrumbSegment {
+  label: string
+  href?: string
+}
+
 interface Props {
   locale: Locale
   pathname: string
+  /**
+   * Sayfa-spesifik breadcrumb segmentleri. Verilirse pill'in "Şu an: …"
+   * etiketi yerine tıklanabilir link zinciri olarak render edilir.
+   */
+  breadcrumb?: BreadcrumbSegment[]
 }
 
 function deriveActiveKey(pathname: string): string {
@@ -45,9 +55,40 @@ function deriveActiveKey(pathname: string): string {
   return 'home'
 }
 
-export default function PublicDynamicIslandHeader({ locale, pathname }: Props) {
+export default function PublicDynamicIslandHeader({ locale, pathname, breadcrumb }: Props) {
   const prefix = locale === 'en' ? '/en' : ''
   const activeKey = deriveActiveKey(pathname)
+
+  // Breadcrumb verilirse pill'in "Şu an: …" içeriğini link zinciri yap
+  const statusChipContent = breadcrumb && breadcrumb.length > 0 ? (
+    <span className="inline-flex items-center gap-1">
+      {breadcrumb.map((seg, i) => (
+        <span key={seg.label + i} className="inline-flex items-center gap-1">
+          {i > 0 && <span className="text-muted-foreground/70">›</span>}
+          {seg.href ? (
+            <a
+              href={seg.href}
+              className={
+                i === breadcrumb.length - 1
+                  ? 'font-medium text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:underline'
+              }
+            >
+              {seg.label}
+            </a>
+          ) : (
+            <span className={i === breadcrumb.length - 1 ? 'font-medium text-foreground' : 'text-muted-foreground'}>
+              {seg.label}
+            </span>
+          )}
+        </span>
+      ))}
+    </span>
+  ) : undefined
+
+  const statusChipLabel = breadcrumb && breadcrumb.length > 0
+    ? breadcrumb.map((s) => s.label).join(' › ')
+    : undefined
 
   const navPages = useMemo(
     () => [
@@ -144,6 +185,8 @@ export default function PublicDynamicIslandHeader({ locale, pathname }: Props) {
       brandIcon={<Sparkles className="h-6 w-6 flex-none" />}
       brandLabel="arsam.net"
       activeKey={activeKey}
+      statusChipLabel={statusChipLabel}
+      statusChipContent={statusChipContent}
       navPages={navPages}
       subNav={subNav}
       aiSearch={{

@@ -45,6 +45,12 @@ export interface Props {
    * overridden for region-specific variants.
    */
   inLanguage?: string
+  /**
+   * Sayfa-spesifik breadcrumb. Verilirse `PublicDynamicIslandHeader` pill'inde
+   * "Şu an: Anasayfa › Arsa arama › Sahilkent" şeklinde tıklanabilir link
+   * zinciri olarak render edilir.
+   */
+  breadcrumb?: Array<{ label: string; href?: string }>
 }
 
 const pathname = Astro.url.pathname
@@ -152,7 +158,7 @@ const resolvedOgImage = overrideOgImage ?? defaultOgImage
     </a>
 
     <slot name="header">
-      <PublicDynamicIslandHeader client:load locale={locale} pathname={pathname} />
+      <PublicDynamicIslandHeader client:load locale={locale} pathname={pathname} breadcrumb={Astro.props.breadcrumb} />
     </slot>
 
     <div class="fixed right-4 top-4 z-50 pointer-events-auto">

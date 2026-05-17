@@ -87,16 +87,6 @@ const breadcrumbJsonLd = {
 ---
 
 <RootLayout title={title} description={description} ogImage={ogImage}>
-  <nav aria-label="Breadcrumb" class="border-b border-border bg-background">
-    <ol
-      class="mx-auto flex max-w-[1280px] items-center gap-1.5 px-4 py-3 text-xs text-muted-foreground"
-    >
-      <li><a href={`${prefix}/`} class="transition hover:text-foreground">{t('search.breadcrumbHome', locale)}</a></li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li><span class="text-foreground">{t('officesHub.heading', locale)}</span></li>
-    </ol>
-  </nav>
-
   <PageHeader officeCount={OFFICES.length} cityCount={cityCount} avgRating={avgRating} />
 
   <SearchBar

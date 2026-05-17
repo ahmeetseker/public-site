@@ -1,57 +1,25 @@
 ---
 /**
- * /ilan/[slug] — Wave F37 / Faz 3 (F37.4 sayfa kompozisyonu).
+ * /ilan/[slug] — Komple ilan detay sayfası.
  *
- * 12 bölümlü mockup paritesi (A-L): `remixed-1848500f.html`. Her bölüm bir
- * React island olarak `client:visible` ile yüklenir; A (Hero) ve J (AI Chat)
- * `client:load` ile critical-path hidrasyonu alır.
- *
- * Section nav (sticky) scroll-spy'ı tarayıcı native (`scroll-mt-32` + anchor)
- * ile sağlanır. SEO için JSON-LD (RealEstateListing + BreadcrumbList) ve
- * recently-viewed tracker korundu.
- *
- * F33 widget mount'ları (AiValuationCard, AiQaWidget, TapuRiskBadge) yeni
- * 12 bölüme migrate edildi — D (AiValuationDeep), J (ListingAiChat), B
- * (IdentityCard) sırasıyla bunların yerine geçer.
- *
- * Faz 2 paralel agent durumu:
- *   - F37.1: A (Hero), B (Identity), L (Seller) → henüz merge değil
- *   - F37.2: C (SmartMap), H (HazardRadar), I (EnvironmentPoi) → henüz merge değil
- *   - F37.3: D (AiValuationDeep), F (Zoning), G (Farmland) → henüz merge değil
- *   - F37.4 (bu): E (Şerh), J (AI Chat), K (Compare) — gerçek import.
- *
- * Sibling agent'lar merge edildikçe inline placeholder div'leri gerçek
- * island import'larıyla değiştirilir. Mevcut sayfa üretim build'inde kırık
- * olmasın diye placeholder yaklaşımı seçildi.
+ * Mockup: `komple_ilan_detay_sayfasi.html` birebir replikası.
+ * 2 kolon (sol içerik / sağ sticky kart), inline statik bölümler.
  */
 
 import RootLayout from '@/layouts/RootLayout.astro'
-import {
-  ListingDetailHero,
-  IdentityCard,
-  SmartMap,
-  AiValuationDeep,
-  LegalEncumbrancePanel,
-  ZoningPanel,
-  FarmlandModule,
-  HazardRadar,
-  EnvironmentPoi,
-  ListingAiChat,
-  InlineCompare,
-  VerifiedSellerCard,
-  HeroVariant,
-  IdentityCardVariant,
-  KeyFactsVariant,
-  ListingGallery,
-} from '@landx/ui/listing-detail'
-import { AnchorNav } from '@/components/listing/AnchorNav.tsx'
-import AiInvestmentPanel from '@/components/listing/ai-invest/AiInvestmentPanel.astro'
-import InteractionPanel from '@/components/listing/interact/InteractionPanel.astro'
-import AdvancedVisualBand from '@/components/listing/intel/AdvancedVisualBand.astro'
 import MobileCtaBar from '@/components/listing/MobileCtaBar.tsx'
+import StickyContactCard from '@/components/listing/StickyContactCard.astro'
 import RecentTracker from '@/components/recent/RecentTracker'
 import SocialProofToast from '@/components/social-proof/SocialProofToast'
 import ShareButtons from '@/components/listing/ShareButtons.tsx'
+import {
+  MapPin, Eye, ChevronRight, BadgeCheck, Share2, Heart, Image as ImageIcon,
+  Video, Mountain, Trees, Route, Map as MapIcon, Camera, Ruler, LayoutGrid,
+  FileCheck2, ShieldCheck, Download, Activity, Waves, TreePine, Sun,
+  Flame, Droplets, MountainSnow, PersonStanding, Bus, Bike, ShoppingCart,
+  School, Stethoscope, Sailboat, TrendingUp, Calculator, Lightbulb, Receipt,
+  BarChart3, Zap, Coins, Sparkles, ArrowUp, Pin, Star, Phone, MessageCircle,
+} from '@landx/icons'
 import '@/styles/print.css'
 
 import { LISTINGS_V2 as LISTINGS } from '@landx/data'
@@ -65,7 +33,6 @@ import {
   toJsonLd,
 } from '@/lib/schema-builders'
 
-// Slugify pattern korundu — mevcut /ilan/[slug] URL'leri kırılmasın.
 const slugify = (s: string) =>
   s
     .toLocaleLowerCase('tr-TR')
@@ -146,13 +113,64 @@ const breadcrumbJsonLd = breadcrumbListSchema([
   { name: listing.district, url: canonicalUrl },
 ])
 
+// Header pill içinde tıklanabilir breadcrumb — JSON-LD ile aynı seviyeler
+const headerBreadcrumb = [
+  { label: homeLabel, href: `${prefix}/` },
+  { label: searchLabel, href: `${prefix}/ara` },
+  { label: listing.city, href: `${prefix}/ara?il=${encodeURIComponent(listing.city)}` },
+  { label: listing.district },
+]
+
+const unitPrice = Math.round(listing.price / listing.size)
+
+// Gerçek görseller: listing.images varsa onları kullan; yoksa Picsum'dan
+// listing.id seed'li deterministik foto seti. Build'de hash sabittir; CDN
+// cache'lenir. 1 büyük + 4 thumb (toplam 5 göster, geri kalan "+N" overlay'de).
+const galleryImages: string[] =
+  listing.images && listing.images.length > 0
+    ? listing.images
+    : Array.from({ length: 24 }, (_, i) => `https://picsum.photos/seed/${listing.id}-${i + 1}/800/520`)
+const photoCount = galleryImages.length
+const heroPhoto = galleryImages[0]
+const thumbPhotos = galleryImages.slice(1, 5)
+
+// OpenStreetMap iframe embed — listing.lat/lng etrafında ~2km kare.
+const lat = listing.lat ?? 39.92
+const lng = listing.lng ?? 32.85
+const bboxDelta = 0.01
+const osmBbox = `${lng - bboxDelta},${lat - bboxDelta},${lng + bboxDelta},${lat + bboxDelta}`
+const osmEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${osmBbox}&layer=mapnik&marker=${lat},${lng}`
+const osmFullUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=15/${lat}/${lng}`
+
+const similar = LISTINGS.filter((l) => l.id !== listing.id && l.city === listing.city).slice(0, 3)
+const similarSlug = (l: Listing) => `${slugify(l.title)}-${l.id}`
+
+const HAZARDS = [
+  { icon: Activity, label: 'Deprem', value: 68, color: 'text-red-700' },
+  { icon: Activity, label: 'Diri fay', value: 42, color: 'text-amber-700' },
+  { icon: Flame, label: 'Yangın', value: 38, color: 'text-amber-700' },
+  { icon: Droplets, label: 'Kuraklık', value: 24, color: 'text-emerald-700' },
+  { icon: Waves, label: 'Sel', value: 12, color: 'text-emerald-700' },
+  { icon: MountainSnow, label: 'Heyelan', value: 8, color: 'text-emerald-700' },
+]
+
+const POIS = [
+  { icon: ShoppingCart, label: 'Çarşı & market', dist: '1.2 km · 3 dk' },
+  { icon: School, label: 'İlkokul & ortaokul', dist: '1.8 km · 5 dk' },
+  { icon: Stethoscope, label: 'Sağlık ocağı', dist: '2.4 km · 6 dk' },
+  { icon: Sailboat, label: 'En yakın plaj', dist: '3.6 km · 8 dk' },
+]
+
+const APPT_DAYS = [
+  { d: 'PZT', n: 18 }, { d: 'SAL', n: 19 }, { d: 'ÇAR', n: 20, on: true },
+  { d: 'PER', n: 21 }, { d: 'CUM', n: 22 }, { d: 'CMT', n: 23 }, { d: 'PAZ', n: 24 },
+]
 ---
-<RootLayout title={pageTitle} description={pageDescription}>
+<RootLayout title={pageTitle} description={pageDescription} breadcrumb={headerBreadcrumb}>
   <Fragment slot="head">
     <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin />
-    <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossorigin />
-    <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossorigin />
-    <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   </Fragment>
 
   <script is:inline type="application/ld+json" set:html={toJsonLd(listingJsonLd)} />
@@ -167,97 +185,882 @@ const breadcrumbJsonLd = breadcrumbListSchema([
   />
   <SocialProofToast client:idle />
 
-  <!-- Breadcrumb -->
-  <nav aria-label="Sayfa yolu" class="border-b border-border bg-background">
-    <ol class="mx-auto flex max-w-[1280px] flex-wrap items-center gap-1 px-4 py-3 text-xs text-muted-foreground">
-      <li><a href={`${prefix}/`} class="hover:text-foreground">{locale === 'en' ? 'Home' : 'Anasayfa'}</a></li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li><a href={`${prefix}/ara`} class="hover:text-foreground">{locale === 'en' ? 'Land search' : 'Arsa arama'}</a></li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li>
-        <a href={`${prefix}/ara?il=${encodeURIComponent(listing.city)}`} class="hover:text-foreground">
-          {listing.city}
-        </a>
-      </li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li class="truncate text-foreground">{listing.district}</li>
-    </ol>
-  </nav>
+  <!-- Sayfa-içi breadcrumb kaldırıldı — üstteki navbar pill yeterli.
+       Breadcrumb JSON-LD (SEO) hâlâ schema-builders'tan yayınlanıyor. -->
 
-  <!-- A: ListingDetailHero (P variant) -->
-  <section id="hero" class="mx-auto max-w-[1280px] space-y-4 px-4 pt-6 md:pt-10">
-    {listing.images && listing.images.length > 0 && (
-      <ListingGallery
-        client:load
-        images={listing.images}
-        alt={listing.title}
-      />
-    )}
-    <HeroVariant client:visible listing={listing} />
-    <div class="flex justify-end">
-      <ShareButtons
-        client:idle
-        url={canonicalUrl}
-        title={listing.title}
-        text={shareText}
-      />
+  <div class="mx-auto my-3 max-w-[1280px] rounded-2xl bg-muted/40 px-3 py-3 lg:my-5">
+
+    <!-- 2 KOLON: SOL ANA (HERO + İÇERİK) / SAĞ STICKY -->
+    <div class="grid grid-cols-1 gap-3.5 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:items-start">
+
+      <!-- LEFT MAIN -->
+      <main class="min-w-0">
+
+        <!-- HERO GALLERY (gerçek görseller, 220px) — main içinde -->
+        <div class="mb-3 grid h-[220px] grid-cols-[1.6fr_1fr] gap-1.5">
+          <div class="relative overflow-hidden rounded-lg bg-muted">
+            <button type="button" data-open-gallery="0" aria-label="Galeriyi aç" class="absolute inset-0 z-[1] cursor-zoom-in"></button>
+            <img src={heroPhoto} alt={listing.title} loading="eager" decoding="async" class="h-full w-full object-cover" />
+            <div class="pointer-events-none absolute left-2.5 top-2.5 inline-flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-[10px] font-medium">
+              <BadgeCheck size={12} className="text-sky-700" />TKGM doğrulamalı
+            </div>
+            <div class="absolute right-2.5 top-2.5 z-[2] flex gap-1.5">
+              <button type="button" data-share aria-label="Paylaş" class="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/95 hover:bg-white"><Share2 size={15} /></button>
+              <button type="button" data-fav aria-label="Kaydet" class="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/95 hover:bg-white"><Heart size={15} /></button>
+            </div>
+            <div class="absolute bottom-2.5 left-2.5 z-[2] flex gap-1.5">
+              <button type="button" data-open-gallery="0" class="inline-flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-black/85"><ImageIcon size={12} />Tümü · {photoCount}</button>
+              <button type="button" data-toast="360° sanal tur yakında" data-toast-kind="warn" class="inline-flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-black/85">360°</button>
+              <button type="button" data-toast="Video tur yakında" data-toast-kind="warn" class="inline-flex items-center gap-1 rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-black/85"><Video size={12} />Video</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 grid-rows-2 gap-1.5">
+            {thumbPhotos.map((src, idx) => {
+              const isLast = idx === thumbPhotos.length - 1
+              const extra = Math.max(photoCount - 5, 0)
+              return (
+                <button type="button" data-open-gallery={idx + 1} aria-label={`Foto ${idx + 2}`} class="relative cursor-zoom-in overflow-hidden rounded-md bg-muted">
+                  <img src={src} alt={`${listing.title} - foto ${idx + 2}`} loading="lazy" decoding="async" class="h-full w-full object-cover" />
+                  {isLast && extra > 0 && (
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/55 text-sm font-medium text-white">+{extra}</div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+
+        <!-- TITLE BLOCK (kompakt) -->
+        <div class="mb-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+          <MapPin size={12} />
+          <span>{listing.city} · {listing.district}</span><span>·</span>
+          <span>No {listing.id.toUpperCase()}</span><span>·</span>
+          <span class="inline-flex items-center gap-0.5"><Eye size={12} />{(listing.views ?? 50438).toLocaleString('tr-TR')}</span>
+        </div>
+        <h1 class="mb-1.5 text-[18px] font-medium leading-tight">{listing.title}</h1>
+        <div class="mb-3 flex flex-wrap items-center gap-1.5">
+          <span class="rounded-full bg-[#E1F5EE] px-2.5 py-0.5 text-[11px] font-medium text-[#085041]">Satılık</span>
+          <span class="rounded-full border border-border bg-background px-2.5 py-0.5 text-[11px] font-medium">{listing.type}</span>
+          {listing.tags.slice(0, 2).map((t) => (
+            <span class="rounded-full border border-border bg-background px-2.5 py-0.5 text-[11px] font-medium">{t}</span>
+          ))}
+          <div class="ml-auto"><ShareButtons client:idle url={canonicalUrl} title={listing.title} text={shareText} /></div>
+        </div>
+
+        <!-- QUICK FACTS (4-col, 8 alan — kimlik tablosunu da içeriyor) -->
+        <div class="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border md:grid-cols-4">
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="inline-flex items-center gap-1 text-[10px] text-muted-foreground"><Ruler size={11} />Yüzölçümü</span>
+            <span class="text-[12px] font-medium">{listing.size.toLocaleString('tr-TR')} m²</span>
+          </div>
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="inline-flex items-center gap-1 text-[10px] text-muted-foreground"><LayoutGrid size={11} />İmar</span>
+            <span class="text-[12px] font-medium">{listing.zoning ?? 'Konut + ticaret'}</span>
+          </div>
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="inline-flex items-center gap-1 text-[10px] text-muted-foreground"><FileCheck2 size={11} />Tapu</span>
+            <span class="text-[12px] font-medium">{listing.titleStatus ?? 'Müstakil'}</span>
+          </div>
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="inline-flex items-center gap-1 text-[10px] text-muted-foreground"><Route size={11} />Yola cephe</span>
+            <span class="text-[12px] font-medium">{listing.hasRoad ? 'Asfalt · 22m' : 'Yok'}</span>
+          </div>
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="text-[10px] text-muted-foreground">Ada / parsel</span>
+            <span class="text-[12px] font-medium">3412 / 17</span>
+          </div>
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="text-[10px] text-muted-foreground">TAKS / KAKS</span>
+            <span class="text-[12px] font-medium">0.30 / 0.60</span>
+          </div>
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="text-[10px] text-muted-foreground">Maks. kat</span>
+            <span class="text-[12px] font-medium">2 kat · 7.50 m</span>
+          </div>
+          <div class="flex flex-col gap-0.5 bg-background px-2.5 py-2">
+            <span class="text-[10px] text-muted-foreground">Altyapı</span>
+            <span class="text-[12px] font-medium">Elektrik · su · gaz</span>
+          </div>
+        </div>
+
+        <!-- TAB NAV (içerik-değiştiren, sahibinden tarzı; sticky DEĞİL, scroll ile birlikte hareket eder) -->
+        <div
+          id="listing-tabs"
+          class="mt-4 flex gap-4 overflow-x-auto border-b border-border"
+          role="tablist"
+        >
+          <button type="button" data-tab="genel" role="tab" aria-selected="true" class="tab-btn -mb-px whitespace-nowrap border-b-2 border-foreground py-1.5 text-[12px] font-medium">Genel</button>
+          <button type="button" data-tab="konum" role="tab" aria-selected="false" class="tab-btn -mb-px whitespace-nowrap border-b-2 border-transparent py-1.5 text-[12px] text-muted-foreground hover:text-foreground">Konum &amp; risk</button>
+          <button type="button" data-tab="cevre" role="tab" aria-selected="false" class="tab-btn -mb-px whitespace-nowrap border-b-2 border-transparent py-1.5 text-[12px] text-muted-foreground hover:text-foreground">Çevre</button>
+          <button type="button" data-tab="yatirim" role="tab" aria-selected="false" class="tab-btn -mb-px whitespace-nowrap border-b-2 border-transparent py-1.5 text-[12px] text-muted-foreground hover:text-foreground">Yatırım</button>
+          <button type="button" data-tab="gorusme" role="tab" aria-selected="false" class="tab-btn -mb-px whitespace-nowrap border-b-2 border-transparent py-1.5 text-[12px] text-muted-foreground hover:text-foreground">Görüşme</button>
+        </div>
+
+        <!-- GENEL: AÇIKLAMA + HUKUKİ ŞERH (yan yana) -->
+        <section id="genel" role="tabpanel" class="tab-panel mt-4">
+          <div class="grid grid-cols-1 gap-2.5 md:grid-cols-[1.4fr_1fr]">
+            <div class="rounded-md border border-border bg-background px-3 py-2.5" data-expandable>
+              <h2 class="mb-1 text-[13px] font-medium">Bu parsel hakkında</h2>
+              <p class="text-[12px] leading-relaxed text-muted-foreground">
+                {listing.district} merkeze 8 dk, asfalt yola sıfır cepheli {listing.size.toLocaleString('tr-TR')} m² imarlı parsel. {listing.zoning ?? 'Konut + ticaret'} planı; bağ evi / butik otel uygun. Şebeke altyapısı hazır. Son 12 ay çevre değer artışı %32.
+                <span class="hidden" data-extra>
+                  {' '}Parselin kuzey-doğu cephesi {listing.hasRoad ? '22 m asfalt yola' : 'mevcut yola'} açılır; güney cephesi bahçe yönlüdür. TAKBİS'te tek malik kaydı, 0 şerh kaydı bulunur. Çevre emsallerinde m² medyan fiyat ₺{Math.round(unitPrice * 1.1).toLocaleString('tr-TR')} olup, parselin birim fiyatı ₺{unitPrice.toLocaleString('tr-TR')}/m² ile emsalin altındadır. Belediye 1/1000 imar planına göre TAKS 0.30 / KAKS 0.60, maks. 2 kat (7.5 m) inşaat hakkı tanımlıdır. Elektrik, su ve doğalgaz şebekesi parsel sınırında hazır olup ek altyapı yatırımı gerekmez.
+                </span>{' '}
+                <button type="button" class="ml-1 font-medium text-sky-700 hover:underline" data-toggle-expand data-label-more="Devamını oku →" data-label-less="Daha az ↑">Devamını oku →</button>
+              </p>
+            </div>
+            <div class="flex items-center gap-2.5 rounded-md border border-border bg-background px-3 py-2.5">
+              <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#E1F5EE]"><ShieldCheck size={18} className="text-[#085041]" /></div>
+              <div class="min-w-0 flex-1">
+                <div class="text-[12px] font-medium leading-tight">Tapu temiz · 0 şerh</div>
+                <div class="text-[10px] leading-tight text-muted-foreground">TAKBİS 14.05.2026 · ipotek/haciz yok</div>
+              </div>
+              <button type="button" data-toast="Şerh raporu indiriliyor (TAKBİS PDF)" data-toast-kind="success" class="inline-flex items-center gap-1 rounded-md border border-border bg-transparent px-2 py-1 text-[11px] font-medium hover:bg-muted"><Download size={11} />PDF</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- KONUM & RİSK (harita + 6 risk skor yan yana) -->
+        <section id="konum" role="tabpanel" class="tab-panel mt-4 hidden">
+          <div class="mb-1.5 flex items-center justify-between">
+            <h2 class="text-[13px] font-medium">Konum &amp; risk</h2>
+            <span class="text-[10px] text-muted-foreground">14 katman · AFAD · MTA · DSİ</span>
+          </div>
+          <div class="grid grid-cols-1 gap-2.5 md:grid-cols-[1.2fr_1fr]">
+            <div>
+              <div class="relative h-[180px] overflow-hidden rounded-md border border-border bg-muted">
+                <div id="inline-map" class="absolute inset-0 z-0"></div>
+                <button
+                  type="button"
+                  id="open-map-modal"
+                  class="absolute bottom-1 right-1 z-[10] rounded bg-white/95 px-1.5 py-0.5 text-[9px] font-medium shadow hover:bg-white"
+                >Büyük harita ⤢</button>
+              </div>
+              <div class="mt-1.5 flex flex-wrap gap-1">
+                <button type="button" class="layer-chip rounded-full bg-foreground px-2 py-0.5 text-[10px] font-medium text-background" data-active="true" data-layer="parsel">Parsel</button>
+                <button type="button" class="layer-chip rounded-full bg-foreground px-2 py-0.5 text-[10px] font-medium text-background" data-active="true" data-layer="imar">İmar</button>
+                <button type="button" class="layer-chip rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="diri-fay">Diri fay</button>
+                <button type="button" class="layer-chip rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="taskin">Taşkın</button>
+                <button type="button" class="layer-chip rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="orman">Orman</button>
+                <!-- Ek 9 katman (toplam 14): tıklanınca açılır -->
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Toprak sınıfı</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Eğim</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Yükselti</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Tarihi deprem</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Heyelan</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Yangın riski</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Yeraltı suyu</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Tarım sınıfı</button>
+                <button type="button" class="layer-chip hidden rounded-full bg-muted px-2 py-0.5 text-[10px]" data-active="false" data-layer="extra" data-extra-chip>Altyapı</button>
+                <button type="button" id="extra-layers-toggle" class="rounded-full px-2 py-0.5 text-[10px] font-medium text-sky-700 hover:underline">+9 katman</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 content-start">
+              {HAZARDS.map((h) => (
+                <div class="rounded-md border border-border bg-background px-1.5 py-2 text-center">
+                  <h.icon size={16} className={`mx-auto ${h.color}`} />
+                  <div class="mt-0.5 text-[10px] text-muted-foreground">{h.label}</div>
+                  <div class:list={['text-[14px] font-medium leading-tight', h.color]}>{h.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <!-- ÇEVRE (3 skor + 4 poi tek kart) -->
+        <section id="cevre" role="tabpanel" class="tab-panel mt-4 hidden">
+          <h2 class="mb-1.5 text-[13px] font-medium">Yakın çevre</h2>
+          <div class="grid grid-cols-1 gap-2.5 md:grid-cols-[auto_1fr]">
+            <div class="grid grid-cols-3 gap-1.5 md:w-[260px]">
+              <div class="rounded-md border border-border bg-background px-2 py-2 text-center">
+                <PersonStanding size={16} className="mx-auto text-sky-700" />
+                <div class="mt-0.5 text-[17px] font-medium leading-none">62</div>
+                <div class="text-[9px] text-muted-foreground">Yürüme</div>
+              </div>
+              <div class="rounded-md border border-border bg-background px-2 py-2 text-center">
+                <Bus size={16} className="mx-auto text-emerald-700" />
+                <div class="mt-0.5 text-[17px] font-medium leading-none">48</div>
+                <div class="text-[9px] text-muted-foreground">Toplu taşıma</div>
+              </div>
+              <div class="rounded-md border border-border bg-background px-2 py-2 text-center">
+                <Bike size={16} className="mx-auto text-violet-700" />
+                <div class="mt-0.5 text-[17px] font-medium leading-none">71</div>
+                <div class="text-[9px] text-muted-foreground">Bisiklet</div>
+              </div>
+            </div>
+            <div class="rounded-md border border-border bg-background">
+              {POIS.map((p, i) => (
+                <div class:list={['flex items-center gap-2 px-3 py-1.5', i < POIS.length - 1 && 'border-b border-border']}>
+                  <p.icon size={14} className="text-muted-foreground" />
+                  <span class="flex-1 text-[11px]">{p.label}</span>
+                  <span class="text-[10px] text-muted-foreground">{p.dist}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <!-- YATIRIM (fiyat tahmini + ROI/maliyet yan yana, AI müzakere + solar yan yana) -->
+        <section id="yatirim" role="tabpanel" class="tab-panel mt-4 hidden">
+          <h2 class="mb-1.5 text-[13px] font-medium">Yatırım &amp; getiri</h2>
+          <div class="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+            <!-- Sol: Fiyat tahmini -->
+            <div class="rounded-md border border-border bg-background px-3 py-2.5">
+              <div class="mb-2 flex items-center justify-between">
+                <div class="inline-flex items-center gap-1.5 text-[11px] font-medium"><TrendingUp size={12} className="text-emerald-700" />12 aylık tahmin</div>
+                <span class="rounded-full bg-[#E1F5EE] px-1.5 py-0.5 text-[9px] font-medium text-[#085041]">Güven %73</span>
+              </div>
+              <div class="mb-2 flex h-[44px] items-end gap-[2px]">
+                <div class="flex-1 rounded-sm bg-[#9FE1CB]" style="height:30%"></div>
+                <div class="flex-1 rounded-sm bg-[#9FE1CB]" style="height:38%"></div>
+                <div class="flex-1 rounded-sm bg-[#9FE1CB]" style="height:42%"></div>
+                <div class="flex-1 rounded-sm bg-[#5DCAA5]" style="height:50%"></div>
+                <div class="flex-1 rounded-sm bg-[#5DCAA5]" style="height:58%"></div>
+                <div class="flex-1 rounded-sm bg-[#5DCAA5]" style="height:62%"></div>
+                <div class="flex-1 rounded-sm bg-[#1D9E75]" style="height:70%"></div>
+                <div class="flex-1 rounded-sm bg-[#1D9E75]" style="height:75%"></div>
+                <div class="flex-1 rounded-sm bg-[#1D9E75]" style="height:82%"></div>
+                <div class="flex-1 rounded-sm bg-[#0F6E56]" style="height:86%"></div>
+                <div class="flex-1 rounded-sm bg-[#0F6E56]" style="height:92%"></div>
+                <div class="flex-1 rounded-sm bg-[#0F6E56]" style="height:100%"></div>
+              </div>
+              <div class="flex justify-between text-[10px]">
+                <div><div class="text-muted-foreground">Düşük</div><div class="font-medium">{formatTLCompact(Math.round(listing.price * 0.95))}</div></div>
+                <div class="text-center"><div class="text-muted-foreground">Beklenen</div><div class="font-medium text-emerald-700">{formatTLCompact(Math.round(listing.price * 1.1))}</div></div>
+                <div class="text-right"><div class="text-muted-foreground">Yüksek</div><div class="font-medium">{formatTLCompact(Math.round(listing.price * 1.25))}</div></div>
+              </div>
+            </div>
+            <!-- Sağ: ROI + Maliyet -->
+            <div class="space-y-2.5">
+              <div class="rounded-md border border-border bg-background px-3 py-2.5">
+                <div class="mb-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium"><Calculator size={12} />Yatırım getirisi</div>
+                <div class="grid grid-cols-3 gap-1.5 text-center">
+                  <div><div class="text-[9px] text-muted-foreground">Aylık kira</div><div class="mt-0.5 text-[12px] font-medium">₺{Math.round(listing.price * 0.005 / 12).toLocaleString('tr-TR')}</div></div>
+                  <div><div class="text-[9px] text-muted-foreground">Yıllık</div><div class="mt-0.5 text-[12px] font-medium text-emerald-700">%5</div></div>
+                  <div><div class="text-[9px] text-muted-foreground">Geri ödeme</div><div class="mt-0.5 text-[12px] font-medium">20 yıl</div></div>
+                </div>
+              </div>
+              <div class="rounded-md border border-border bg-background px-3 py-2.5">
+                <div class="mb-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium"><Receipt size={12} />Ek alım maliyetleri</div>
+                <div class="space-y-0.5 text-[11px]">
+                  <div class="flex justify-between"><span class="text-muted-foreground">Tapu harcı (%2)</span><span class="font-medium">₺{Math.round(listing.price * 0.02).toLocaleString('tr-TR')}</span></div>
+                  <div class="flex justify-between"><span class="text-muted-foreground">KDV</span><span class="font-medium">₺{Math.round(listing.price * 0.08).toLocaleString('tr-TR')}</span></div>
+                  <div class="flex justify-between"><span class="text-muted-foreground">Emlak beyan</span><span class="font-medium">₺{Math.round(listing.price * 0.002).toLocaleString('tr-TR')}</span></div>
+                  <div class="flex justify-between border-t border-border pt-1 text-[12px]"><span class="font-medium">Toplam</span><span class="font-medium">₺{(Math.round(listing.price * 0.02) + Math.round(listing.price * 0.08) + Math.round(listing.price * 0.002) + 8500).toLocaleString('tr-TR')}</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI müzakere + Solar yan yana -->
+          <div class="mt-2.5 grid grid-cols-1 gap-2.5 md:grid-cols-2">
+            <div class="rounded-md border border-l-[3px] border-border border-l-amber-700 bg-background px-3 py-2.5">
+              <div class="flex items-start gap-2">
+                <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#FAEEDA]"><Lightbulb size={14} className="text-[#854F0B]" /></div>
+                <div class="min-w-0 flex-1">
+                  <div class="mb-0.5 flex flex-wrap items-center gap-1 text-[11px] font-medium">AI müzakere <span class="rounded-full bg-[#FAEEDA] px-1.5 py-px text-[8px] font-medium text-[#633806]">FIRSAT %9.5</span></div>
+                  <div class="text-[10px] leading-snug text-muted-foreground">
+                    Emsal medyan m² ₺{Math.round(unitPrice * 1.1).toLocaleString('tr-TR')}. Bu parsel ₺{unitPrice.toLocaleString('tr-TR')}/m². Teklif başlangıcı {formatTLCompact(Math.round(listing.price * 0.94))}.
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rounded-md border border-border bg-background px-3 py-2.5">
+              <div class="mb-1 inline-flex items-center gap-1.5 text-[11px] font-medium"><Sun size={12} className="text-amber-600" />Güneş enerjisi</div>
+              <div class="grid grid-cols-4 gap-1.5 text-center">
+                <div><div class="text-[9px] text-muted-foreground">Verim</div><div class="text-[11px] font-medium">326 kWh/m²</div></div>
+                <div><div class="text-[9px] text-muted-foreground">Sınıf</div><div class="text-[11px] font-medium text-emerald-700">Yüksek</div></div>
+                <div><div class="text-[9px] text-muted-foreground">Üretim</div><div class="text-[11px] font-medium">237 MWh</div></div>
+                <div><div class="text-[9px] text-muted-foreground">Gelir</div><div class="text-[11px] font-medium">₺592K</div></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GÖRÜŞME (chat + randevu yan yana) -->
+        <section id="gorusme" role="tabpanel" class="tab-panel mt-4 hidden">
+          <h2 class="mb-1.5 text-[13px] font-medium">Görüşme &amp; sohbet</h2>
+          <div class="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+            <!-- AI Chat -->
+            <div class="rounded-md border border-border bg-background px-3 py-2.5">
+              <div class="mb-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium"><Sparkles size={12} className="text-violet-700" />Bu arsayla sohbet et</div>
+              <div class="mb-2 flex flex-wrap gap-1">
+                <button type="button" class="ai-prompt rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-muted">Ev yapabilir miyim?</button>
+                <button type="button" class="ai-prompt rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-muted">Yatırım potansiyeli?</button>
+                <button type="button" class="ai-prompt rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-muted">Alım maliyeti?</button>
+              </div>
+              <div class="flex items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
+                <input type="text" data-chat-input placeholder="Bu parsel hakkında bir şey sor..." class="flex-1 bg-transparent text-[11px] outline-none" />
+                <button type="button" data-send-chat aria-label="Gönder" class="flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background hover:opacity-90"><ArrowUp size={12} /></button>
+              </div>
+            </div>
+            <!-- Randevu -->
+            <div class="rounded-md border border-border bg-background px-3 py-2.5">
+              <div class="mb-1.5 inline-flex items-center gap-1.5 text-[11px] font-medium"><Video size={12} className="text-violet-700" />Yerinde / uzaktan görüşme</div>
+              <div class="mb-2 grid grid-cols-7 gap-1">
+                {APPT_DAYS.map((day) => (
+                  <button
+                    type="button"
+                    data-day={day.n}
+                    data-day-label={`${day.d} ${day.n}`}
+                    class:list={[
+                      'rounded-md px-1 py-1.5 text-center transition',
+                      day.on ? 'bg-foreground text-background' : 'border border-border bg-transparent hover:bg-muted',
+                    ]}
+                  >
+                    <div class:list={['text-[8px]', day.on ? 'opacity-70' : 'text-muted-foreground']}>{day.d}</div>
+                    <div class="text-[11px] font-medium">{day.n}</div>
+                  </button>
+                ))}
+              </div>
+              <div class="flex gap-1.5">
+                <button type="button" data-toast="Randevu talebi gönderildi · emlakçı geri dönecek" data-toast-kind="success" class="flex-1 rounded-md border border-border bg-transparent py-1.5 text-[11px] font-medium hover:bg-muted">Randevu al</button>
+                <button type="button" data-toast="Co-view daveti e-posta ile gönderildi" data-toast-kind="success" class="flex-1 rounded-md border border-border bg-transparent py-1.5 text-[11px] font-medium hover:bg-muted">Co-view davet</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- RIGHT STICKY -->
+      <aside class="hidden lg:block lg:sticky lg:top-4 lg:self-start">
+        <StickyContactCard listing={listing} />
+      </aside>
+
     </div>
-  </section>
 
-  <!-- Sticky AnchorNav -->
-  <AnchorNav client:idle locale={locale === 'en' ? 'en' : 'tr'} />
-
-  <!-- 12 bölüm section placeholder'ları (sonraki task'larda doldurulacak) -->
-  <div class="mx-auto max-w-[1280px] space-y-8 px-4 py-8 md:py-10">
-    <section id="kimlik" data-section="B" aria-label="Kimlik">
-      <div class="grid gap-4 md:grid-cols-[1fr_240px]">
-        <IdentityCardVariant client:visible listing={listing} />
-        <KeyFactsVariant client:visible listing={listing} />
+    <!-- BENZER İLANLAR -->
+    <section class="mt-5">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-[13px] font-medium">Benzer ilanlar · {listing.district}</h2>
+        <a href={`${prefix}/ara?il=${encodeURIComponent(listing.city)}`} class="text-[11px] font-medium text-sky-700">Tümü →</a>
+      </div>
+      <div class="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+        {similar.map((s, i) => {
+          const bgList = ['bg-[#E1F5EE]', 'bg-[#FAEEDA]', 'bg-[#E6F1FB]']
+          const iconColorList = ['text-[#0F6E56]', 'text-[#854F0B]', 'text-[#185FA5]']
+          const IconList = [Trees, Mountain, Route]
+          const TileIcon = IconList[i % IconList.length]
+          return (
+            <a href={`${prefix}/ilan/${similarSlug(s)}`} class="overflow-hidden rounded-lg border border-border bg-background transition hover:shadow-md">
+              <div class:list={['relative flex h-[80px] items-center justify-center', bgList[i % bgList.length]]}>
+                <TileIcon size={30} className={iconColorList[i % iconColorList.length]} />
+                <div class="absolute left-1.5 top-1.5 rounded-full bg-emerald-700 px-1.5 py-0.5 text-[8px] font-medium text-white">SATILIK</div>
+              </div>
+              <div class="p-2">
+                <div class="mb-0.5 text-[9px] text-muted-foreground">{s.district} · {s.size.toLocaleString('tr-TR')} m²</div>
+                <div class="mb-1 line-clamp-1 text-[11px] font-medium leading-tight">{s.title}</div>
+                <div class="text-[12px] font-medium">{formatTLCompact(s.price)}</div>
+              </div>
+            </a>
+          )
+        })}
       </div>
     </section>
-    <section id="harita" data-section="C" aria-label="Harita">
-      <SmartMap client:visible listingId={listing.id} />
-    </section>
-    <section id="degerleme" data-section="D" aria-label="Değerleme">
-      <AiValuationDeep client:visible listingId={listing.id} />
-    </section>
-    <section id="yatirim" data-section="M" aria-label="AI Yatırım">
-      <AiInvestmentPanel listing={listing} />
-    </section>
-    <section id="serh" data-section="E" aria-label="Hukuki şerh">
-      <LegalEncumbrancePanel client:visible listingId={listing.id} />
-    </section>
-    <section id="imar" data-section="F" aria-label="İmar">
-      <ZoningPanel client:visible listingId={listing.id} />
-    </section>
-    <section id="tarla" data-section="G" aria-label="Tarla">
-      <FarmlandModule client:visible listingId={listing.id} />
-    </section>
-    <section id="risk" data-section="H" aria-label="Afet risk">
-      <HazardRadar client:visible listingId={listing.id} />
-    </section>
-    <section id="cevre" data-section="I" aria-label="Çevre">
-      <EnvironmentPoi client:visible listingId={listing.id} />
-    </section>
-    <section id="gorsel" data-section="O" aria-label="Görsel">
-      <AdvancedVisualBand listing={listing} />
-    </section>
-    <section id="chat" data-section="J" aria-label="AI Chat">
-      <ListingAiChat client:load listingId={listing.id} />
-    </section>
-    <section id="karsi" data-section="K" aria-label="Karşılaştırma">
-      <InlineCompare client:visible listingId={listing.id} />
-    </section>
-    <section id="iletisim" data-section="L" aria-label="Satıcı">
-      <VerifiedSellerCard
-        client:visible
-        sellerId={listing.id}
-        sellerUsername={(listing as { sellerUsername?: string }).sellerUsername ?? 'mert-soydan'}
-      />
-    </section>
-    <section id="etkilesim" data-section="N" aria-label="Etkileşim">
-      <InteractionPanel listing={listing} />
-    </section>
+
   </div>
+
   <MobileCtaBar client:idle listingId={listing.id} />
+
+  <!-- GALERİ LIGHTBOX MODAL -->
+  <div
+    id="gallery-modal"
+    class="fixed inset-0 z-[80] hidden items-center justify-center bg-black/95 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Fotoğraf galerisi"
+  >
+    <button type="button" data-close-gallery aria-label="Kapat" class="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <button type="button" data-gallery-prev aria-label="Önceki" class="absolute left-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <button type="button" data-gallery-next aria-label="Sonraki" class="absolute right-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </button>
+    <img id="gallery-img" src="" alt="" class="max-h-[90vh] max-w-[95vw] object-contain" />
+    <div id="gallery-counter" class="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm text-white">1 / 1</div>
+  </div>
+
+  <!-- BÜYÜK HARİTA MODAL -->
+  <div
+    id="map-modal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="map-modal-title"
+  >
+    <div class="flex h-full max-h-[min(900px,95vh)] w-full max-w-[1100px] flex-col overflow-hidden rounded-2xl bg-background shadow-xl">
+      <header class="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <div>
+          <h3 id="map-modal-title" class="text-[14px] font-medium leading-tight">Konum &amp; veri katmanları</h3>
+          <p class="text-[11px] text-muted-foreground">{listing.city} · {listing.district} · 14 katman</p>
+        </div>
+        <button type="button" data-close-map-modal aria-label="Kapat" class="flex h-8 w-8 items-center justify-center rounded-full hover:bg-muted">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <div class="relative flex-1 bg-muted">
+        <div id="modal-map" class="absolute inset-0 z-0"></div>
+      </div>
+
+      <footer class="border-t border-border bg-background px-4 py-3">
+        <div class="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Katmanlar</div>
+        <div class="flex flex-wrap gap-1.5">
+          <button type="button" class="layer-chip rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background" data-active="true" data-layer="parsel">Parsel</button>
+          <button type="button" class="layer-chip rounded-full bg-foreground px-3 py-1 text-[11px] font-medium text-background" data-active="true" data-layer="imar">İmar</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="diri-fay">Diri fay</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="taskin">Taşkın</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="orman">Orman</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="toprak">Toprak sınıfı</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="egim">Eğim</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="yukselti">Yükselti</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="tarihi-deprem">Tarihi deprem</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="heyelan">Heyelan</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="yangin">Yangın riski</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="su">Yeraltı suyu</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="tarim">Tarım sınıfı</button>
+          <button type="button" class="layer-chip rounded-full bg-muted px-3 py-1 text-[11px]" data-active="false" data-layer="altyapi">Altyapı</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script is:inline define:vars={{ lat, lng, zoning: listing.zoning ?? 'konut+ticari', sizeM2: listing.size, gallery: galleryImages, listingPrice: listing.price, listingTitle: listing.title }}>
+    (function () {
+      const root = document.getElementById('listing-tabs')
+      if (!root) return
+      const buttons = Array.from(root.querySelectorAll('.tab-btn'))
+      const panels = Array.from(document.querySelectorAll('.tab-panel'))
+
+      function activate(tab, scroll) {
+        panels.forEach((p) => p.classList.toggle('hidden', p.id !== tab))
+        buttons.forEach((b) => {
+          const isActive = b.dataset.tab === tab
+          b.setAttribute('aria-selected', isActive ? 'true' : 'false')
+          b.classList.toggle('border-foreground', isActive)
+          b.classList.toggle('border-transparent', !isActive)
+          b.classList.toggle('font-medium', isActive)
+          b.classList.toggle('text-muted-foreground', !isActive)
+        })
+        if (scroll) {
+          // Tab nav'a smooth scroll — kullanıcı tab'a tıklayınca panel'i görmek için
+          // tab nav'a otomatik kayar. Eğer zaten görünürse no-op.
+          root.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }
+
+      buttons.forEach((b) => {
+        b.addEventListener('click', () => {
+          const tab = b.dataset.tab
+          if (tab) {
+            activate(tab, true)
+            history.replaceState(null, '', '#' + tab)
+          }
+        })
+      })
+
+      // Initial hash load — `#konum` gibi paylaşılan linkler için
+      const initial = (location.hash || '').slice(1)
+      if (initial && document.getElementById(initial)?.classList.contains('tab-panel')) {
+        activate(initial, false)
+        // Sayfa render olduktan sonra tab nav'a scroll yap
+        setTimeout(() => root.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+      }
+    })()
+
+    // "Devamını oku" toggle
+    document.querySelectorAll('[data-toggle-expand]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('[data-expandable]')
+        const extra = card && card.querySelector('[data-extra]')
+        if (!extra) return
+        const wasHidden = extra.classList.contains('hidden')
+        extra.classList.toggle('hidden')
+        btn.textContent = wasHidden
+          ? (btn.dataset.labelLess || 'Daha az ↑')
+          : (btn.dataset.labelMore || 'Devamını oku →')
+      })
+    })
+
+    // ============== LEAFLET HARİTA & KATMANLAR ==============
+    // Layer aktif/pasif state — UI ve haritalar arasında ortak truth
+    const layerState = {
+      parsel: true, imar: true, 'diri-fay': false, taskin: false, orman: false,
+    }
+
+    // Bir Leaflet container kurar: tile + marker + tüm gerçek-koordinat overlay layer'lar
+    function setupMap(elementId) {
+      if (typeof L === 'undefined') return null
+      const el = document.getElementById(elementId)
+      if (!el || el._leafletInit) return el && el._leafletMap
+      const map = L.map(el, { scrollWheelZoom: true }).setView([lat, lng], 16)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap',
+        maxZoom: 19,
+      }).addTo(map)
+      L.marker([lat, lng]).addTo(map)
+
+      // Gerçek koordinatlara bağlı overlay layer'lar (harita ile birlikte hareket eder)
+      const layers = {
+        parsel: L.rectangle(
+          [[lat - 0.0003, lng - 0.0004], [lat + 0.0003, lng + 0.0004]],
+          { color: '#BA7517', weight: 2, fillOpacity: 0.22 }
+        ).bindTooltip('Bu parsel · ' + sizeM2.toLocaleString('tr-TR') + ' m²', {
+          permanent: true, direction: 'center', className: 'leaflet-tt-parsel',
+        }),
+        imar: L.rectangle(
+          [[lat - 0.0009, lng - 0.0012], [lat + 0.0009, lng + 0.0012]],
+          { color: '#0F6E56', weight: 1.5, dashArray: '5', fillOpacity: 0.08 }
+        ).bindTooltip('İmar · ' + zoning, {
+          permanent: true, direction: 'top', className: 'leaflet-tt-imar',
+        }),
+        'diri-fay': L.polyline(
+          [[lat + 0.005, lng - 0.008], [lat - 0.003, lng + 0.012]],
+          { color: '#A32D2D', weight: 3, dashArray: '7' }
+        ).bindTooltip('Diri fay · 1.4 km', {
+          permanent: true, sticky: true, className: 'leaflet-tt-fault',
+        }),
+        taskin: L.polygon(
+          [[lat - 0.005, lng - 0.012], [lat - 0.005, lng + 0.012],
+           [lat - 0.009, lng + 0.012], [lat - 0.009, lng - 0.012]],
+          { color: '#185FA5', weight: 1, fillOpacity: 0.25 }
+        ).bindTooltip('Taşkın yatağı', {
+          permanent: true, direction: 'center', className: 'leaflet-tt-flood',
+        }),
+        orman: L.polygon(
+          [[lat + 0.003, lng + 0.005], [lat + 0.003, lng + 0.015],
+           [lat - 0.003, lng + 0.015], [lat - 0.003, lng + 0.007]],
+          { color: '#0F6E56', weight: 1, fillOpacity: 0.18 }
+        ).bindTooltip('Orman sınırı', {
+          permanent: true, direction: 'center', className: 'leaflet-tt-forest',
+        }),
+      }
+
+      // İlk state'e göre add
+      Object.keys(layers).forEach((k) => {
+        if (layerState[k]) layers[k].addTo(map)
+      })
+
+      el._leafletInit = true
+      el._leafletMap = map
+      el._leafletLayers = layers
+      return map
+    }
+
+    // L global'i hazır olana kadar bekle
+    function whenLeafletReady(cb) {
+      if (typeof L !== 'undefined') return cb()
+      let tries = 0
+      const id = setInterval(() => {
+        if (typeof L !== 'undefined' || tries++ > 60) {
+          clearInterval(id)
+          if (typeof L !== 'undefined') cb()
+        }
+      }, 100)
+    }
+
+    // Inline haritayı yükle
+    whenLeafletReady(() => setupMap('inline-map'))
+
+    // Chip toggle — chip görünüm + Leaflet layer add/remove (her iki harita)
+    function applyLayerToMap(elementId, layer, active) {
+      const el = document.getElementById(elementId)
+      if (!el || !el._leafletMap || !el._leafletLayers) return
+      const lyr = el._leafletLayers[layer]
+      if (!lyr) return
+      if (active && !el._leafletMap.hasLayer(lyr)) lyr.addTo(el._leafletMap)
+      else if (!active && el._leafletMap.hasLayer(lyr)) el._leafletMap.removeLayer(lyr)
+    }
+    function setLayerActive(layer, active) {
+      layerState[layer] = active
+      document.querySelectorAll('.layer-chip[data-layer="' + layer + '"]').forEach((c) => {
+        c.dataset.active = active ? 'true' : 'false'
+        if (active) {
+          c.classList.add('bg-foreground', 'text-background', 'font-medium')
+          c.classList.remove('bg-muted')
+        } else {
+          c.classList.remove('bg-foreground', 'text-background', 'font-medium')
+          c.classList.add('bg-muted')
+        }
+      })
+      applyLayerToMap('inline-map', layer, active)
+      applyLayerToMap('modal-map', layer, active)
+    }
+    document.querySelectorAll('.layer-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const layer = chip.dataset.layer
+        if (!layer) return
+        setLayerActive(layer, chip.dataset.active !== 'true')
+      })
+    })
+
+    // Büyük harita modal aç/kapat (açılınca modal-map'i lazy init)
+    const mapModal = document.getElementById('map-modal')
+    const openMapBtn = document.getElementById('open-map-modal')
+    function openMapModal() {
+      if (!mapModal) return
+      mapModal.classList.remove('hidden')
+      mapModal.classList.add('flex')
+      document.body.style.overflow = 'hidden'
+      whenLeafletReady(() => {
+        const el = document.getElementById('modal-map')
+        if (!el) return
+        if (!el._leafletInit) {
+          setupMap('modal-map')
+        }
+        // Display:none'dan açılınca tile boyutları yanlış hesaplanır → fix
+        setTimeout(() => el._leafletMap && el._leafletMap.invalidateSize(), 50)
+      })
+    }
+    function closeMapModal() {
+      if (!mapModal) return
+      mapModal.classList.add('hidden')
+      mapModal.classList.remove('flex')
+      document.body.style.overflow = ''
+    }
+    if (openMapBtn) openMapBtn.addEventListener('click', openMapModal)
+    document.querySelectorAll('[data-close-map-modal]').forEach((b) => {
+      b.addEventListener('click', closeMapModal)
+    })
+    if (mapModal) {
+      mapModal.addEventListener('click', (e) => {
+        if (e.target === mapModal) closeMapModal()
+      })
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mapModal && !mapModal.classList.contains('hidden')) {
+        closeMapModal()
+      }
+    })
+
+    // AI chat hızlı soru → input'a yaz, focus
+    const chatInput = document.querySelector('[data-chat-input]')
+    document.querySelectorAll('.ai-prompt').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!chatInput) return
+        chatInput.value = btn.textContent.trim()
+        chatInput.focus()
+      })
+    })
+
+    // Harita "+9 katman" toggle — gizli ek chip'leri aç/kapa
+    const extraBtn = document.getElementById('extra-layers-toggle')
+    if (extraBtn) {
+      let expanded = false
+      extraBtn.addEventListener('click', () => {
+        expanded = !expanded
+        document.querySelectorAll('[data-extra-chip]').forEach((c) => {
+          c.classList.toggle('hidden', !expanded)
+        })
+        extraBtn.textContent = expanded ? 'Daha az' : '+9 katman'
+      })
+    }
+
+    // ============== TOAST + INTERACTION HANDLERS ==============
+    // Toast root (DOM'a tek sefer eklenir)
+    function ensureToastRoot() {
+      let root = document.getElementById('toast-root')
+      if (!root) {
+        root = document.createElement('div')
+        root.id = 'toast-root'
+        root.className = 'fixed bottom-4 left-1/2 z-[200] flex -translate-x-1/2 flex-col gap-2 pointer-events-none'
+        document.body.appendChild(root)
+      }
+      return root
+    }
+    function showToast(message, opts) {
+      opts = opts || {}
+      const root = ensureToastRoot()
+      const toast = document.createElement('div')
+      const bg = opts.kind === 'success'
+        ? 'bg-emerald-700 text-white'
+        : opts.kind === 'warn'
+          ? 'bg-amber-700 text-white'
+          : 'bg-foreground text-background'
+      toast.className = 'pointer-events-auto rounded-md px-3 py-2 text-[12px] font-medium shadow-lg ' + bg
+      toast.textContent = message
+      root.appendChild(toast)
+      setTimeout(() => {
+        toast.style.transition = 'opacity 200ms, transform 200ms'
+        toast.style.opacity = '0'
+        toast.style.transform = 'translateY(8px)'
+      }, 2400)
+      setTimeout(() => toast.remove(), 2700)
+    }
+
+    // Generic [data-toast] click → just show the toast message
+    document.querySelectorAll('[data-toast]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const kind = btn.dataset.toastKind || 'info'
+        showToast(btn.dataset.toast, { kind })
+      })
+    })
+
+    // Favori (kalp) toggle — sayfa bazında, basit visual state
+    document.querySelectorAll('[data-fav]').forEach((btn) => {
+      let active = false
+      btn.addEventListener('click', () => {
+        active = !active
+        const icon = btn.querySelector('svg')
+        if (icon) {
+          if (active) {
+            icon.style.fill = '#ef4444'
+            icon.style.stroke = '#ef4444'
+          } else {
+            icon.style.fill = 'none'
+            icon.style.stroke = 'currentColor'
+          }
+        }
+        showToast(active ? 'Favorilere eklendi' : 'Favorilerden çıkarıldı', { kind: 'success' })
+      })
+    })
+
+    // Paylaş (link kopyala) — navigator.share varsa onu kullan
+    document.querySelectorAll('[data-share]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const url = location.href
+        try {
+          if (navigator.share) {
+            await navigator.share({ title: document.title, url: url })
+          } else if (navigator.clipboard) {
+            await navigator.clipboard.writeText(url)
+            showToast('Bağlantı kopyalandı', { kind: 'success' })
+          } else {
+            showToast(url)
+          }
+        } catch (e) { /* user cancelled */ }
+      })
+    })
+
+    // Fiyat alarmı — radyo davranış (tek seçim aktif)
+    const alarmBtns = document.querySelectorAll('[data-alarm]')
+    alarmBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        alarmBtns.forEach((b) => {
+          b.classList.remove('bg-foreground', 'text-background')
+          b.classList.add('border', 'border-border', 'bg-transparent')
+        })
+        btn.classList.add('bg-foreground', 'text-background')
+        btn.classList.remove('border', 'border-border', 'bg-transparent')
+        showToast('Fiyat %' + btn.dataset.alarm + ' düşerse bildirim alacaksınız', { kind: 'success' })
+      })
+    })
+
+    // Randevu gün — radyo davranış
+    const dayBtns = document.querySelectorAll('[data-day]')
+    dayBtns.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        dayBtns.forEach((b) => {
+          b.classList.remove('bg-foreground', 'text-background')
+          b.classList.add('border', 'border-border', 'bg-transparent')
+          const lbl = b.querySelector('div:first-child')
+          if (lbl) {
+            lbl.classList.remove('opacity-70')
+            lbl.classList.add('text-muted-foreground')
+          }
+        })
+        btn.classList.add('bg-foreground', 'text-background')
+        btn.classList.remove('border', 'border-border', 'bg-transparent')
+        const lbl = btn.querySelector('div:first-child')
+        if (lbl) {
+          lbl.classList.add('opacity-70')
+          lbl.classList.remove('text-muted-foreground')
+        }
+        showToast(btn.dataset.dayLabel + ' günü seçildi')
+      })
+    })
+
+    // ============== GALERİ LIGHTBOX ==============
+    const galleryModal = document.getElementById('gallery-modal')
+    const galleryImg = document.getElementById('gallery-img')
+    const galleryCounter = document.getElementById('gallery-counter')
+    let galleryIndex = 0
+    function updateGalleryView() {
+      if (!galleryImg || !galleryCounter || !gallery || gallery.length === 0) return
+      galleryImg.src = gallery[galleryIndex]
+      galleryImg.alt = (listingTitle || '') + ' - foto ' + (galleryIndex + 1)
+      galleryCounter.textContent = (galleryIndex + 1) + ' / ' + gallery.length
+    }
+    function openGallery(idx) {
+      if (!galleryModal) return
+      galleryIndex = Math.max(0, Math.min(idx | 0, (gallery && gallery.length || 1) - 1))
+      updateGalleryView()
+      galleryModal.classList.remove('hidden')
+      galleryModal.classList.add('flex')
+      document.body.style.overflow = 'hidden'
+    }
+    function closeGallery() {
+      if (!galleryModal) return
+      galleryModal.classList.add('hidden')
+      galleryModal.classList.remove('flex')
+      document.body.style.overflow = ''
+    }
+    function prevGallery() {
+      if (!gallery || gallery.length === 0) return
+      galleryIndex = (galleryIndex - 1 + gallery.length) % gallery.length
+      updateGalleryView()
+    }
+    function nextGallery() {
+      if (!gallery || gallery.length === 0) return
+      galleryIndex = (galleryIndex + 1) % gallery.length
+      updateGalleryView()
+    }
+    document.querySelectorAll('[data-open-gallery]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault()
+        openGallery(parseInt(el.getAttribute('data-open-gallery'), 10) || 0)
+      })
+    })
+    document.querySelectorAll('[data-close-gallery]').forEach((b) => {
+      b.addEventListener('click', closeGallery)
+    })
+    document.querySelectorAll('[data-gallery-prev]').forEach((b) => {
+      b.addEventListener('click', prevGallery)
+    })
+    document.querySelectorAll('[data-gallery-next]').forEach((b) => {
+      b.addEventListener('click', nextGallery)
+    })
+    if (galleryModal) {
+      galleryModal.addEventListener('click', (e) => {
+        if (e.target === galleryModal) closeGallery()
+      })
+    }
+    document.addEventListener('keydown', (e) => {
+      if (!galleryModal || galleryModal.classList.contains('hidden')) return
+      if (e.key === 'Escape') closeGallery()
+      else if (e.key === 'ArrowLeft') prevGallery()
+      else if (e.key === 'ArrowRight') nextGallery()
+    })
+
+    // AI chat gönder — fake yanıt
+    function sendChatMessage() {
+      if (!chatInput) return
+      const value = chatInput.value.trim()
+      if (!value) {
+        showToast('Önce bir soru yazın')
+        return
+      }
+      chatInput.value = ''
+      showToast('Yanıt hazırlanıyor...')
+      setTimeout(() => {
+        showToast('AI: "' + value.substring(0, 40) + (value.length > 40 ? '...' : '') + '" için yanıt geldi.', { kind: 'success' })
+      }, 900)
+    }
+    document.querySelectorAll('[data-send-chat]').forEach((b) => {
+      b.addEventListener('click', sendChatMessage)
+    })
+    if (chatInput) {
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          sendChatMessage()
+        }
+      })
+    }
+  </script>
 </RootLayout>

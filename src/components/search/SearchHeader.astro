@@ -46,15 +46,7 @@ const headingForParts = t('search.resultsHeadingFor', locale).split('{accent}')
 ---
 <header class="border-b border-border bg-background">
   <div class="mx-auto max-w-[1280px] px-4 pb-6 pt-5">
-    <nav aria-label="Breadcrumb" class="text-xs text-muted-foreground">
-      <ol class="flex items-center gap-1.5">
-        <li><a href={`${prefix}/`} class="transition hover:text-foreground">{t('search.breadcrumbHome', locale)}</a></li>
-        <li aria-hidden class="text-muted-foreground/60">/</li>
-        <li><span class="text-foreground">{t('search.breadcrumbSearch', locale)}</span></li>
-      </ol>
-    </nav>
-
-    <div class="mt-3 flex flex-wrap items-end justify-between gap-3">
+    <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
         <div class="font-mono text-xs uppercase tracking-[0.18em] text-muted-foreground">{t('search.resultsEyebrow', locale)}</div>
         <h1 class="mt-1 font-serif text-3xl font-normal tracking-tight md:text-4xl">

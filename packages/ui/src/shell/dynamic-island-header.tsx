@@ -26,6 +26,7 @@ export function DynamicIslandHeader({
   brandLabel,
   activeKey = 'overview',
   statusChipLabel,
+  statusChipContent,
   navPages,
   subNav,
   aiSearch,
@@ -309,7 +310,9 @@ export function DynamicIslandHeader({
               </span>
               <span className="text-xs leading-none">
                 <span className="text-muted-foreground">Şu an: </span>
-                <span className="font-medium text-foreground">{activePageLabel}</span>
+                {statusChipContent ?? (
+                  <span className="font-medium text-foreground">{activePageLabel}</span>
+                )}
               </span>
               <span
                 className="hidden h-3 w-px flex-none bg-border/70 sm:inline-block"

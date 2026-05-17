@@ -86,17 +86,6 @@ const officeBreadcrumbJsonLd = breadcrumbListSchema([
   <script is:inline type="application/ld+json" set:html={toJsonLd(officeJsonLd)} />
   <script is:inline type="application/ld+json" set:html={toJsonLd(officeBreadcrumbJsonLd)} />
 
-  <!-- Breadcrumb -->
-  <nav aria-label="Breadcrumb" class="border-b border-border bg-background">
-    <ol class="mx-auto flex max-w-[1280px] items-center gap-1.5 px-4 py-3 text-xs text-muted-foreground">
-      <li><a href={`${prefix}/`} class="transition hover:text-foreground">{t('search.breadcrumbHome', locale)}</a></li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li><a href={`${prefix}/ofisler`} class="transition hover:text-foreground">{t('officesHub.heading', locale)}</a></li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li><span class="text-foreground">{office.name}</span></li>
-    </ol>
-  </nav>
-
   <OfficeHero office={office} />
 
   <div class="mx-auto max-w-[1280px] px-4 py-8 md:py-10">

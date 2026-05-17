@@ -36,6 +36,7 @@ import AiInvestmentPanel from '@/components/listing/ai-invest/AiInvestmentPanel.
 import InteractionPanel from '@/components/listing/interact/InteractionPanel.astro'
 import AdvancedVisualBand from '@/components/listing/intel/AdvancedVisualBand.astro'
 import MobileCtaBar from '@/components/listing/MobileCtaBar.tsx'
+import StickyContactCard from '@/components/listing/StickyContactCard.astro'
 import RecentTracker from '@/components/recent/RecentTracker'
 import SocialProofToast from '@/components/social-proof/SocialProofToast'
 import ShareButtons from '@/components/listing/ShareButtons.tsx'
@@ -132,8 +133,15 @@ const breadcrumbJsonLd = breadcrumbListSchema([
   { name: listing.district, url: canonicalUrl },
 ])
 
+const headerBreadcrumb = [
+  { label: 'Home', href: `${prefix}/` },
+  { label: 'Land search', href: `${prefix}/ara` },
+  { label: listing.city, href: `${prefix}/ara?il=${encodeURIComponent(listing.city)}` },
+  { label: listing.district },
+]
+
 ---
-<RootLayout title={pageTitle} description={pageDescription}>
+<RootLayout title={pageTitle} description={pageDescription} breadcrumb={headerBreadcrumb}>
   <Fragment slot="head">
     <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossorigin />
     <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossorigin />
@@ -153,25 +161,10 @@ const breadcrumbJsonLd = breadcrumbListSchema([
   />
   <SocialProofToast client:idle />
 
-  <!-- Breadcrumb -->
-  <nav aria-label="Breadcrumb" class="border-b border-border bg-background">
-    <ol class="mx-auto flex max-w-[1280px] flex-wrap items-center gap-1 px-4 py-3 text-xs text-muted-foreground">
-      <li><a href={`${prefix}/`} class="hover:text-foreground">Home</a></li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li><a href={`${prefix}/ara`} class="hover:text-foreground">Land search</a></li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li>
-        <a href={`${prefix}/ara?il=${encodeURIComponent(listing.city)}`} class="hover:text-foreground">
-          {listing.city}
-        </a>
-      </li>
-      <li aria-hidden class="text-muted-foreground/60">/</li>
-      <li class="truncate text-foreground">{listing.district}</li>
-    </ol>
-  </nav>
+  <!-- Sayfa-içi breadcrumb kaldırıldı — üst pill içinde gösteriliyor. -->
 
-  <!-- A: ListingDetailHero (P variant) -->
-  <section id="hero" class="mx-auto max-w-[1280px] space-y-4 px-4 pt-6 md:pt-10">
+  <!-- HERO GALLERY (full width) -->
+  <section id="hero" class="mx-auto max-w-[1280px] px-4 pt-6 md:pt-10">
     {listing.images && listing.images.length > 0 && (
       <ListingGallery
         client:load
@@ -179,71 +172,103 @@ const breadcrumbJsonLd = breadcrumbListSchema([
         alt={listing.title}
       />
     )}
-    <HeroVariant client:visible listing={listing} />
-    <div class="flex justify-end">
-      <ShareButtons
-        client:idle
-        url={canonicalUrl}
-        title={listing.title}
-        text={shareText}
-      />
-    </div>
   </section>
 
-  <!-- Sticky AnchorNav -->
-  <AnchorNav client:idle locale="en" />
+  <!-- 2 COL: LEFT MAIN / RIGHT STICKY CARD -->
+  <div class="mx-auto max-w-[1280px] px-4 pt-6">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,360px)] lg:items-start">
 
-  <!-- 12 section islands (B-L). Section IDs match TR for shared AnchorNav hrefs. -->
-  <div class="mx-auto max-w-[1280px] space-y-8 px-4 py-8 md:py-10">
-    <section id="kimlik" data-section="B" aria-label="Identity">
-      <div class="grid gap-4 md:grid-cols-[1fr_240px]">
-        <IdentityCardVariant client:visible listing={listing} />
-        <KeyFactsVariant client:visible listing={listing} />
+      <!-- LEFT MAIN -->
+      <main class="min-w-0 space-y-8">
+        <section aria-label="Listing title" class="space-y-4">
+          <HeroVariant client:visible listing={listing} />
+          <div class="flex justify-end">
+            <ShareButtons
+              client:idle
+              url={canonicalUrl}
+              title={listing.title}
+              text={shareText}
+            />
+          </div>
+        </section>
+
+        <section id="ozet" aria-label="Quick facts">
+          <KeyFactsVariant client:visible listing={listing} />
+        </section>
+
+        <AnchorNav client:idle locale="en" />
+
+        <section id="kimlik" data-section="B" aria-label="Identity & zoning" class="space-y-4">
+          <IdentityCardVariant client:visible listing={listing} />
+          <div id="imar" data-section="F">
+            <ZoningPanel client:visible listingId={listing.id} />
+          </div>
+        </section>
+
+        <section id="serh" data-section="E" aria-label="Legal encumbrances">
+          <LegalEncumbrancePanel client:visible listingId={listing.id} />
+        </section>
+
+        <section id="harita" data-section="C" aria-label="Map">
+          <SmartMap client:visible listingId={listing.id} />
+        </section>
+
+        <section id="risk" data-section="H" aria-label="Hazard risk">
+          <HazardRadar client:visible listingId={listing.id} />
+        </section>
+
+        <section id="cevre" data-section="I" aria-label="Environment">
+          <EnvironmentPoi client:visible listingId={listing.id} />
+        </section>
+
+        <section id="yatirim" data-section="D" aria-label="Investment & return" class="space-y-4">
+          <AiValuationDeep client:visible listingId={listing.id} />
+          <div data-section="M">
+            <AiInvestmentPanel listing={listing} />
+          </div>
+        </section>
+
+        <section id="tarla" data-section="G" aria-label="Farmland">
+          <FarmlandModule client:visible listingId={listing.id} />
+        </section>
+
+        <section id="gorsel" data-section="O" aria-label="Visual">
+          <AdvancedVisualBand listing={listing} />
+        </section>
+
+        <section id="chat" data-section="J" aria-label="AI Chat">
+          <ListingAiChat client:load listingId={listing.id} />
+        </section>
+
+        <section id="iletisim" data-section="L" aria-label="Meeting & offer" class="space-y-4">
+          <div data-section="N">
+            <InteractionPanel listing={listing} />
+          </div>
+          <VerifiedSellerCard
+            client:visible
+            sellerId={listing.id}
+            sellerUsername={(listing as { sellerUsername?: string }).sellerUsername ?? 'mert-soydan'}
+          />
+        </section>
+      </main>
+
+      <!-- RIGHT STICKY CONTACT CARD -->
+      <div class="hidden lg:block lg:sticky lg:top-4 lg:self-start">
+        <StickyContactCard listing={listing} />
       </div>
-    </section>
-    <section id="harita" data-section="C" aria-label="Map">
-      <SmartMap client:visible listingId={listing.id} />
-    </section>
-    <section id="degerleme" data-section="D" aria-label="Valuation">
-      <AiValuationDeep client:visible listingId={listing.id} />
-    </section>
-    <section id="yatirim" data-section="M" aria-label="AI Investment">
-      <AiInvestmentPanel listing={listing} />
-    </section>
-    <section id="serh" data-section="E" aria-label="Legal encumbrances">
-      <LegalEncumbrancePanel client:visible listingId={listing.id} />
-    </section>
-    <section id="imar" data-section="F" aria-label="Zoning">
-      <ZoningPanel client:visible listingId={listing.id} />
-    </section>
-    <section id="tarla" data-section="G" aria-label="Farmland">
-      <FarmlandModule client:visible listingId={listing.id} />
-    </section>
-    <section id="risk" data-section="H" aria-label="Hazard risk">
-      <HazardRadar client:visible listingId={listing.id} />
-    </section>
-    <section id="cevre" data-section="I" aria-label="Environment">
-      <EnvironmentPoi client:visible listingId={listing.id} />
-    </section>
-    <section id="gorsel" data-section="O" aria-label="Visual">
-      <AdvancedVisualBand listing={listing} />
-    </section>
-    <section id="chat" data-section="J" aria-label="AI Chat">
-      <ListingAiChat client:load listingId={listing.id} />
-    </section>
-    <section id="karsi" data-section="K" aria-label="Compare">
-      <InlineCompare client:visible listingId={listing.id} />
-    </section>
-    <section id="iletisim" data-section="L" aria-label="Seller">
-      <VerifiedSellerCard
-        client:visible
-        sellerId={listing.id}
-        sellerUsername={(listing as { sellerUsername?: string }).sellerUsername ?? 'mert-soydan'}
-      />
-    </section>
-    <section id="etkilesim" data-section="N" aria-label="Interaction">
-      <InteractionPanel listing={listing} />
-    </section>
+
+    </div>
   </div>
+
+  <!-- SIMILAR LISTINGS (full width) -->
+  <section
+    id="karsi"
+    data-section="K"
+    aria-label="Similar listings"
+    class="mx-auto mt-10 max-w-[1280px] px-4 pb-12"
+  >
+    <InlineCompare client:visible listingId={listing.id} />
+  </section>
+
   <MobileCtaBar client:idle listingId={listing.id} />
 </RootLayout>

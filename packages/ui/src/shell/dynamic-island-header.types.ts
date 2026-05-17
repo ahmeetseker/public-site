@@ -35,6 +35,13 @@ export interface DynamicIslandHeaderProps {
   brandLabel: string
   activeKey?: string
   statusChipLabel?: string
+  /**
+   * Optional rich content to render inside the "Şu an: …" status chip.
+   * When provided, replaces the plain `activePageLabel` text node — useful
+   * for breadcrumb chains with clickable segments on detail pages.
+   * `statusChipLabel` is still used for the aria-label string.
+   */
+  statusChipContent?: ReactNode
   navPages: NavPage[]
   subNav: Record<string, SubNavItem[]>
   aiSearch?: {
