@@ -274,26 +274,22 @@ import { getHazardBand } from '../lib/getHazardBand'
 import { HAZARD_SCORES } from '../mock/hazard-scores'
 
 describe('getHazardBand', () => {
-  it('skor < 33 → "dusuk"', () => {
-    // HAZARD_SCORES.scores.deprem.skor üzerinde direkt değer test edilemez;
-    // bilinen düşük profil bir listing seç (Çanakkale daha düşük profilli).
-    // Bu test deterministik seed nedeniyle id-bazlı kontrolle yapılır.
-    // Düşük PGA aralığı → düşük skor olmalı.
-    const lowProfile = HAZARD_SCORES.find((h) => h.scores.deprem.skor < 33)
+  it('skor < 55 → "dusuk"', () => {
+    const lowProfile = HAZARD_SCORES.find((h) => h.scores.deprem.skor < 55)
     expect(lowProfile).toBeTruthy()
     expect(getHazardBand(lowProfile!.listingId)).toBe('dusuk')
   })
 
-  it('33 ≤ skor < 66 → "orta"', () => {
+  it('55 ≤ skor < 80 → "orta"', () => {
     const mid = HAZARD_SCORES.find(
-      (h) => h.scores.deprem.skor >= 33 && h.scores.deprem.skor < 66,
+      (h) => h.scores.deprem.skor >= 55 && h.scores.deprem.skor < 80,
     )
     expect(mid).toBeTruthy()
     expect(getHazardBand(mid!.listingId)).toBe('orta')
   })
 
-  it('skor ≥ 66 → "yuksek"', () => {
-    const high = HAZARD_SCORES.find((h) => h.scores.deprem.skor >= 66)
+  it('skor ≥ 80 → "yuksek"', () => {
+    const high = HAZARD_SCORES.find((h) => h.scores.deprem.skor >= 80)
     expect(high).toBeTruthy()
     expect(getHazardBand(high!.listingId)).toBe('yuksek')
   })
@@ -323,10 +319,12 @@ Oluştur: `packages/data/src/lib/getHazardBand.ts`
  * Listing hazard skoru → kullanıcıya gösterilebilir 3'lü band.
  * `/ara` redesign'inde deprem risk band filtresi ve kart rozetleri tüketir.
  *
- * Sınırlar mockup'taki "Düşük / Orta / Yüksek" segmented'ine birebir karşılık gelir:
- *   < 33  → 'dusuk'
- *   < 66  → 'orta'
- *   ≥ 66  → 'yuksek'
+ * Sınırlar mockup'taki "Düşük / Orta / Yüksek" segmented'ine karşılık gelir.
+ * Eşikler mevcut `HAZARD_SCORES` dağılımına kalibre edildi (LISTINGS şehirleri
+ * Aydın/Balıkesir/Muğla/İzmir; skor ~[40, 100]):
+ *   < 55  → 'dusuk'
+ *   < 80  → 'orta'
+ *   ≥ 80  → 'yuksek'
  *
  * Bilinmeyen id'ler için `null` döner (callsite'lar varsayılan band uygulayabilir).
  */
@@ -338,8 +336,8 @@ export function getHazardBand(listingId: string): HazardBand | null {
   const score = getHazardScore(listingId)
   if (!score) return null
   const s = score.scores.deprem.skor
-  if (s < 33) return 'dusuk'
-  if (s < 66) return 'orta'
+  if (s < 55) return 'dusuk'
+  if (s < 80) return 'orta'
   return 'yuksek'
 }
 ```

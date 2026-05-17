@@ -50,7 +50,7 @@ packages/data/src/lib/getHazardBand.ts               # YENİ — hazard score �
    - `hasGas?: boolean` — özellik filtresi (mockup'ta "Doğalgaz" checkbox)
    - `comparisonHint?: string` — vitrin kartında "%9 emsal altı" gibi serbest metin (basitleştirme; gerçek emsal hesaplama scope dışı)
 2. Seed (`listings-v2` veya ilgili kaynak dosya — implementation aşamasında lokalize edilir): kategori başına 1-2 ilan `isFeatured: true` + uygun `comparisonHint`; `hasGas` mantıklı bir oranda true atanır.
-3. `packages/data/src/lib/getHazardBand.ts` — `HAZARD_SCORES` tablosundan listing id ile join eden, `'dusuk' | 'orta' | 'yuksek'` döndüren saf fonksiyon. Sınır değerleri: score < 33 → düşük, < 66 → orta, ≥ 66 → yüksek (implementation'da netleşir; HAZARD_SCORES tipi okunup ayarlanır).
+3. `packages/data/src/lib/getHazardBand.ts` — `HAZARD_SCORES` tablosundan listing id ile join eden, `'dusuk' | 'orta' | 'yuksek'` döndüren saf fonksiyon. **Sınır değerleri** mevcut `HAZARD_SCORES` dağılımına kalibre edildi (LISTINGS şehirleri Aydın/Balıkesir/Muğla/İzmir; skor aralığı ~[40, 100]): `< 55 → düşük`, `< 80 → orta`, `≥ 80 → yüksek`. Balıkesir alt aralığı (PGA ~0.22-0.27) düşük band'a; orta şehirler orta band'a; İzmir/Muğla/Aydın üst yarısı yüksek band'a doğal olarak düşer. Ek seed listingsi gerekmez.
 4. `src/pages/ara.astro` SSR filter loop'una eklenecek query param'lar:
    - `priceMin` (number, varsayılan 0)
    - `sizeMin` / `sizeMax` (number)
