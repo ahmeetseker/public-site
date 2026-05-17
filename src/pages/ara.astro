@@ -65,6 +65,19 @@ let filtered: Listing[] = sourceListings.filter((l) => {
   if (tip !== 'Tümü' && l.type !== tip) return false
   if (il !== 'Tümü' && l.city !== il) return false
   if (l.price > priceMax) return false
+  if (l.price < priceMin) return false
+  if (l.size < sizeMin) return false
+  if (l.size > sizeMax) return false
+  if (imarSet && (!l.zoning || !imarSet.has(l.zoning))) return false
+  if (tapu && l.titleStatus !== tapu) return false
+  if (wantCephe && !l.hasRoad) return false
+  if (wantSu && !l.hasWater) return false
+  if (wantElektrik && !l.hasElectricity) return false
+  if (wantGaz && !l.hasGas) return false
+  if (depremRiskSet) {
+    const band = getHazardBand(l.id)
+    if (!band || !depremRiskSet.has(band)) return false
+  }
   if (qLower) {
     const blob = `${l.id} ${l.title} ${l.city} ${l.district} ${l.tags.join(' ')}`.toLocaleLowerCase('tr-TR')
     if (!blob.includes(qLower)) return false
