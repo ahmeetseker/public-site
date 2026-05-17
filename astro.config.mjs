@@ -35,8 +35,8 @@ import { visualizer } from 'rollup-plugin-visualizer'
 //      DOT ABOVE). Logged here so it's not re-investigated.
 export default defineConfig({
   output: 'static',
-  site: 'https://arsam.net',
-  base: '/',
+  site: process.env.SITE || 'https://arsam.net',
+  base: process.env.BASE_PATH || '/',
   i18n: {
     defaultLocale: 'tr',
     locales: ['tr', 'en'],
